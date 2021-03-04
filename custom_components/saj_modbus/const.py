@@ -57,7 +57,7 @@ SENSOR_TYPES = {
 }
 
 DEVICE_STATUSSES = {
-    0: "Not Connected"
+    0: "Not Connected",
     1: "Waiting",
     2: "Normal",
     3: "Error",
