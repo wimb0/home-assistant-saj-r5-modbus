@@ -1,0 +1,22 @@
+{
+  "config": {
+    "title": "SAJ Inverter Modbus",
+    "step": {
+      "user": {
+        "title": "Definieer uw SAJ Inverter modbus-verbinding",
+        "data": {
+          "host": "Het ip-adres van uw SAJ-omvormer modbus apparaat",
+          "name": "Het voorvoegsel dat moet worden gebruikt voor uw SAJ-sensoren",
+          "port": "De TCP-poort waarop verbinding moet worden gemaakt met de SAJ-omvormer",
+          "scan_interval": "De polling-frequentie van de modbus registratie in seconden"
+        }
+      }
+    },
+    "error": {
+      "already_configured": "Apparaat is al geconfigureerd"
+    },
+    "abort": {
+      "already_configured": "Apparaat is al geconfigureerd"
+    }
+  }
+}

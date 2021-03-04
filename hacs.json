@@ -1,0 +1,7 @@
+{
+  "name": "SAJ Inverter Modbus",
+  "content_in_root": false,
+  "domains": ["sensor"],
+  "homeassistant": "0.109.0",
+  "iot_class": "local_poll"
+}

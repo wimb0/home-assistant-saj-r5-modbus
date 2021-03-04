@@ -1,0 +1,9 @@
+{
+  "domain": "saj_modbus",
+  "name": "SAJ Modbus",
+  "documentation": "https://github.com/wimb0/home-assistant-saj-modbus",
+  "requirements": ["pymodbus==1.5.2"],
+  "dependencies": [],
+  "codeowners": ["@wimb0"],
+  "config_flow": true
+}
