@@ -19,7 +19,7 @@ from homeassistant.helpers.event import async_track_time_interval
 from .const import (
     DOMAIN,
     DEFAULT_NAME,
-    DEFAULT_SCAN_INTERVAL,
+    DEFAULT_SCAN_INTERVAL
 )
 
 _LOGGER = logging.getLogger(__name__)
