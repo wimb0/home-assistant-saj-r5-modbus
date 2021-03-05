@@ -137,7 +137,7 @@ class SAJModbusHub:
         if not self._sensors:
             return
 
-        update_result = self.read_modbus_data()
+        update_result = self.read_modbus_data_stub()
 
         if update_result:
             for update_callback in self._sensors:
@@ -178,53 +178,53 @@ class SAJModbusHub:
         )
 
     def read_modbus_data_inverter_stub(self):
-        self.data["mpvstatus"] = 1
-        self.data["mpvmode"] = 1
-        self.data["faultmsg"] = 1
-        self.data["pv1volt"] = 1
-        self.data["pv1curr"] = 1
-        self.data["pv1power"] = 1
-        self.data["pv2volt"] = 1
-        self.data["pv2curr"] = 1
-        self.data["pv2power"] = 1
-        self.data["pv3volt"] = 1
-        self.data["pv3curr"] = 1
-        self.data["pv3power"] = 1
-        self.data["busvolt"] = 1
-        self.data["invtempc"] = 1
-        self.data["gfci"] = 1
-        self.data["power"] = 1
-        self.data["qpower"] = 1
-        self.data["pf"] = 1
-        self.data["l1volt"] = 1
-        self.data["l1curr"] = 1
-        self.data["l1freq"] = 1
-        self.data["l1dci"] = 1
-        self.data["l1power"] = 1
-        self.data["l1pf"] = 1
-        self.data["l2volt"] = 1
-        self.data["l2curr"] = 1
-        self.data["l2freq"] = 1
-        self.data["l2dci"] = 1
-        self.data["l2power"] = 1
-        self.data["l2pf"] = 1
-        self.data["l3volt"] = 1
-        self.data["l3curr"] = 1
-        self.data["l3freq"] = 1
-        self.data["l3dci"] = 1
-        self.data["l3power"] = 1
-        self.data["l3pf"] = 1
-        self.data["iso1"] = 1
-        self.data["iso2"] = 1
-        self.data["iso3"] = 1
-        self.data["iso4"] = 1
-        self.data["todayenergy"] = 1
-        self.data["monthenergy"] = 1
-        self.data["yearenergy"] = 1
-        self.data["totalenergy"] = 1
-        self.data["todayhour"] = 1
-        self.data["totalhour"] = 1       
-        self.data["errorcount"] = 1
+        self.data["mpvstatus"] = "Offline"
+        self.data["mpvmode"] = 0
+        self.data["faultmsg"] = 0
+        self.data["pv0volt"] = 0
+        self.data["pv0curr"] = 0
+        self.data["pv0power"] = 0
+        self.data["pv2volt"] = 0
+        self.data["pv2curr"] = 0
+        self.data["pv2power"] = 0
+        self.data["pv3volt"] = 0
+        self.data["pv3curr"] = 0
+        self.data["pv3power"] = 0
+        self.data["busvolt"] = 0
+        self.data["invtempc"] = 0
+        self.data["gfci"] = 0
+        self.data["power"] = 0
+        self.data["qpower"] = 0
+        self.data["pf"] = 0
+        self.data["l0volt"] = 0
+        self.data["l0curr"] = 0
+        self.data["l0freq"] = 0
+        self.data["l0dci"] = 0
+        self.data["l0power"] = 0
+        self.data["l0pf"] = 0
+        self.data["l2volt"] = 0
+        self.data["l2curr"] = 0
+        self.data["l2freq"] = 0
+        self.data["l2dci"] = 0
+        self.data["l2power"] = 0
+        self.data["l2pf"] = 0
+        self.data["l3volt"] = 0
+        self.data["l3curr"] = 0
+        self.data["l3freq"] = 0
+        self.data["l3dci"] = 0
+        self.data["l3power"] = 0
+        self.data["l3pf"] = 0
+        self.data["iso0"] = 0
+        self.data["iso2"] = 0
+        self.data["iso3"] = 0
+        self.data["iso4"] = 0
+        self.data["todayenergy"] = 0
+        self.data["monthenergy"] = 0
+        self.data["yearenergy"] = 0
+        self.data["totalenergy"] = 0
+        self.data["todayhour"] = 0
+        self.data["totalhour"] = 0      
+        self.data["errorcount"] = 0
 
         return True
 
