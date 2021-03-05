@@ -168,67 +168,11 @@ class SAJModbusHub:
     def calculate_value(self, value, sf):
         return value * 10 ** sf
 
-    def read_modbus_data_stub(self):
-        return (
-            self.read_modbus_data_inverter_stub()
-        )
-
     def read_modbus_data(self):
         return (
             self.read_modbus_inverter_data()
             and self.read_modbus_realtime_data()
         )
-
-    def read_modbus_data_inverter_stub(self):
-        self.data["mpvstatus"] = "Offline"
-        self.data["mpvmode"] = 0
-        # self.data["faultmsg"] = 0
-        self.data["pv1volt"] = 0
-        self.data["pv1curr"] = 0
-        self.data["pv2power"] = 0
-        self.data["pv2volt"] = 0
-        self.data["pv2curr"] = 0
-        self.data["pv2power"] = 0
-        self.data["pv3volt"] = 0
-        self.data["pv3curr"] = 0
-        self.data["pv3power"] = 0
-        self.data["busvolt"] = 0
-        self.data["invtempc"] = 0
-        self.data["gfci"] = 0
-        self.data["power"] = 0
-        self.data["qpower"] = 0
-        self.data["pf"] = 0
-        self.data["l1volt"] = 0
-        self.data["l1curr"] = 0
-        self.data["l1freq"] = 0
-        self.data["l1dci"] = 0
-        self.data["l1power"] = 0
-        self.data["l1pf"] = 0
-        self.data["l2volt"] = 0
-        self.data["l2curr"] = 0
-        self.data["l2freq"] = 0
-        self.data["l2dci"] = 0
-        self.data["l2power"] = 0
-        self.data["l2pf"] = 0
-        self.data["l3volt"] = 0
-        self.data["l3curr"] = 0
-        self.data["l3freq"] = 0
-        self.data["l3dci"] = 0
-        self.data["l3power"] = 0
-        self.data["l3pf"] = 0
-        self.data["iso1"] = 0
-        self.data["iso2"] = 0
-        self.data["iso3"] = 0
-        self.data["iso4"] = 0
-        self.data["todayenergy"] = 0
-        self.data["monthenergy"] = 0
-        self.data["yearenergy"] = 0
-        self.data["totalenergy"] = 0
-        self.data["todayhour"] = 0
-        self.data["totalhour"] = 0
-        self.data["errorcount"] = 0
-
-        return True
 
     def read_modbus_inverter_data(self):
         inverter_data = self.read_holding_registers(
@@ -394,5 +338,4 @@ class SAJModbusHub:
 
             return True
         else:
-            self.read_modbus_data_stub()
             return False
