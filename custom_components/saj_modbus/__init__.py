@@ -180,7 +180,7 @@ class SAJModbusHub:
     def read_modbus_data_inverter_stub(self):
         self.data["mpvstatus"] = "Offline"
         self.data["mpvmode"] = 0
-        self.data["faultmsg"] = 0
+        # self.data["faultmsg"] = 0
         self.data["pv1volt"] = 0
         self.data["pv1curr"] = 0
         self.data["pv2power"] = 0
