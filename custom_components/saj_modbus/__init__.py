@@ -260,7 +260,7 @@ class SAJModbusHub:
             self.data["disphwversion"] = round(disphwversion * 0.001, 3)
             ctrlhwversion = decoder.decode_16bit_uint()
             self.data["ctrlhwversion"] = round(ctrlhwversion * 0.001, 3)
-            powerhwversion = = decoder.decode_16bit_uint()
+            powerhwversion = decoder.decode_16bit_uint()
             self.data["powerhwversion"] = round(powerhwversion * 0.001, 3)
             
             return True
