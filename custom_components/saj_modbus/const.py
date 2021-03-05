@@ -7,6 +7,7 @@ ATTR_STATUS_DESCRIPTION = "status"
 ATTR_MANUFACTURER = "SAJ"
 
 SENSOR_TYPES = {
+    "MPVStatus": ["Inverter status", "mpvstatus", None, None],
     "MPVMode": ["Inverter working mode", "mpvmode", None, None],
     "FaultMSG": ["Inverter error message", "faultmsg",  None, None],
     "PV1Volt": ["PV1 voltage", "pv1volt", "V", None],
