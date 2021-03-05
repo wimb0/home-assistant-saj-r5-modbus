@@ -4,7 +4,7 @@
 Home assistant Custom Component for reading data from SAJ inverters through modbus TCP.
 Implements SAJ Inverter registers from https://www.solartoday.nl/wp-content/uploads/saj-plus-series-inverter-modbus-protocal.pdf.
 
-Based on home-assistant-solaredge-modbus from binsentsu https://github.com/binsentsu/home-assistant-solaredge-modbus.
+Based on home-assistant-solaredge-modbus from @binsentsu https://github.com/binsentsu/home-assistant-solaredge-modbus.
 
 # Installation
 Copy contents of custom_components folder to your home-assistant config/custom_components folder or install through HACS.
