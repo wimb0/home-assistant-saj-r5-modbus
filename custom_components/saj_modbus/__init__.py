@@ -137,7 +137,7 @@ class SAJModbusHub:
         if not self._sensors:
             return
 
-        update_result = self.read_modbus_data_stub()
+        update_result = self.read_modbus_data()
 
         if update_result:
             for update_callback in self._sensors:
@@ -196,12 +196,12 @@ class SAJModbusHub:
         self.data["power"] = 0
         self.data["qpower"] = 0
         self.data["pf"] = 0
-        self.data["l0volt"] = 0
-        self.data["l0curr"] = 0
-        self.data["l0freq"] = 0
-        self.data["l0dci"] = 0
-        self.data["l0power"] = 0
-        self.data["l0pf"] = 0
+        self.data["l1volt"] = 0
+        self.data["l1curr"] = 0
+        self.data["l1freq"] = 0
+        self.data["l1dci"] = 0
+        self.data["l1power"] = 0
+        self.data["l1pf"] = 0
         self.data["l2volt"] = 0
         self.data["l2curr"] = 0
         self.data["l2freq"] = 0
@@ -354,4 +354,5 @@ class SAJModbusHub:
 
             return True
         else:
-            return False
+            self.read_modbus_data_stub()
+            return True
