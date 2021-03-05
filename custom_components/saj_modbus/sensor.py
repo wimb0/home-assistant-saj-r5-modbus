@@ -98,8 +98,10 @@ class SajSensor(Entity):
     @property
     def state_attributes(self) -> Optional[Dict[str, Any]]:
         if self._key in ["mpvmode", "statusvendor"]:
+            _LOGGER.debug("Key %s = %s", self._key, self.state)
             if self.state in DEVICE_STATUSSES:
-                return {ATTR_STATUS_DESCRIPTION: DEVICE_STATUSSES[self.state]}
+                _LOGGER.debug("Status %s = %s", ATTR_STATUS_DESCRIPTION, DEVICE_STATUSSES[])
+                return {ATTR_STATUS_DESCRIPTION: DEVICE_STATUSSES[]}
         return None
 
     @property
