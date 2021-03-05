@@ -20,6 +20,7 @@ from .const import (
     DOMAIN,
     DEFAULT_NAME,
     DEFAULT_SCAN_INTERVAL,
+    DEVICE_STATUSSES,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -177,6 +178,7 @@ class SAJModbusHub:
         )
 
     def read_modbus_data_inverter_stub(self):
+        self.data["mpvstatus"] = 1
         self.data["mpvmode"] = 1
         self.data["faultmsg"] = 1
         self.data["pv1volt"] = 1
@@ -236,7 +238,12 @@ class SAJModbusHub:
             
             mpvmode = decoder.decode_16bit_uint()
             self.data["mpvmode"] = mpvmode
-            
+
+            if mpvmode in DEVICE_STATUSSES:
+                self.data["mpvstatus"] = DEVICE_STATUSSES[self.state]
+            else:
+                self.data["mpvstatus"] = "Unknown"
+                
             # TODO: read fault message
             # faultmsg = decoder.decode_16bit_uint()
             # skip 6 registers
