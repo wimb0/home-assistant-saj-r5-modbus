@@ -50,7 +50,6 @@ class SajSensor(Entity):
         self._hub = hub
         self._key = key
         self._name = name
-        self._friendly_name = name
         self._unit_of_measurement = unit
         self._icon = icon
         self._device_info = device_info
@@ -72,14 +71,9 @@ class SajSensor(Entity):
             self._state = self._hub.data[self._key]
 
     @property
-    def friendly_name(self):
-        """Return the friendly name."""
-        return self._name
-
-    @property
     def name(self):
         """Return the name."""
-        return f"{self._platform_name}_{self._name}"
+        return f"{self._platform_name} {self._name}"
 
     @property
     def unique_id(self) -> Optional[str]:
