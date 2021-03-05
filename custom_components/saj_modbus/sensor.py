@@ -50,7 +50,7 @@ class SajSensor(Entity):
         self._hub = hub
         self._key = key
         self._name = name
-        self._friendly_name = friendly_name
+        self._friendly_name = name
         self._unit_of_measurement = unit
         self._icon = icon
         self._device_info = device_info
