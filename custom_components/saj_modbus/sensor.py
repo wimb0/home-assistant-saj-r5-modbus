@@ -3,7 +3,6 @@ from typing import Optional, Dict, Any
 from .const import (
     SENSOR_TYPES,
     DOMAIN,
-    ATTR_STATUS_DESCRIPTION,
     DEVICE_STATUSSES,
     ATTR_MANUFACTURER,
 )

@@ -3,8 +3,7 @@ DEFAULT_NAME = "SAJ"
 DEFAULT_SCAN_INTERVAL = 60
 DEFAULT_PORT = 2020
 CONF_SAJ_HUB = "saj_hub"
-ATTR_STATUS_DESCRIPTION = "status"
-ATTR_MANUFACTURER = "SAJ"
+ATTR_MANUFACTURER = "SAJ Electric"
 
 SENSOR_TYPES = {
     "DevType": ["Device Type", "devtype", None, None],
