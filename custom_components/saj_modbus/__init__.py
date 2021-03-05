@@ -175,7 +175,8 @@ class SAJModbusHub:
 
     def read_modbus_data(self):
         return (
-            self.read_modbus_data_inverter()
+            self.read_modbus_inverter_data()
+            and self.read_modbus_realtime_data()
         )
 
     def read_modbus_data_inverter_stub(self):
@@ -229,12 +230,34 @@ class SAJModbusHub:
 
         return True
 
-    def read_modbus_data_inverter(self):
+    def read_modbus_inverter_data(self):
         inverter_data = self.read_holding_registers(
-            unit=1, address=256, count=60)
+            unit=1, address=36608, count=29)
         if not inverter_data.isError():
             decoder = BinaryPayloadDecoder.fromRegisters(
-                inverter_data.registers, byteorder=Endian.Big
+                realtime_data.registers, byteorder=Endian.Big
+            )
+
+            devtype = decoder.decode_16bit_uint()
+            self.data["devtype"] = devtype
+            subtype = decoder.decode_16bit_uint()
+            self.data["subtype"] = devtype
+            commver = decoder.decode_16bit_uint()
+            self.data["commver"] = round(commver * 0.001, 3)
+            
+            sn = decoder.decode_string(20).decode('ascii')
+            self.data["subsntype"] = str(sn)
+            pc = decoder.decode_string(20).decode('ascii')
+            self.data["pc"] = str(pc)
+        else:
+            return False
+
+    def read_modbus_realtime_data(self):
+        realtime_data = self.read_holding_registers(
+            unit=1, address=256, count=60)
+        if not realtime_data.isError():
+            decoder = BinaryPayloadDecoder.fromRegisters(
+                realtime_data.registers, byteorder=Endian.Big
             )
 
             mpvmode = decoder.decode_16bit_uint()

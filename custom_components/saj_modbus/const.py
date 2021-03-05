@@ -7,6 +7,11 @@ ATTR_STATUS_DESCRIPTION = "status"
 ATTR_MANUFACTURER = "SAJ"
 
 SENSOR_TYPES = {
+    "DevType": ["Device Type", "devtype", None, None],
+    "SubType": ["Sub Type", "subtype", None, None],
+    "CommVer": ["Comms Protocol Version", "commver", None, None],
+    "SN": ["Serial Number", "sn", None, None],
+    "PC": ["Product Code", "pc", None, None],
     "MPVStatus": ["Inverter status", "mpvstatus", None, None],
     "MPVMode": ["Inverter working mode", "mpvmode", None, None],
     # "FaultMSG": ["Inverter error message", "faultmsg",  None, None],
