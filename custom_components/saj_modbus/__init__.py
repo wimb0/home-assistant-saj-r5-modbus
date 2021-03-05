@@ -235,7 +235,7 @@ class SAJModbusHub:
             unit=1, address=36608, count=29)
         if not inverter_data.isError():
             decoder = BinaryPayloadDecoder.fromRegisters(
-                realtime_data.registers, byteorder=Endian.Big
+                inverter_data.registers, byteorder=Endian.Big
             )
 
             devtype = decoder.decode_16bit_uint()
@@ -244,11 +244,26 @@ class SAJModbusHub:
             self.data["subtype"] = devtype
             commver = decoder.decode_16bit_uint()
             self.data["commver"] = round(commver * 0.001, 3)
-            
+
             sn = decoder.decode_string(20).decode('ascii')
             self.data["subsntype"] = str(sn)
             pc = decoder.decode_string(20).decode('ascii')
             self.data["pc"] = str(pc)
+
+            dv = decoder.decode_16bit_uint()
+            self.data["dv"] = round(dv * 0.001, 3)
+            mcv = decoder.decode_16bit_uint()
+            self.data["mcv"] = round(mcv * 0.001, 3)
+            scv = decoder.decode_16bit_uint()
+            self.data["scv"] = round(scv * 0.001, 3)           
+            disphwversion = decoder.decode_16bit_uint()
+            self.data["disphwversion"] = round(disphwversion * 0.001, 3)
+            ctrlhwversion = decoder.decode_16bit_uint()
+            self.data["ctrlhwversion"] = round(ctrlhwversion * 0.001, 3)
+            powerhwversion = = decoder.decode_16bit_uint()
+            self.data["powerhwversion"] = round(powerhwversion * 0.001, 3)
+            
+            return True
         else:
             return False
 
@@ -380,4 +395,4 @@ class SAJModbusHub:
             return True
         else:
             self.read_modbus_data_stub()
-            return True
+            return False
