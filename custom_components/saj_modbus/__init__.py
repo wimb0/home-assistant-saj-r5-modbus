@@ -282,7 +282,7 @@ class SAJModbusHub:
             self.data["power"] = power
 
             qpower = decoder.decode_16bit_int()
-            self.data["qpower"] = power
+            self.data["qpower"] = qpower
 
             pf = decoder.decode_16bit_int()
             self.data["pf"] = round(pf * 0.001, 3)
