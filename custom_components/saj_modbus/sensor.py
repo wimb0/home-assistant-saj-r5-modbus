@@ -79,7 +79,7 @@ class SajSensor(Entity):
     @property
     def friendly_name(self):
         """Return the friendly name."""
-        return {self._name}
+        return self._name
 
     @property
     def unique_id(self) -> Optional[str]:
