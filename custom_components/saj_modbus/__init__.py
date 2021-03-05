@@ -181,9 +181,9 @@ class SAJModbusHub:
         self.data["mpvstatus"] = "Offline"
         self.data["mpvmode"] = 0
         self.data["faultmsg"] = 0
-        self.data["pv0volt"] = 0
-        self.data["pv0curr"] = 0
-        self.data["pv0power"] = 0
+        self.data["pv1volt"] = 0
+        self.data["pv1curr"] = 0
+        self.data["pv2power"] = 0
         self.data["pv2volt"] = 0
         self.data["pv2curr"] = 0
         self.data["pv2power"] = 0
@@ -214,7 +214,7 @@ class SAJModbusHub:
         self.data["l3dci"] = 0
         self.data["l3power"] = 0
         self.data["l3pf"] = 0
-        self.data["iso0"] = 0
+        self.data["iso1"] = 0
         self.data["iso2"] = 0
         self.data["iso3"] = 0
         self.data["iso4"] = 0
