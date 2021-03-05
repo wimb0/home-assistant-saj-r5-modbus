@@ -240,7 +240,7 @@ class SAJModbusHub:
             self.data["mpvmode"] = mpvmode
 
             if mpvmode in DEVICE_STATUSSES:
-                self.data["mpvstatus"] = DEVICE_STATUSSES[self.state]
+                self.data["mpvstatus"] = DEVICE_STATUSSES[mpvmode]
             else:
                 self.data["mpvstatus"] = "Unknown"
                 
