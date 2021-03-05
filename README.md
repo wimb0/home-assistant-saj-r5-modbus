@@ -1,5 +1,3 @@
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
-
 # home-assistant-saj-modbus
 Home assistant Custom Component for reading data from SAJ inverters through modbus TCP.
 SAJ Inverters are also sold in The Netherlands as Zonneplan ONE inverters.
@@ -28,4 +26,5 @@ I use a Hi-Flying Elfin-EW11 (www.hi-flying.com/elfin-ew10-elfin-ew11).
 * Cli Disable
 * Protocol Modbus
 
-[!saj_logo](https://github.com/wimb0/home-assistant-saj-modbus/blob/main/images/saj_modbus/logo.png)]
+[![saj_logo](https://github.com/wimb0/home-assistant-saj-modbus/blob/main/images/saj_modbus/logo.png)](https://www.saj-electric.com/)
+
