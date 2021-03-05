@@ -57,7 +57,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     _LOGGER.debug("Setup %s.%s", DOMAIN, name)
 
-    hub = SAJedgeModbusHub(
+    hub = SAJModbusHub(
         hass, name, host, port, scan_interval
     )
     """Register the hub."""
@@ -87,7 +87,7 @@ async def async_unload_entry(hass, entry):
     return True
 
 
-class SAJedgeModbusHub:
+class SAJModbusHub:
     """Thread safe wrapper class for pymodbus."""
 
     def __init__(

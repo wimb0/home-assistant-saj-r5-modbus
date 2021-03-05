@@ -2,7 +2,7 @@ DOMAIN = "saj_modbus"
 DEFAULT_NAME = "saj"
 DEFAULT_SCAN_INTERVAL = 60
 DEFAULT_PORT = 2020
-CONF_SAJEDGE_HUB = "saj_hub"
+CONF_SAJ_HUB = "saj_hub"
 ATTR_STATUS_DESCRIPTION = "status_description"
 ATTR_MANUFACTURER = "SAJ"
 
