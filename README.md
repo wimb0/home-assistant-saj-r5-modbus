@@ -1,5 +1,5 @@
 # home-assistant-saj-modbus
-Home assistant Custom Component for reading data from SAJ inverters through modbus TCP.
+Home Assistant Custom Component for reading data from SAJ Solar Inverters through modbus over TCP.
 
 SAJ Inverters are also sold in The Netherlands as Zonneplan ONE inverters.
 
@@ -7,12 +7,12 @@ Implements SAJ Inverter registers from [`saj-plus-series-inverter-modbus-protoca
 
 Based on [`home-assistant-solaredge-modbus`](https://github.com/binsentsu/home-assistant-solaredge-modbus) from [@binsentsu](https://github.com/binsentsu).
 
-# Installation
+## Installation
 Copy contents of custom_components folder to your home-assistant config/custom_components folder or install through HACS.
 
 After reboot of Home-Assistant, this integration can be configured through the integration setup UI
 
-# Connection via Modbus TCP to a SAJ Inverter
+## Connection via Modbus TCP to a SAJ Inverter
 Connect a Modbus to Wifi device to the Modbus port of your SAJ Inverter.
 
 I use a Hi-Flying Elfin-EW11 (www.hi-flying.com/elfin-ew10-elfin-ew11).
