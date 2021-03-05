@@ -76,7 +76,8 @@ async def async_unload_entry(hass, entry):
     unload_ok = all(
         await asyncio.gather(
             *[
-                hass.config_entries.async_forward_entry_unload(entry, component)
+                hass.config_entries.async_forward_entry_unload(
+                    entry, component)
                 for component in PLATFORMS
             ]
         )
@@ -223,18 +224,19 @@ class SAJModbusHub:
         self.data["yearenergy"] = 0
         self.data["totalenergy"] = 0
         self.data["todayhour"] = 0
-        self.data["totalhour"] = 0      
+        self.data["totalhour"] = 0
         self.data["errorcount"] = 0
 
         return True
 
     def read_modbus_data_inverter(self):
-        inverter_data = self.read_holding_registers(unit=1, address=256, count=60)
+        inverter_data = self.read_holding_registers(
+            unit=1, address=256, count=60)
         if not inverter_data.isError():
             decoder = BinaryPayloadDecoder.fromRegisters(
                 inverter_data.registers, byteorder=Endian.Big
             )
-            
+
             mpvmode = decoder.decode_16bit_uint()
             self.data["mpvmode"] = mpvmode
 
@@ -242,7 +244,7 @@ class SAJModbusHub:
                 self.data["mpvstatus"] = DEVICE_STATUSSES[mpvmode]
             else:
                 self.data["mpvstatus"] = "Unknown"
-                
+
             # TODO: read fault message
             # faultmsg = decoder.decode_16bit_uint()
             # skip 6 registers
@@ -254,7 +256,7 @@ class SAJModbusHub:
             self.data["pv1volt"] = round(pv1volt * 0.1, 1)
             self.data["pv1curr"] = round(pv1curr * 0.01, 2)
             self.data["pv1power"] = round(pv1power * 1, 0)
-            
+
             pv2volt = decoder.decode_16bit_uint()
             pv2curr = decoder.decode_16bit_uint()
             pv2power = decoder.decode_16bit_uint()
@@ -292,12 +294,12 @@ class SAJModbusHub:
             l1freq = decoder.decode_16bit_uint()
             l1dci = decoder.decode_16bit_int()
             l1power = decoder.decode_16bit_uint()
-            l1pf = decoder.decode_16bit_int()            
+            l1pf = decoder.decode_16bit_int()
             self.data["l1volt"] = round(l1volt * 0.1, 1)
             self.data["l1curr"] = round(l1curr * 0.01, 2)
-            self.data["l1freq"] = round(l1freq * 0.01, 2)   
+            self.data["l1freq"] = round(l1freq * 0.01, 2)
             self.data["l1dci"] = l1dci
-            self.data["l1power"] = l1power                             
+            self.data["l1power"] = l1power
             self.data["l1pf"] = round(l1pf * 0.001, 3)
 
             l2volt = decoder.decode_16bit_uint()
@@ -305,12 +307,12 @@ class SAJModbusHub:
             l2freq = decoder.decode_16bit_uint()
             l2dci = decoder.decode_16bit_int()
             l2power = decoder.decode_16bit_uint()
-            l2pf = decoder.decode_16bit_int()            
+            l2pf = decoder.decode_16bit_int()
             self.data["l2volt"] = round(l2volt * 0.1, 1)
             self.data["l2curr"] = round(l2curr * 0.01, 2)
-            self.data["l2freq"] = round(l2freq * 0.01, 2)   
+            self.data["l2freq"] = round(l2freq * 0.01, 2)
             self.data["l2dci"] = l2dci
-            self.data["l2power"] = l2power                              
+            self.data["l2power"] = l2power
             self.data["l2pf"] = round(l2pf * 0.001, 3)
 
             l3volt = decoder.decode_16bit_uint()
@@ -318,12 +320,12 @@ class SAJModbusHub:
             l3freq = decoder.decode_16bit_uint()
             l3dci = decoder.decode_16bit_int()
             l3power = decoder.decode_16bit_uint()
-            l3pf = decoder.decode_16bit_int()            
+            l3pf = decoder.decode_16bit_int()
             self.data["l3volt"] = round(l3volt * 0.1, 1)
             self.data["l3curr"] = round(l3curr * 0.01, 2)
-            self.data["l3freq"] = round(l3freq * 0.01, 2)   
+            self.data["l3freq"] = round(l3freq * 0.01, 2)
             self.data["l3dci"] = l3dci
-            self.data["l3power"] = l3power                                
+            self.data["l3power"] = l3power
             self.data["l3pf"] = round(l3pf * 0.001, 3)
 
             iso1 = decoder.decode_16bit_uint()
@@ -341,12 +343,12 @@ class SAJModbusHub:
             totalenergy = decoder.decode_32bit_uint()
             self.data["todayenergy"] = round(todayenergy * 0.01, 2)
             self.data["monthenergy"] = round(monthenergy * 0.01, 2)
-            self.data["yearenergy"] = round(yearenergy * 0.01, 2)        
-            self.data["totalenergy"] = round(totalenergy * 0.01, 2)         
+            self.data["yearenergy"] = round(yearenergy * 0.01, 2)
+            self.data["totalenergy"] = round(totalenergy * 0.01, 2)
 
-            todayhour = decoder.decode_16bit_uint()            
+            todayhour = decoder.decode_16bit_uint()
             self.data["todayhour"] = round(todayhour * 0.1, 1)
-            totalhour = decoder.decode_32bit_uint()            
+            totalhour = decoder.decode_32bit_uint()
             self.data["totalhour"] = round(totalhour * 0.1, 1)
 
             errorcount = decoder.decode_16bit_uint()
