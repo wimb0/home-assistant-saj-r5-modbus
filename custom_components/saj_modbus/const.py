@@ -53,7 +53,7 @@ SENSOR_TYPES = {
     "TodayHour": ["Daily working hours", "todayhour", "h", None],
     "TotalHour": ["Total working hours", "totalhour", "h", None],
     "ErrorCount": ["Error count", "errorcount", None, None],   
-    "Time": ["Current time", "time", None, None],   
+    #"Time": ["Current time", "time", None, None],   
 }
 
 DEVICE_STATUSSES = {

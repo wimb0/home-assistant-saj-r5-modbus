@@ -223,7 +223,7 @@ class SAJModbusHub:
         self.data["todayhour"] = 1
         self.data["totalhour"] = 1       
         self.data["errorcount"] = 1  
-        self.data["time"] = 1  
+        #self.data["time"] = 1  
 
         return True
 
