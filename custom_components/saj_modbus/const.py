@@ -9,7 +9,7 @@ ATTR_MANUFACTURER = "SAJ"
 SENSOR_TYPES = {
     "MPVStatus": ["Inverter status", "mpvstatus", None, None],
     "MPVMode": ["Inverter working mode", "mpvmode", None, None],
-    "FaultMSG": ["Inverter error message", "faultmsg",  None, None],
+    #"FaultMSG": ["Inverter error message", "faultmsg",  None, None],
     "PV1Volt": ["PV1 voltage", "pv1volt", "V", None],
     "PV1Curr": ["PV1 total current", "pv1curr", "A", "mdi:current-ac"],
     "PV1Power": ["PV1 power", "pv1power", "W", "mdi:solar-power"],
@@ -54,7 +54,6 @@ SENSOR_TYPES = {
     "TodayHour": ["Daily working hours", "todayhour", "h", None],
     "TotalHour": ["Total working hours", "totalhour", "h", None],
     "ErrorCount": ["Error count", "errorcount", None, None],   
-    #"Time": ["Current time", "time", None, None],   
 }
 
 DEVICE_STATUSSES = {
