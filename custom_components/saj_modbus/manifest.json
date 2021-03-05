@@ -1,6 +1,6 @@
 {
   "domain": "saj_modbus",
-  "name": "SAJ Modbus",
+  "name": "SAJ Inverter Modbus",
   "documentation": "https://github.com/wimb0/home-assistant-saj-modbus",
   "requirements": ["pymodbus==1.5.2"],
   "dependencies": [],
