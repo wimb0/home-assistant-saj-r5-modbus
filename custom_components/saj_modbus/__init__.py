@@ -199,14 +199,14 @@ class SAJModbusHub:
             mcv = decoder.decode_16bit_uint()
             self.data["mcv"] = round(mcv * 0.001, 3)
             scv = decoder.decode_16bit_uint()
-            self.data["scv"] = round(scv * 0.001, 3)           
+            self.data["scv"] = round(scv * 0.001, 3)
             disphwversion = decoder.decode_16bit_uint()
             self.data["disphwversion"] = round(disphwversion * 0.001, 3)
             ctrlhwversion = decoder.decode_16bit_uint()
             self.data["ctrlhwversion"] = round(ctrlhwversion * 0.001, 3)
             powerhwversion = decoder.decode_16bit_uint()
             self.data["powerhwversion"] = round(powerhwversion * 0.001, 3)
-            
+
             return True
         else:
             return False
