@@ -191,7 +191,7 @@ class SAJModbusHub:
             self.data["commver"] = round(commver * 0.001, 3)
 
             sn = decoder.decode_string(20).decode('ascii')
-            self.data["subsntype"] = str(sn)
+            self.data["sn"] = str(sn)
             pc = decoder.decode_string(20).decode('ascii')
             self.data["pc"] = str(pc)
 
