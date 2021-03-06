@@ -1,8 +1,9 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs) ![GitHub all releases](https://img.shields.io/github/downloads/wimb0/home-assistant-saj-modbus/total) ![License](https://img.shields.io/github/license/wimb0/home-assistant-saj-modbus)
 # home-assistant-saj-modbus
 Home Assistant Custom Component for reading data from SAJ Solar Inverters through modbus over TCP.
+This integration should work with SAJ R5, Sununo and Suntrio inverters.
 
-SAJ Inverters are also sold in The Netherlands as Zonneplan ONE inverters.
+SAJ R5-4K-S2 Inverters are also sold in The Netherlands as Zonneplan ONE inverters.
 
 Implements SAJ Inverter registers from [`saj-plus-series-inverter-modbus-protocal.pdf`](https://github.com/wimb0/home-assistant-saj-modbus/blob/main/saj-plus-series-inverter-modbus-protocal.pdf).
 
