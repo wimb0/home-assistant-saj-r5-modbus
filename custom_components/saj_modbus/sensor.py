@@ -1,14 +1,11 @@
 import logging
-from typing import Optional, Dict, Any
-from .const import (
-    SENSOR_TYPES,
-    DOMAIN,
-    DEVICE_STATUSSES,
-    ATTR_MANUFACTURER,
-)
-from homeassistant.helpers.entity import Entity
+from typing import Any, Dict, Optional
+
 from homeassistant.const import CONF_NAME
 from homeassistant.core import callback
+from homeassistant.helpers.entity import Entity
+
+from .const import ATTR_MANUFACTURER, DEVICE_STATUSSES, DOMAIN, SENSOR_TYPES
 
 _LOGGER = logging.getLogger(__name__)
 
