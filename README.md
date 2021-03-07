@@ -20,7 +20,7 @@ I use a Hi-Flying Elfin-EW11 (www.hi-flying.com/elfin-ew10-elfin-ew11).
 
 **Cable Layout for EW11A to SAJ Inverter:**
 
-[![cable](https://github.com/wimb0/home-assistant-saj-modbus/blob/dev/images/cable.png)
+![cable](https://github.com/wimb0/home-assistant-saj-modbus/blob/dev/images/cable.png)
 
 **EW11A settings:**
 
