@@ -163,7 +163,7 @@ class SAJModbusHub:
                 kwargs = {"unit": unit} if unit else {}
                 return self._client.read_holding_registers(address, count, **kwargs)
             except ConnectionException as ex:
-                print(f'Connecting to device {address} failed!')
+                _LOGGER.error((f'Connecting to device {address} failed!'))
 
     def calculate_value(self, value, sf):
         return value * 10 ** sf
