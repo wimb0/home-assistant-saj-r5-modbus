@@ -159,8 +159,11 @@ class SAJModbusHub:
     def read_holding_registers(self, unit, address, count):
         """Read holding registers."""
         with self._lock:
-            kwargs = {"unit": unit} if unit else {}
-            return self._client.read_holding_registers(address, count, **kwargs)
+            try:
+                kwargs = {"unit": unit} if unit else {}
+                return self._client.read_holding_registers(address, count, **kwargs)
+            except ConnectionException as ex:
+                print(f'Connecting to device {address} failed!')
 
     def calculate_value(self, value, sf):
         return value * 10 ** sf
