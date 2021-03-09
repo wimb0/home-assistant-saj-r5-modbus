@@ -178,9 +178,9 @@ class SAJModbusHub:
                 unit=1, address=36608, count=29)
             connected = True
         except ConnectionException as ex:
-            _LOGGER.error((f'Connecting to device {address} failed!'))
+            _LOGGER.error('Reading inverter data failed! Inverter is unreachable.')
             connected = False
-            
+
         if connected:
             if not inverter_data.isError():
                 decoder = BinaryPayloadDecoder.fromRegisters(
@@ -214,9 +214,18 @@ class SAJModbusHub:
 
                 return True
             else:
+
                 return False
         else:
-            return False
+            mpvmode = 0
+            self.data["mpvmode"] = mpvmode
+
+            if mpvmode in DEVICE_STATUSSES:
+                self.data["mpvstatus"] = DEVICE_STATUSSES[mpvmode]
+            else:
+                self.data["mpvstatus"] = "Unknown"
+
+            return True
 
     def read_modbus_realtime_data(self):
         connected = False
@@ -225,7 +234,7 @@ class SAJModbusHub:
                 unit=1, address=256, count=60)
             connected = True
         except ConnectionException as ex:
-            _LOGGER.error((f'Connecting to device {address} failed!'))
+            _LOGGER.error('Reading realtime data failed! Inverter is unreachable.')
             connected = False
 
         if connected:
@@ -353,6 +362,16 @@ class SAJModbusHub:
 
                 return True
             else:
+
                 return False
         else:
-            return False
+            mpvmode = 0
+            self.data["mpvmode"] = mpvmode
+
+            if mpvmode in DEVICE_STATUSSES:
+                self.data["mpvstatus"] = DEVICE_STATUSSES[mpvmode]
+            else:
+                self.data["mpvstatus"] = "Unknown"
+
+            return True
+
