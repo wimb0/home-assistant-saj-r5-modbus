@@ -180,6 +180,7 @@ class SAJModbusHub:
         except ConnectionException as ex:
             _LOGGER.error((f'Connecting to device {address} failed!'))
             connected = False
+            
         if connected:
             if not inverter_data.isError():
                 decoder = BinaryPayloadDecoder.fromRegisters(
@@ -226,6 +227,7 @@ class SAJModbusHub:
         except ConnectionException as ex:
             _LOGGER.error((f'Connecting to device {address} failed!'))
             connected = False
+
         if connected:
             if not realtime_data.isError():
                 decoder = BinaryPayloadDecoder.fromRegisters(
