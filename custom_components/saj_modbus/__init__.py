@@ -225,6 +225,9 @@ class SAJModbusHub:
             else:
                 self.data["mpvstatus"] = "Unknown"
 
+            power = 0
+            self.data["power"] = power
+
             return True
 
     def read_modbus_realtime_data(self):
@@ -372,6 +375,9 @@ class SAJModbusHub:
                 self.data["mpvstatus"] = DEVICE_STATUSSES[mpvmode]
             else:
                 self.data["mpvstatus"] = "Unknown"
+
+            power = 0
+            self.data["power"] = power
 
             return True
 
