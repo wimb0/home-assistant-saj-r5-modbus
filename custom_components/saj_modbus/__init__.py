@@ -175,7 +175,7 @@ class SAJModbusHub:
         connected = False
         try:
             inverter_data = self.read_holding_registers(
-                unit=1, address=36608, count=29)
+                unit=1, address=0x8f00, count=29)
             connected = True
         except ConnectionException as ex:
             _LOGGER.error('Reading inverter data failed! Inverter is unreachable.')
@@ -234,7 +234,7 @@ class SAJModbusHub:
         connected = False
         try:
             realtime_data = self.read_holding_registers(
-                unit=1, address=256, count=60)
+                unit=1, address=0x100, count=60)
             connected = True
         except ConnectionException as ex:
             _LOGGER.error('Reading realtime data failed! Inverter is unreachable.')
@@ -255,7 +255,10 @@ class SAJModbusHub:
                     self.data["mpvstatus"] = "Unknown"
 
                 # TODO: read fault message
-                # faultmsg = decoder.decode_16bit_uint()
+                # faultmsg1 = decoder.decode_16bit_uint()
+                # faultmsg2 = decoder.decode_16bit_uint()
+                # faultmsg3 = decoder.decode_16bit_uint()                 
+
                 # skip 6 registers
                 decoder.skip_bytes(12)
 
