@@ -3,7 +3,7 @@
 Home Assistant Custom Component for reading data from SAJ Solar Inverters through modbus over TCP.
 This integration should work with SAJ R5, Sununo and Suntrio inverters.
 
-SAJ R5-4K-S2 Inverters are also sold in The Netherlands as Zonneplan ONE inverters.
+SAJ R5 Inverters are also sold in The Netherlands as Zonneplan ONE inverters.
 
 Implements SAJ Inverter registers from [`saj-plus-series-inverter-modbus-protocal.pdf`](https://github.com/wimb0/home-assistant-saj-modbus/blob/main/saj-plus-series-inverter-modbus-protocal.pdf).
 
@@ -19,7 +19,7 @@ Connect a Modbus to Wifi device to the Modbus port of your SAJ Inverter.
 I use a Hi-Flying Elfin-EW11 (www.hi-flying.com/elfin-ew10-elfin-ew11).
 
 **Cable Layout for EW11A to SAJ Inverter:**
-
+Both connectors are RJ45.
 ![cable](https://github.com/wimb0/home-assistant-saj-modbus/blob/dev/images/cable.png)
 
 **EW11A settings:**
