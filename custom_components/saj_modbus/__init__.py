@@ -254,7 +254,7 @@ class SAJModbusHub:
                 else:
                     self.data["mpvstatus"] = "Unknown"
 
-                # TODO: read fault message
+                # TODO: read and decode hex fault message
                 # faultmsg1 = decoder.decode_16bit_uint()
                 # faultmsg2 = decoder.decode_16bit_uint()
                 # faultmsg3 = decoder.decode_16bit_uint()                 
