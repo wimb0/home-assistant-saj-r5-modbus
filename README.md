@@ -1,4 +1,4 @@
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs) ![GitHub all releases](https://img.shields.io/github/downloads/wimb0/home-assistant-saj-modbus/total) ![License](https://img.shields.io/github/license/wimb0/home-assistant-saj-modbus)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs) ![GitHub all releases](https://img.shields.io/github/downloads/wimb0/home-assistant-saj-modbus/total) ![License](https://img.shields.io/github/license/wimb0/home-assistant-saj-modbus)
 # home-assistant-saj-modbus
 Home Assistant Custom Component for reading data from SAJ Solar Inverters through modbus over TCP.
 This integration should work with SAJ R5, Sununo and Suntrio inverters.
@@ -19,6 +19,7 @@ Connect a Modbus to Wifi device to the Modbus port of your SAJ Inverter.
 I use a Hi-Flying Elfin-EW11 (www.hi-flying.com/elfin-ew10-elfin-ew11).
 
 **Cable Layout for EW11A to SAJ Inverter:**
+
 Both connectors are RJ45.
 ![cable](https://github.com/wimb0/home-assistant-saj-modbus/blob/dev/images/cable.png)
 
