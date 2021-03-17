@@ -190,7 +190,7 @@ class SAJModbusHub:
                 devtype = decoder.decode_16bit_uint()
                 self.data["devtype"] = devtype
                 subtype = decoder.decode_16bit_uint()
-                self.data["subtype"] = devtype
+                self.data["subtype"] = subtype
                 commver = decoder.decode_16bit_uint()
                 self.data["commver"] = round(commver * 0.001, 3)
 
