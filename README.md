@@ -10,7 +10,9 @@ Implements SAJ Inverter registers from [`saj-plus-series-inverter-modbus-protoca
 Based on [`home-assistant-solaredge-modbus`](https://github.com/binsentsu/home-assistant-solaredge-modbus) from [@binsentsu](https://github.com/binsentsu).
 
 ## Installation
-Copy contents of custom_components folder to your home-assistant config/custom_components folder or install through HACS.
+This integration is available in the HACS default repository.
+
+Search for "SAJ Inverter Modus" and install it.
 
 After reboot of Home-Assistant, this integration can be configured through the integration setup UI
 
