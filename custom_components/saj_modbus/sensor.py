@@ -30,6 +30,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
             sensor_info[1],
             sensor_info[2],
             sensor_info[3],
+            sensor_info[4],
         )
         entities.append(sensor)
 
@@ -40,7 +41,9 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class SajSensor(Entity):
     """Representation of an SAJ Modbus sensor."""
 
-    def __init__(self, platform_name, hub, device_info, name, key, unit, icon):
+    def __init__(
+        self, platform_name, hub, device_info, name, key, unit, icon, device_class
+    ):
         """Initialize the sensor."""
         self._platform_name = platform_name
         self._hub = hub
@@ -48,6 +51,7 @@ class SajSensor(Entity):
         self._name = name
         self._unit_of_measurement = unit
         self._icon = icon
+        self._device_class = device_class
         self._device_info = device_info
 
     async def async_added_to_hass(self):
@@ -84,6 +88,11 @@ class SajSensor(Entity):
     def icon(self):
         """Return the sensor icon."""
         return self._icon
+
+    @property
+    def device_class(self):
+        """Return the sensor device_class."""
+        return self._device_class
 
     @property
     def state(self):
