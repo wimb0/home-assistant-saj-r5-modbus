@@ -8,8 +8,7 @@ from typing import Optional
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (CONF_HOST, CONF_NAME, CONF_PORT,
-                                 CONF_SCAN_INTERVAL)
+from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.event import async_track_time_interval
 from pymodbus.client.sync import ModbusTcpClient
@@ -17,8 +16,13 @@ from pymodbus.constants import Endian
 from pymodbus.exceptions import ConnectionException
 from pymodbus.payload import BinaryPayloadDecoder
 
-from .const import (DEFAULT_NAME, DEFAULT_SCAN_INTERVAL, DEVICE_STATUSSES,
-                    DOMAIN)
+from .const import (
+    DEFAULT_NAME,
+    DEFAULT_SCAN_INTERVAL,
+    DEVICE_STATUSSES,
+    DOMAIN,
+    FAULT_MESSAGES,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -55,9 +59,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     _LOGGER.debug("Setup %s.%s", DOMAIN, name)
 
-    hub = SAJModbusHub(
-        hass, name, host, port, scan_interval
-    )
+    hub = SAJModbusHub(hass, name, host, port, scan_interval)
     """Register the hub."""
     hass.data[DOMAIN][name] = {"hub": hub}
 
@@ -73,8 +75,7 @@ async def async_unload_entry(hass, entry):
     unload_ok = all(
         await asyncio.gather(
             *[
-                hass.config_entries.async_forward_entry_unload(
-                    entry, component)
+                hass.config_entries.async_forward_entry_unload(entry, component)
                 for component in PLATFORMS
             ]
         )
@@ -166,19 +167,17 @@ class SAJModbusHub:
         return value * 10 ** sf
 
     def read_modbus_data(self):
-        return (
-            self.read_modbus_inverter_data()
-            and self.read_modbus_realtime_data()
-        )
+        return self.read_modbus_inverter_data() and self.read_modbus_realtime_data()
 
     def read_modbus_inverter_data(self):
         connected = False
         try:
             inverter_data = self.read_holding_registers(
-                unit=1, address=0x8f00, count=29)
+                unit=1, address=0x8F00, count=29
+            )
             connected = True
         except ConnectionException as ex:
-            _LOGGER.error('Reading inverter data failed! Inverter is unreachable.')
+            _LOGGER.error("Reading inverter data failed! Inverter is unreachable.")
             connected = False
 
         if connected:
@@ -194,9 +193,9 @@ class SAJModbusHub:
                 commver = decoder.decode_16bit_uint()
                 self.data["commver"] = round(commver * 0.001, 3)
 
-                sn = decoder.decode_string(20).decode('ascii')
+                sn = decoder.decode_string(20).decode("ascii")
                 self.data["sn"] = str(sn)
-                pc = decoder.decode_string(20).decode('ascii')
+                pc = decoder.decode_string(20).decode("ascii")
                 self.data["pc"] = str(pc)
 
                 dv = decoder.decode_16bit_uint()
@@ -233,11 +232,10 @@ class SAJModbusHub:
     def read_modbus_realtime_data(self):
         connected = False
         try:
-            realtime_data = self.read_holding_registers(
-                unit=1, address=0x100, count=60)
+            realtime_data = self.read_holding_registers(unit=1, address=0x100, count=60)
             connected = True
         except ConnectionException as ex:
-            _LOGGER.error('Reading realtime data failed! Inverter is unreachable.')
+            _LOGGER.error("Reading realtime data failed! Inverter is unreachable.")
             connected = False
 
         if connected:
@@ -254,13 +252,34 @@ class SAJModbusHub:
                 else:
                     self.data["mpvstatus"] = "Unknown"
 
-                # TODO: read and decode hex fault message
-                # faultmsg1 = decoder.decode_16bit_uint()
-                # faultmsg2 = decoder.decode_16bit_uint()
-                # faultmsg3 = decoder.decode_16bit_uint()                 
+                faultMsg0 = decoder.decode_32bit_uint()
+                faultMsg1 = decoder.decode_32bit_uint()
+                faultMsg2 = decoder.decode_32bit_uint()
+                _LOGGER.debug(
+                    "faultMsg "
+                    + "{0:#010x}".format(faultMsg0)
+                    + " "
+                    + "{0:#010x}".format(faultMsg1)
+                    + " "
+                    + "{0:#010x}".format(faultMsg2)
+                )
 
-                # skip 6 registers
-                decoder.skip_bytes(12)
+                faultMsg = []
+                if faultMsg0:
+                    for code, mesg in FAULT_MESSAGES[0].items():
+                        if faultMsg0 & code:
+                            faultMsg.append(mesg)
+                if faultMsg1:
+                    for code, mesg in FAULT_MESSAGES[1].items():
+                        if faultMsg1 & code:
+                            faultMsg.append(mesg)
+                if faultMsg2:
+                    for code, mesg in FAULT_MESSAGES[2].items():
+                        if faultMsg2 & code:
+                            faultMsg.append(mesg)
+
+                # status value can hold max 255 chars in HA
+                self.data["faultmsg"] = ", ".join(faultMsg).strip()[0:254]
 
                 pv1volt = decoder.decode_16bit_uint()
                 pv1curr = decoder.decode_16bit_uint()
@@ -383,4 +402,3 @@ class SAJModbusHub:
             self.data["power"] = power
 
             return True
-
