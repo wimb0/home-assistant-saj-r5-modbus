@@ -1,6 +1,5 @@
 {
   "config": {
-    "title": "SAJ Inverter Modbus",
     "step": {
       "user": {
         "title": "Define your SAJ Inverter modbus-connection",
