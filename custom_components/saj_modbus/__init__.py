@@ -238,14 +238,6 @@ class SAJModbusHub:
         faultMsg0 = decoder.decode_32bit_uint()
         faultMsg1 = decoder.decode_32bit_uint()
         faultMsg2 = decoder.decode_32bit_uint()
-        _LOGGER.debug(
-            "faultMsg "
-            + "{0:#010x}".format(faultMsg0)
-            + " "
-            + "{0:#010x}".format(faultMsg1)
-            + " "
-            + "{0:#010x}".format(faultMsg2)
-        )
 
         faultMsg = []
         faultMsg.extend(
