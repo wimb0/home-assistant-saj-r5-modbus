@@ -1,12 +1,16 @@
 {
   "domain": "saj_modbus",
   "name": "SAJ Inverter Modbus",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "documentation": "https://github.com/wimb0/home-assistant-saj-modbus",
   "issue_tracker": "https://github.com/wimb0/home-assistant-saj-modbus/issues",
-  "requirements": ["pymodbus==2.3.0"],
+  "requirements": [
+    "pymodbus==2.3.0"
+  ],
   "dependencies": [],
-  "codeowners": ["@wimb0"],
+  "codeowners": [
+    "@wimb0"
+  ],
   "config_flow": true,
   "iot_class": "local_polling"
 }
