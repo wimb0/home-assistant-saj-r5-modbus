@@ -1,11 +1,12 @@
+from homeassistant.components.sensor import SensorEntity
 import logging
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from homeassistant.const import CONF_NAME
 from homeassistant.core import callback
-from homeassistant.helpers.entity import Entity
+import homeassistant.util.dt as dt_util
 
-from .const import ATTR_MANUFACTURER, DEVICE_STATUSSES, DOMAIN, SENSOR_TYPES
+from .const import ATTR_MANUFACTURER, DOMAIN, SENSOR_TYPES
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,6 +32,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
             sensor_info[2],
             sensor_info[3],
             sensor_info[4],
+            sensor_info[5] if len(sensor_info) > 5 else None,
+            sensor_info[6] if len(sensor_info) > 6 else None,
         )
         entities.append(sensor)
 
@@ -38,21 +41,41 @@ async def async_setup_entry(hass, entry, async_add_entities):
     return True
 
 
-class SajSensor(Entity):
+class SajSensor(SensorEntity):
     """Representation of an SAJ Modbus sensor."""
 
     def __init__(
-        self, platform_name, hub, device_info, name, key, unit, icon, device_class
+        self,
+        platform_name,
+        hub,
+        device_info,
+        name,
+        key,
+        unit,
+        icon,
+        device_class,
+        state_class,
+        last_reset,
     ):
         """Initialize the sensor."""
         self._platform_name = platform_name
         self._hub = hub
         self._key = key
         self._name = name
-        self._unit_of_measurement = unit
-        self._icon = icon
-        self._device_class = device_class
-        self._device_info = device_info
+        self._attr_unit_of_measurement = unit
+        self._attr_icon = icon
+        self._attr_device_class = device_class
+        self._attr_device_info = device_info
+        self._attr_state_class = state_class
+
+        if last_reset == "today":
+            self._attr_last_reset = (
+                dt_util.now().today().replace(hour=0, minute=0, second=0, microsecond=0)
+            )
+        elif last_reset:
+            self._attr_last_reset = dt_util.utc_from_timestamp(0)
+
+        self._attr_should_poll = False
 
     async def async_added_to_hass(self):
         """Register callbacks."""
@@ -80,35 +103,7 @@ class SajSensor(Entity):
         return f"{self._platform_name}_{self._key}"
 
     @property
-    def unit_of_measurement(self):
-        """Return the unit of measurement."""
-        return self._unit_of_measurement
-
-    @property
-    def icon(self):
-        """Return the sensor icon."""
-        return self._icon
-
-    @property
-    def device_class(self):
-        """Return the sensor device_class."""
-        return self._device_class
-
-    @property
     def state(self):
         """Return the state of the sensor."""
         if self._key in self._hub.data:
             return self._hub.data[self._key]
-
-    @property
-    def state_attributes(self) -> Optional[Dict[str, Any]]:
-        return None
-
-    @property
-    def should_poll(self) -> bool:
-        """Data is delivered by the hub"""
-        return False
-
-    @property
-    def device_info(self) -> Optional[Dict[str, Any]]:
-        return self._device_info
