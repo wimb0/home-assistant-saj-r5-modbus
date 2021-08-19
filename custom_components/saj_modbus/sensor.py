@@ -1,3 +1,5 @@
+from __future__ import annotations
+from datetime import datetime
 from homeassistant.components.sensor import SensorEntity
 import logging
 from typing import Optional
@@ -6,7 +8,12 @@ from homeassistant.const import CONF_NAME
 from homeassistant.core import callback
 import homeassistant.util.dt as dt_util
 
-from .const import ATTR_MANUFACTURER, DOMAIN, SENSOR_TYPES
+from .const import (
+    ATTR_MANUFACTURER,
+    DOMAIN,
+    SENSOR_TYPES,
+    SajModbusSensorEntityDescription,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,18 +29,12 @@ async def async_setup_entry(hass, entry, async_add_entities):
     }
 
     entities = []
-    for sensor_info in SENSOR_TYPES.values():
+    for sensor_description in SENSOR_TYPES.values():
         sensor = SajSensor(
             hub_name,
             hub,
             device_info,
-            sensor_info[0],
-            sensor_info[1],
-            sensor_info[2],
-            sensor_info[3],
-            sensor_info[4],
-            sensor_info[5] if len(sensor_info) > 5 else None,
-            sensor_info[6] if len(sensor_info) > 6 else None,
+            sensor_description,
         )
         entities.append(sensor)
 
@@ -49,31 +50,13 @@ class SajSensor(SensorEntity):
         platform_name,
         hub,
         device_info,
-        name,
-        key,
-        unit,
-        icon,
-        device_class,
-        state_class,
-        last_reset,
+        description: SajModbusSensorEntityDescription,
     ):
         """Initialize the sensor."""
         self._platform_name = platform_name
         self._hub = hub
-        self._key = key
-        self._name = name
-        self._attr_unit_of_measurement = unit
-        self._attr_icon = icon
-        self._attr_device_class = device_class
         self._attr_device_info = device_info
-        self._attr_state_class = state_class
-
-        if last_reset == "today":
-            self._attr_last_reset = (
-                dt_util.now().today().replace(hour=0, minute=0, second=0, microsecond=0)
-            )
-        elif last_reset:
-            self._attr_last_reset = dt_util.utc_from_timestamp(0)
+        self.entity_description: SajModbusSensorEntityDescription = description
 
         self._attr_should_poll = False
 
@@ -90,20 +73,31 @@ class SajSensor(SensorEntity):
 
     @callback
     def _update_state(self):
-        if self._key in self._hub.data:
-            self._state = self._hub.data[self._key]
+        if self.entity_description.key in self._hub.data:
+            self._state = self._hub.data[self.entity_description.key]
 
     @property
     def name(self):
         """Return the name."""
-        return f"{self._platform_name} {self._name}"
+        return f"{self._platform_name} {self.entity_description.name}"
 
     @property
     def unique_id(self) -> Optional[str]:
-        return f"{self._platform_name}_{self._key}"
+        return f"{self._platform_name}_{self.entity_description.key}"
 
     @property
     def state(self):
         """Return the state of the sensor."""
-        if self._key in self._hub.data:
-            return self._hub.data[self._key]
+        if self.entity_description.key in self._hub.data:
+            return self._hub.data[self.entity_description.key]
+
+    @property
+    def last_reset(self) -> datetime | None:
+
+        if self.entity_description.set_last_reset_today:
+            return (
+                dt_util.now().today().replace(hour=0, minute=0, second=0, microsecond=0)
+            )
+        elif self.entity_description.set_last_reset:
+            return dt_util.utc_from_timestamp(0)
+        return None
