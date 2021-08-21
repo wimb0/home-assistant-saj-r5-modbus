@@ -15,8 +15,6 @@ from .const import (
     SajModbusSensorEntityDescription,
 )
 
-from .hub import SAJModbusHub
-
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -49,14 +47,14 @@ class SajSensor(SensorEntity):
 
     def __init__(
         self,
-        platform_name: str,
-        hub: SAJModbusHub,
+        platform_name,
+        hub,
         device_info,
         description: SajModbusSensorEntityDescription,
     ):
         """Initialize the sensor."""
         self._platform_name = platform_name
-        self._hub: SAJModbusHub = hub
+        self._hub = hub
         self._attr_device_info = device_info
         self.entity_description: SajModbusSensorEntityDescription = description
 
@@ -71,12 +69,12 @@ class SajSensor(SensorEntity):
 
     @callback
     def _modbus_data_updated(self):
-        self._attr_state = (
-            self._hub.data[self.entity_description.key]
-            if self.entity_description.key in self._hub.data
-            else None
-        )
         self.async_write_ha_state()
+
+    @callback
+    def _update_state(self):
+        if self.entity_description.key in self._hub.data:
+            self._state = self._hub.data[self.entity_description.key]
 
     @property
     def name(self):
@@ -90,8 +88,8 @@ class SajSensor(SensorEntity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        """Temporary needed to have it work with HA 2021.9.* without further changes. Will be removed in newer version"""
-        return self._attr_state
+        if self.entity_description.key in self._hub.data:
+            return self._hub.data[self.entity_description.key]
 
     @property
     def last_reset(self) -> datetime | None:
