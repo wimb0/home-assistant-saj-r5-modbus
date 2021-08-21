@@ -72,7 +72,7 @@ class SajSensor(CoordinatorEntity, SensorEntity):
         return f"{self._platform_name}_{self.entity_description.key}"
 
     @property
-    def state(self):
+    def native_value(self):
         """Return the state of the sensor."""
         return (
             self.coordinator.data[self.entity_description.key]
