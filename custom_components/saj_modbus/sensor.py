@@ -71,7 +71,7 @@ class SajSensor(CoordinatorEntity, SensorEntity):
 
     @callback
     def _modbus_data_updated(self):
-        self._attr_state = (
+        self._attr_native_value = (
             self.coordinator.data[self.entity_description.key]
             if self.entity_description.key in self.coordinator.data
             else None
@@ -86,20 +86,3 @@ class SajSensor(CoordinatorEntity, SensorEntity):
     @property
     def unique_id(self) -> Optional[str]:
         return f"{self._platform_name}_{self.entity_description.key}"
-
-    @property
-    def state(self):
-        """Return the state of the sensor."""
-        """Temporary needed to have it work with HA 2021.9.* without further changes. Will be removed in newer version"""
-        return self._attr_state
-
-    @property
-    def last_reset(self) -> datetime | None:
-
-        if self.entity_description.set_last_reset_today:
-            return (
-                dt_util.now().today().replace(hour=0, minute=0, second=0, microsecond=0)
-            )
-        elif self.entity_description.set_last_reset:
-            return dt_util.utc_from_timestamp(0)
-        return None
