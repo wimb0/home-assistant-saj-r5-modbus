@@ -1,5 +1,6 @@
 from __future__ import annotations
 from datetime import datetime
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.components.sensor import SensorEntity
 import logging
 from typing import Optional
@@ -14,6 +15,8 @@ from .const import (
     SENSOR_TYPES,
     SajModbusSensorEntityDescription,
 )
+
+from .hub import SAJModbusHub
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,39 +45,22 @@ async def async_setup_entry(hass, entry, async_add_entities):
     return True
 
 
-class SajSensor(SensorEntity):
+class SajSensor(CoordinatorEntity, SensorEntity):
     """Representation of an SAJ Modbus sensor."""
 
     def __init__(
         self,
-        platform_name,
-        hub,
+        platform_name: str,
+        hub: SAJModbusHub,
         device_info,
         description: SajModbusSensorEntityDescription,
     ):
         """Initialize the sensor."""
         self._platform_name = platform_name
-        self._hub = hub
         self._attr_device_info = device_info
         self.entity_description: SajModbusSensorEntityDescription = description
 
-        self._attr_should_poll = False
-
-    async def async_added_to_hass(self):
-        """Register callbacks."""
-        self._hub.async_add_saj_sensor(self._modbus_data_updated)
-
-    async def async_will_remove_from_hass(self) -> None:
-        self._hub.async_remove_saj_sensor(self._modbus_data_updated)
-
-    @callback
-    def _modbus_data_updated(self):
-        self.async_write_ha_state()
-
-    @callback
-    def _update_state(self):
-        if self.entity_description.key in self._hub.data:
-            self._state = self._hub.data[self.entity_description.key]
+        super().__init__(coordinator=hub)
 
     @property
     def name(self):
@@ -88,8 +74,11 @@ class SajSensor(SensorEntity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        if self.entity_description.key in self._hub.data:
-            return self._hub.data[self.entity_description.key]
+        return (
+            self.coordinator.data[self.entity_description.key]
+            if self.entity_description.key in self.coordinator.data
+            else None
+        )
 
     @property
     def last_reset(self) -> datetime | None:
