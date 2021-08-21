@@ -86,7 +86,13 @@ class SajSensor(SensorEntity):
     @property
     def unique_id(self) -> Optional[str]:
         return f"{self._platform_name}_{self.entity_description.key}"
-
+    
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        """Temporary needed to have it work with HA 2021.9.* without further changes. Will be removed in newer version"""
+        return self._attr_state
+        
     @property
     def last_reset(self) -> datetime | None:
 
