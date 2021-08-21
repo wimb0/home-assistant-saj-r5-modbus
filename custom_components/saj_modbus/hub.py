@@ -204,7 +204,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         data["qpower"] = qpower
 
         pf = decoder.decode_16bit_int()
-        data["pf"] = round(pf * 0.001, 3)
+        data["pf"] = round(pf * 0.1, 2)
 
         l1volt = decoder.decode_16bit_uint()
         l1curr = decoder.decode_16bit_uint()
@@ -217,7 +217,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         data["l1freq"] = round(l1freq * 0.01, 2)
         data["l1dci"] = l1dci
         data["l1power"] = l1power
-        data["l1pf"] = round(l1pf * 0.001, 3)
+        data["l1pf"] = round(l1pf * 0.1, 2)
 
         l2volt = decoder.decode_16bit_uint()
         l2curr = decoder.decode_16bit_uint()
@@ -230,7 +230,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         data["l2freq"] = round(l2freq * 0.01, 2)
         data["l2dci"] = l2dci
         data["l2power"] = l2power
-        data["l2pf"] = round(l2pf * 0.001, 3)
+        data["l2pf"] = round(l2pf * 0.1, 2)
 
         l3volt = decoder.decode_16bit_uint()
         l3curr = decoder.decode_16bit_uint()
@@ -243,7 +243,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         data["l3freq"] = round(l3freq * 0.01, 2)
         data["l3dci"] = l3dci
         data["l3power"] = l3power
-        data["l3pf"] = round(l3pf * 0.001, 3)
+        data["l3pf"] = round(l3pf * 0.1, 2)
 
         iso1 = decoder.decode_16bit_uint()
         iso2 = decoder.decode_16bit_uint()

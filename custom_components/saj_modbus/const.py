@@ -15,6 +15,7 @@ from homeassistant.const import (
     ELECTRIC_POTENTIAL_VOLT,
     ENERGY_KILO_WATT_HOUR,
     FREQUENCY_HERTZ,
+    PERCENTAGE,
     POWER_WATT,
     TEMP_CELSIUS,
     TIME_HOURS,
@@ -213,6 +214,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
     "PF": SajModbusSensorEntityDescription(
         name="Total power factor of inverter",
         key="pf",
+        native_unit_of_measurement=PERCENTAGE,
         device_class=DEVICE_CLASS_POWER_FACTOR,
     ),
     "L1Volt": SajModbusSensorEntityDescription(
@@ -255,6 +257,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
     "L1PF": SajModbusSensorEntityDescription(
         name="L1 power factor",
         key="l1pf",
+        native_unit_of_measurement=PERCENTAGE,
         device_class=DEVICE_CLASS_POWER_FACTOR,
         state_class=STATE_CLASS_MEASUREMENT,
     ),
@@ -298,6 +301,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
     "L2PF": SajModbusSensorEntityDescription(
         name="L2 power factor",
         key="l2pf",
+        native_unit_of_measurement=PERCENTAGE,
         device_class=DEVICE_CLASS_POWER_FACTOR,
         state_class=STATE_CLASS_MEASUREMENT,
     ),
@@ -341,6 +345,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
     "L3PF": SajModbusSensorEntityDescription(
         name="L3 power factor",
         key="l3pf",
+        native_unit_of_measurement=PERCENTAGE,
         device_class=DEVICE_CLASS_POWER_FACTOR,
         state_class=STATE_CLASS_MEASUREMENT,
     ),
