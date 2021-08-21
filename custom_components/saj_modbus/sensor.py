@@ -62,22 +62,6 @@ class SajSensor(CoordinatorEntity, SensorEntity):
 
         super().__init__(coordinator=hub)
 
-    async def async_added_to_hass(self):
-        """Register callbacks."""
-        self.coordinator.async_add_listener(self._modbus_data_updated)
-
-    async def async_will_remove_from_hass(self) -> None:
-        self.coordinator.async_remove_listener(self._modbus_data_updated)
-
-    @callback
-    def _modbus_data_updated(self):
-        self._attr_native_value = (
-            self.coordinator.data[self.entity_description.key]
-            if self.entity_description.key in self.coordinator.data
-            else None
-        )
-        self.async_write_ha_state()
-
     @property
     def name(self):
         """Return the name."""
@@ -86,3 +70,12 @@ class SajSensor(CoordinatorEntity, SensorEntity):
     @property
     def unique_id(self) -> Optional[str]:
         return f"{self._platform_name}_{self.entity_description.key}"
+
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        return (
+            self.coordinator.data[self.entity_description.key]
+            if self.entity_description.key in self.coordinator.data
+            else None
+        )
