@@ -1,5 +1,6 @@
 from __future__ import annotations
 from datetime import datetime
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.components.sensor import SensorEntity
 import logging
 from typing import Optional
@@ -44,7 +45,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     return True
 
 
-class SajSensor(SensorEntity):
+class SajSensor(CoordinatorEntity, SensorEntity):
     """Representation of an SAJ Modbus sensor."""
 
     def __init__(
@@ -56,24 +57,23 @@ class SajSensor(SensorEntity):
     ):
         """Initialize the sensor."""
         self._platform_name = platform_name
-        self._hub: SAJModbusHub = hub
         self._attr_device_info = device_info
         self.entity_description: SajModbusSensorEntityDescription = description
 
-        self._attr_should_poll = False
+        super().__init__(coordinator=hub)
 
     async def async_added_to_hass(self):
         """Register callbacks."""
-        self._hub.async_add_saj_sensor(self._modbus_data_updated)
+        self.coordinator.async_add_listener(self._modbus_data_updated)
 
     async def async_will_remove_from_hass(self) -> None:
-        self._hub.async_remove_saj_sensor(self._modbus_data_updated)
+        self.coordinator.async_remove_listener(self._modbus_data_updated)
 
     @callback
     def _modbus_data_updated(self):
         self._attr_state = (
-            self._hub.data[self.entity_description.key]
-            if self.entity_description.key in self._hub.data
+            self.coordinator.data[self.entity_description.key]
+            if self.entity_description.key in self.coordinator.data
             else None
         )
         self.async_write_ha_state()
