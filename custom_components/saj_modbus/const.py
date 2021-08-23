@@ -28,6 +28,9 @@ DEFAULT_PORT = 502
 CONF_SAJ_HUB = "saj_hub"
 ATTR_MANUFACTURER = "SAJ Electric"
 
+# Temporary work arround until https://github.com/home-assistant/architecture/discussions/503 is resolved
+MEASUREMENT_WITHOUT_UNIT = " "
+
 
 @dataclass
 class SajModbusSensorEntityDescription(SensorEntityDescription):
@@ -234,6 +237,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
     "PF": SajModbusSensorEntityDescription(
         name="Total power factor of inverter",
         key="pf",
+        native_unit_of_measurement=MEASUREMENT_WITHOUT_UNIT,
         device_class=DEVICE_CLASS_POWER_FACTOR,
         entity_registry_enabled_default=False,
     ),
@@ -281,6 +285,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
     "L1PF": SajModbusSensorEntityDescription(
         name="L1 power factor",
         key="l1pf",
+        native_unit_of_measurement=MEASUREMENT_WITHOUT_UNIT,
         device_class=DEVICE_CLASS_POWER_FACTOR,
         state_class=STATE_CLASS_MEASUREMENT,
     ),
@@ -328,6 +333,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
     "L2PF": SajModbusSensorEntityDescription(
         name="L2 power factor",
         key="l2pf",
+        native_unit_of_measurement=MEASUREMENT_WITHOUT_UNIT,
         device_class=DEVICE_CLASS_POWER_FACTOR,
         state_class=STATE_CLASS_MEASUREMENT,
     ),
@@ -375,6 +381,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
     "L3PF": SajModbusSensorEntityDescription(
         name="L3 power factor",
         key="l3pf",
+        native_unit_of_measurement=MEASUREMENT_WITHOUT_UNIT,
         device_class=DEVICE_CLASS_POWER_FACTOR,
         state_class=STATE_CLASS_MEASUREMENT,
     ),
@@ -459,6 +466,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
     "ErrorCount": SajModbusSensorEntityDescription(
         name="Error count",
         key="errorcount",
+        native_unit_of_measurement=MEASUREMENT_WITHOUT_UNIT,
         icon="mdi:counter",
     ),
 }
