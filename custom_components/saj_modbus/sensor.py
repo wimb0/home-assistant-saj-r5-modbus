@@ -72,21 +72,10 @@ class SajSensor(CoordinatorEntity, SensorEntity):
         return f"{self._platform_name}_{self.entity_description.key}"
 
     @property
-    def state(self):
+    def native_value(self):
         """Return the state of the sensor."""
         return (
             self.coordinator.data[self.entity_description.key]
             if self.entity_description.key in self.coordinator.data
             else None
         )
-
-    @property
-    def last_reset(self) -> datetime | None:
-
-        if self.entity_description.set_last_reset_today:
-            return (
-                dt_util.now().today().replace(hour=0, minute=0, second=0, microsecond=0)
-            )
-        elif self.entity_description.set_last_reset:
-            return dt_util.utc_from_timestamp(0)
-        return None
