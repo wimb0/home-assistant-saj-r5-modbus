@@ -1,4 +1,4 @@
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs) ![GitHub all releases](https://img.shields.io/github/downloads/wimb0/home-assistant-saj-modbus/total) ![License](https://img.shields.io/github/license/wimb0/home-assistant-saj-modbus)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration) ![GitHub all releases](https://img.shields.io/github/downloads/wimb0/home-assistant-saj-modbus/total) ![License](https://img.shields.io/github/license/wimb0/home-assistant-saj-modbus)
 # home-assistant-saj-modbus
 Home Assistant Custom Component for reading data from SAJ Solar Inverters through modbus over TCP.
 This integration should work with SAJ R5, Sununo and Suntrio inverters.
