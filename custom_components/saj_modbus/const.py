@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from homeassistant.components.sensor import (
     SensorDeviceClass,
-    STATE_CLASS_MEASUREMENT,
-    STATE_CLASS_TOTAL_INCREASING,
+    SensorStateClass,
     SensorEntityDescription,
 )
 from homeassistant.const import (
@@ -117,7 +116,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         key="pv1volt",
         native_unit_of_measurement=ELECTRIC_POTENTIAL_VOLT,
         device_class=SensorDeviceClass.VOLTAGE,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "PV1Curr": SajModbusSensorEntityDescription(
@@ -126,7 +125,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=ELECTRIC_CURRENT_AMPERE,
         icon="mdi:current-ac",
         device_class=SensorDeviceClass.CURRENT,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "PV1Power": SajModbusSensorEntityDescription(
@@ -135,14 +134,14 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=POWER_WATT,
         icon="mdi:solar-power",
         device_class=SensorDeviceClass.POWER,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     "PV2Volt": SajModbusSensorEntityDescription(
         name="PV2 voltage",
         key="pv2volt",
         native_unit_of_measurement=ELECTRIC_POTENTIAL_VOLT,
         device_class=SensorDeviceClass.VOLTAGE,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "PV2Curr": SajModbusSensorEntityDescription(
@@ -151,7 +150,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=ELECTRIC_CURRENT_AMPERE,
         icon="mdi:current-ac",
         device_class=SensorDeviceClass.CURRENT,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "PV2Power": SajModbusSensorEntityDescription(
@@ -160,14 +159,14 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=POWER_WATT,
         icon="mdi:solar-power",
         device_class=SensorDeviceClass.POWER,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     "PV3Volt": SajModbusSensorEntityDescription(
         name="PV3 voltage",
         key="pv3volt",
         native_unit_of_measurement=ELECTRIC_POTENTIAL_VOLT,
         device_class=SensorDeviceClass.VOLTAGE,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "PV3Curr": SajModbusSensorEntityDescription(
@@ -176,7 +175,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=ELECTRIC_CURRENT_AMPERE,
         icon="mdi:current-ac",
         device_class=SensorDeviceClass.CURRENT,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "PV3Power": SajModbusSensorEntityDescription(
@@ -185,7 +184,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=POWER_WATT,
         icon="mdi:solar-power",
         device_class=SensorDeviceClass.POWER,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "BusVolt": SajModbusSensorEntityDescription(
@@ -193,7 +192,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         key="busvolt",
         native_unit_of_measurement=ELECTRIC_POTENTIAL_VOLT,
         device_class=SensorDeviceClass.VOLTAGE,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "InvTempC": SajModbusSensorEntityDescription(
@@ -201,7 +200,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         key="invtempc",
         native_unit_of_measurement=TEMP_CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "GFCI": SajModbusSensorEntityDescription(
@@ -210,7 +209,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=ELECTRIC_CURRENT_MILLIAMPERE,
         icon="mdi:current-dc",
         device_class=SensorDeviceClass.CURRENT,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "Power": SajModbusSensorEntityDescription(
@@ -219,20 +218,20 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=POWER_WATT,
         icon="mdi:solar-power",
         device_class=SensorDeviceClass.POWER,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     "QPower": SajModbusSensorEntityDescription(
         name="Reactive power of inverter total output",
         key="qpower",
         native_unit_of_measurement="VAR",
         icon="mdi:flash",
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     "PF": SajModbusSensorEntityDescription(
         name="Total power factor of inverter",
         key="pf",
         device_class=SensorDeviceClass.POWER_FACTOR,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "L1Volt": SajModbusSensorEntityDescription(
@@ -240,7 +239,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         key="l1volt",
         native_unit_of_measurement=ELECTRIC_POTENTIAL_VOLT,
         device_class=SensorDeviceClass.VOLTAGE,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "L1Curr": SajModbusSensorEntityDescription(
@@ -249,7 +248,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=ELECTRIC_CURRENT_AMPERE,
         icon="mdi:current-ac",
         device_class=SensorDeviceClass.CURRENT,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "L1Freq": SajModbusSensorEntityDescription(
@@ -257,7 +256,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         key="l1freq",
         native_unit_of_measurement=FREQUENCY_HERTZ,
         icon="mdi:sine-wave",
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "L1DCI": SajModbusSensorEntityDescription(
@@ -266,7 +265,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=ELECTRIC_CURRENT_MILLIAMPERE,
         icon="mdi:current-dc",
         device_class=SensorDeviceClass.CURRENT,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "L1Power": SajModbusSensorEntityDescription(
@@ -275,20 +274,20 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=POWER_WATT,
         icon="mdi:solar-power",
         device_class=SensorDeviceClass.POWER,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     "L1PF": SajModbusSensorEntityDescription(
         name="L1 power factor",
         key="l1pf",
         device_class=SensorDeviceClass.POWER_FACTOR,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     "L2Volt": SajModbusSensorEntityDescription(
         name="L2 voltage",
         key="l2volt",
         native_unit_of_measurement=ELECTRIC_POTENTIAL_VOLT,
         device_class=SensorDeviceClass.VOLTAGE,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "L2Curr": SajModbusSensorEntityDescription(
@@ -297,7 +296,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=ELECTRIC_CURRENT_AMPERE,
         icon="mdi:current-ac",
         device_class=SensorDeviceClass.CURRENT,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "L2Freq": SajModbusSensorEntityDescription(
@@ -305,7 +304,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         key="l2freq",
         native_unit_of_measurement=FREQUENCY_HERTZ,
         icon="mdi:sine-wave",
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "L2DCI": SajModbusSensorEntityDescription(
@@ -314,7 +313,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=ELECTRIC_CURRENT_MILLIAMPERE,
         icon="mdi:current-dc",
         device_class=SensorDeviceClass.CURRENT,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "L2Power": SajModbusSensorEntityDescription(
@@ -323,20 +322,20 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=POWER_WATT,
         icon="mdi:solar-power",
         device_class=SensorDeviceClass.POWER,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     "L2PF": SajModbusSensorEntityDescription(
         name="L2 power factor",
         key="l2pf",
         device_class=SensorDeviceClass.POWER_FACTOR,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     "L3Volt": SajModbusSensorEntityDescription(
         name="L3 voltage",
         key="l3volt",
         native_unit_of_measurement=ELECTRIC_POTENTIAL_VOLT,
         device_class=SensorDeviceClass.VOLTAGE,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "L3Curr": SajModbusSensorEntityDescription(
@@ -345,7 +344,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=ELECTRIC_CURRENT_AMPERE,
         icon="mdi:current-ac",
         device_class=SensorDeviceClass.CURRENT,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "L3Freq": SajModbusSensorEntityDescription(
@@ -353,7 +352,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         key="l3freq",
         native_unit_of_measurement=FREQUENCY_HERTZ,
         icon="mdi:sine-wave",
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "L3DCI": SajModbusSensorEntityDescription(
@@ -362,7 +361,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=ELECTRIC_CURRENT_MILLIAMPERE,
         icon="mdi:current-dc",
         device_class=SensorDeviceClass.CURRENT,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     "L3Power": SajModbusSensorEntityDescription(
@@ -371,13 +370,13 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=POWER_WATT,
         icon="mdi:solar-power",
         device_class=SensorDeviceClass.POWER,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     "L3PF": SajModbusSensorEntityDescription(
         name="L3 power factor",
         key="l3pf",
         device_class=SensorDeviceClass.POWER_FACTOR,
-        state_class=STATE_CLASS_MEASUREMENT,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     "ISO1": SajModbusSensorEntityDescription(
         name="PV1+_ISO",
@@ -413,7 +412,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
         icon="mdi:solar-power",
         device_class=SensorDeviceClass.ENERGY,
-        state_class=STATE_CLASS_TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
     "MonthEnergy": SajModbusSensorEntityDescription(
         name="Power generation in current month",
@@ -421,7 +420,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
         icon="mdi:solar-power",
         device_class=SensorDeviceClass.ENERGY,
-        state_class=STATE_CLASS_TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL_INCREASING,
         entity_registry_enabled_default=False,
     ),
     "YearEnergy": SajModbusSensorEntityDescription(
@@ -430,7 +429,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
         icon="mdi:solar-power",
         device_class=SensorDeviceClass.ENERGY,
-        state_class=STATE_CLASS_TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL_INCREASING,
         entity_registry_enabled_default=False,
     ),
     "TotalEnergy": SajModbusSensorEntityDescription(
@@ -439,27 +438,27 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
         icon="mdi:solar-power",
         device_class=SensorDeviceClass.ENERGY,
-        state_class=STATE_CLASS_TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
     "TodayHour": SajModbusSensorEntityDescription(
         name="Daily working hours",
         key="todayhour",
         native_unit_of_measurement=TIME_HOURS,
         icon="mdi:progress-clock",
-        state_class=STATE_CLASS_TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
     "TotalHour": SajModbusSensorEntityDescription(
         name="Total working hours",
         key="totalhour",
         native_unit_of_measurement=TIME_HOURS,
         icon="mdi:progress-clock",
-        state_class=STATE_CLASS_TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
     "ErrorCount": SajModbusSensorEntityDescription(
         name="Error count",
         key="errorcount",
         icon="mdi:counter",
-        state_class=STATE_CLASS_TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
 }
 
