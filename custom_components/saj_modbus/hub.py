@@ -7,7 +7,7 @@ import logging
 import threading
 from datetime import timedelta
 from homeassistant.core import CALLBACK_TYPE, callback
-from pymodbus.client.sync import ModbusTcpClient
+from pymodbus.client import ModbusTcpClient
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ConnectionException
 from pymodbus.payload import BinaryPayloadDecoder
@@ -64,8 +64,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
     ) -> ReadHoldingRegistersResponse:
         """Read holding registers."""
         with self._lock:
-            kwargs = {"unit": unit} if unit else {}
-            return self._client.read_holding_registers(address, count, **kwargs)
+            return self._client.read_holding_registers(address=address, count=count, slave=unit)
 
     async def _async_update_data(self) -> dict:
         realtime_data = {}
