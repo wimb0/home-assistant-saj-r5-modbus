@@ -64,8 +64,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
     ) -> ReadHoldingRegistersResponse:
         """Read holding registers."""
         with self._lock:
-            kwargs = {"unit": unit} if unit else {}
-            return self._client.read_holding_registers(address=address, count=count, **kwargs)
+            return self._client.read_holding_registers(address=address, count=count, slave=unit)
 
     async def _async_update_data(self) -> dict:
         realtime_data = {}
