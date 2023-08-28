@@ -7,7 +7,7 @@ import logging
 import threading
 from datetime import timedelta
 from homeassistant.core import CALLBACK_TYPE, callback
-from pymodbus.client.sync import ModbusTcpClient
+from pymodbus.client import ModbusTcpClient
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ConnectionException
 from pymodbus.payload import BinaryPayloadDecoder
