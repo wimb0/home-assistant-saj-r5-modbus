@@ -95,7 +95,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
 
         data = {}
         decoder = BinaryPayloadDecoder.fromRegisters(
-            inverter_data.registers, byteorder=Endian.Big
+            inverter_data.registers, byteorder=Endian.BIG
         )
 
         devtype = decoder.decode_16bit_uint()
@@ -135,7 +135,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         data = {}
 
         decoder = BinaryPayloadDecoder.fromRegisters(
-            realtime_data.registers, byteorder=Endian.Big
+            realtime_data.registers, byteorder=Endian.BIG
         )
 
         mpvmode = decoder.decode_16bit_uint()
