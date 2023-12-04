@@ -4,6 +4,7 @@
   "domains": [
     "sensor"
   ],
-  "homeassistant": "2021.12.0",
+  "homeassistant": "2023.9.1",
+  "hacs": "1.28.4",
   "iot_class": "local_poll"
 }
