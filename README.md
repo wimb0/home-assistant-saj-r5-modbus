@@ -1,13 +1,28 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration) ![GitHub all releases](https://img.shields.io/github/downloads/wimb0/home-assistant-saj-modbus/total) ![License](https://img.shields.io/github/license/wimb0/home-assistant-saj-modbus)
-# home-assistant-saj-modbus
-Home Assistant Custom Component for reading data from SAJ Solar Inverters through modbus over TCP.
-This integration should work with SAJ R5, Sununo and Suntrio inverters.
+## SAJ MODBUS TCP - A Home Assistant custom component for SAJ Inverters
 
-SAJ R5 Inverters are also sold in The Netherlands as Zonneplan ONE inverters.
+Home assistant Custom Component for reading data from SAJ Inverters through modbus TCP.
+
+SAJ Inverters are also sold in The Netherlands as Zonneplan ONE inverters.
 
 Implements SAJ Inverter registers from [`saj-plus-series-inverter-modbus-protocal.pdf`](https://github.com/wimb0/home-assistant-saj-modbus/blob/main/saj-plus-series-inverter-modbus-protocal.pdf).
 
 Idea based on [`home-assistant-solaredge-modbus`](https://github.com/binsentsu/home-assistant-solaredge-modbus) from [@binsentsu](https://github.com/binsentsu).
+
+### Features
+
+- Installation through Config Flow UI.
+- Separate sensor per register
+- Auto applies scaling factor
+- Configurable polling interval
+- All modbus registers are read within 1 read cycle for data consistency between sensors.
+
+
+### Configuration
+Go to the integrations page in your configuration and click on new integration -> SAJ Modbus
+
+Home Assistant Custom Component for reading data from SAJ Solar Inverters through modbus over TCP.
+This integration should work with SAJ R5, Sununo and Suntrio inverters.
 
 ## Installation
 This integration is available in the HACS default repository.
