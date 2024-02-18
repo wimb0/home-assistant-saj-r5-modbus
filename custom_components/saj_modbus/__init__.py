@@ -51,6 +51,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     _LOGGER.debug("Setup %s.%s", DOMAIN, name)
 
     hub = SAJModbusHub(hass, name, host, port, scan_interval)
+    await hub.async_config_entry_first_refresh()
+
     """Register the hub."""
     hass.data[DOMAIN][name] = {"hub": hub}
 
