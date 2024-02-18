@@ -5,6 +5,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
 )
 from homeassistant.const import (
+    POWER_VOLT_AMPERE_REACTIVE,
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
     UnitOfEnergy,
@@ -222,7 +223,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
     "QPower": SajModbusSensorEntityDescription(
         name="Reactive power of inverter total output",
         key="qpower",
-        native_unit_of_measurement="VAR",
+        native_unit_of_measurement=POWER_VOLT_AMPERE_REACTIVE,
         icon="mdi:flash",
         state_class=SensorStateClass.MEASUREMENT,
     ),
