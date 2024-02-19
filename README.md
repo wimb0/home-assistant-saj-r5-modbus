@@ -1,4 +1,4 @@
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration) ![License](https://img.shields.io/github/license/wimb0/home-assistant-saj-modbus) 
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
 ## SAJ Inverter Modbus - A Home Assistant custom component for SAJ Inverters
 
 Home assistant Custom Component for reading data from SAJ Inverters through modbus TCP.
