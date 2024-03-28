@@ -42,7 +42,7 @@ NUMBER_TYPES: dict[str, list[SajModbusNumberEntityDescription]] = {
 
 @dataclass
 class SajModbusSensorEntityDescription(SensorEntityDescription):
-    """A class that describes Zoonneplan sensor entities."""
+    """A class that describes SAJ number entities."""
 
 
 SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {

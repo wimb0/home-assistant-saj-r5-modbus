@@ -71,7 +71,7 @@ class SajNumber(CoordinatorEntity, NumberEntity):
 
     @property
     def native_value(self):
-        """Return the state of the sensor."""
+        """Return the state of the number entity."""
         return getattr(self.coordinator, self.entity_description.key, None)
 
     def set_native_value(self, value: float) -> None:

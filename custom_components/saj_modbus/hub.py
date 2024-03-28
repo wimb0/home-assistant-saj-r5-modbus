@@ -297,10 +297,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         return messages
 
     def set_limitpower(self, value: int):
-        """Limit the power output of the inverter.
-
-        Return the number of bytes written.
-        """
+        """Limit the power output of the inverter."""
         response = self._write_registers(unit=1, address=0x801F, values=int(value*10))
         if not isinstance(response, WriteMultipleRegistersResponse):
             raise response
