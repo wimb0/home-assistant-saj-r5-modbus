@@ -46,7 +46,6 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         self.inverter_data: dict = {}
         self.data: dict = {}
         self.limitpower: int = 100
-        self.set_limitpower(100)
 
     @callback
     def async_remove_listener(self, update_callback: CALLBACK_TYPE) -> None:
@@ -84,6 +83,10 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
             if not self.inverter_data:
                 self.inverter_data = await self.hass.async_add_executor_job(
                     self.read_modbus_inverter_data
+                )
+                await self.hass.async_add_executor_job(
+                    self.set_limitpower,
+                    self.limitpower
                 )
             """Read realtime data"""
             realtime_data = await self.hass.async_add_executor_job(
@@ -299,8 +302,8 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
     def set_limitpower(self, value: int):
         """Limit the power output of the inverter."""
         response = self._write_registers(unit=1, address=0x801F, values=int(value*10))
-        if not isinstance(response, WriteMultipleRegistersResponse):
-            raise response
+        if response.isError():
+            return
         self.limitpower = value
         self.hass.add_job(self.async_update_listeners)
 
