@@ -1,6 +1,6 @@
 """SAJ Modbus Hub"""
 from pymodbus.register_read_message import ReadHoldingRegistersResponse
-from pymodbus.register_write_message import ModbusResponse, WriteMultipleRegistersResponse
+from pymodbus.register_write_message import ModbusResponse
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from voluptuous.validators import Number
 from homeassistant.helpers.typing import HomeAssistantType
