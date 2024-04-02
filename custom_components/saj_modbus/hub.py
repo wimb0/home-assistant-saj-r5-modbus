@@ -1,5 +1,6 @@
 """SAJ Modbus Hub"""
 from pymodbus.register_read_message import ReadHoldingRegistersResponse
+from pymodbus.register_write_message import ModbusResponse
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from voluptuous.validators import Number
 from homeassistant.helpers.typing import HomeAssistantType
@@ -44,6 +45,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
 
         self.inverter_data: dict = {}
         self.data: dict = {}
+        self.limitpower: int = 100
 
     @callback
     def async_remove_listener(self, update_callback: CALLBACK_TYPE) -> None:
@@ -57,6 +59,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
     def close(self) -> None:
         """Disconnect client."""
         with self._lock:
+            self.set_limitpower(100)
             self._client.close()
 
     def _read_holding_registers(
@@ -66,6 +69,13 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         with self._lock:
             return self._client.read_holding_registers(address=address, count=count, slave=unit)
 
+    def _write_registers(
+        self, unit: int, address: int, values: list[int] | int
+    ) -> ModbusResponse:
+        """Write values to registers."""
+        with self._lock:
+            return self._client.write_registers(address=address, values=values, slave=unit)
+
     async def _async_update_data(self) -> dict:
         realtime_data = {}
         try:
@@ -73,6 +83,10 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
             if not self.inverter_data:
                 self.inverter_data = await self.hass.async_add_executor_job(
                     self.read_modbus_inverter_data
+                )
+                await self.hass.async_add_executor_job(
+                    self.set_limitpower,
+                    self.limitpower
                 )
             """Read realtime data"""
             realtime_data = await self.hass.async_add_executor_job(
@@ -284,3 +298,16 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
                 messages.append(mesg)
 
         return messages
+
+    def set_limitpower(self, value: int):
+        """Limit the power output of the inverter."""
+        response = self._write_registers(unit=1, address=0x801F, values=int(value*10))
+        if response.isError():
+            return
+        self.limitpower = value
+        self.hass.add_job(self.async_update_listeners)
+
+    def set_value(self, key: str, value: int):
+        """Set value matching key."""
+        if key == "limitpower":
+            self.set_limitpower(value)
