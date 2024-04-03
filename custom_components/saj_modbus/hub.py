@@ -6,7 +6,7 @@ from voluptuous.validators import Number
 from homeassistant.helpers.typing import HomeAssistantType
 import logging
 import threading
-from datetime import timedelta
+from datetime import datetime, timedelta
 from homeassistant.core import CALLBACK_TYPE, callback
 from pymodbus.client import ModbusTcpClient
 from pymodbus.constants import Endian
@@ -306,6 +306,22 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
             return
         self.limitpower = value
         self.hass.add_job(self.async_update_listeners)
+
+    def set_date_and_time(self, date_time: datetime = None):
+        """Set the time and date on the inverter."""
+        if date_time is None:
+            date_time = datetime.now()
+
+        values = [
+            date_time.year,
+            (date_time.month << 8) + date_time.day,
+            (date_time.hour << 8) + date_time.minute,
+            (date_time.second << 8)
+        ]
+
+        response = self._write_registers(unit=1, address=0x8020, values=values)
+        if response.isError():
+            raise response
 
     def set_value(self, key: str, value: int):
         """Set value matching key."""

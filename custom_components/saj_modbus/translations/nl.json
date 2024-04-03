@@ -17,5 +17,21 @@
     "abort": {
       "already_configured": "Apparaat is al geconfigureerd"
     }
+  },
+    "services": {
+    "set_datetime": {
+      "name": "Stel datum en tijd in",
+      "description": "Stelt de datum en tijd van de omvormer in.",
+      "fields": {
+        "device_id": {
+          "name": "Apparaat",
+          "description": "De omvormer waarop de datum en tijd ingesteld zullen worden."
+        },
+        "datetime": {
+          "name": "Datum en tijd",
+          "description": "De datum en tijd die op de omvormer ingesteld zullen worden."
+        }
+      }
+    }
   }
 }
