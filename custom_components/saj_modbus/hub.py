@@ -8,6 +8,8 @@ import logging
 import threading
 from datetime import timedelta
 from homeassistant.core import CALLBACK_TYPE, callback
+from homeassistant.helpers import entity_registry
+from homeassistant.components.number import DOMAIN as NUMBER_DOMAIN
 from pymodbus.client import ModbusTcpClient
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ConnectionException
@@ -15,6 +17,7 @@ from pymodbus.payload import BinaryPayloadDecoder
 
 from .const import (
     DEVICE_STATUSSES,
+    DOMAIN,
     FAULT_MESSAGES,
 )
 
@@ -299,8 +302,18 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
 
         return messages
 
+    def limiter_is_disabled(self):
+        """Return True if the limiter entity is disabled, False otherwise."""
+        ent_reg = entity_registry.async_get(self.hass)
+        limiter_entity_id = ent_reg.async_get_entity_id(NUMBER_DOMAIN, DOMAIN, f"{self.name}_limitpower")
+        if limiter_entity_id is None:
+            return True
+        return ent_reg.async_get(limiter_entity_id).disabled
+
     def set_limitpower(self, value: int):
         """Limit the power output of the inverter."""
+        if self.limiter_is_disabled():
+            return
         response = self._write_registers(unit=1, address=0x801F, values=int(value*10))
         if response.isError():
             return
