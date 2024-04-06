@@ -11,6 +11,7 @@ import homeassistant.util.dt as dt_util
 
 from .const import (
     ATTR_MANUFACTURER,
+    COUNTER_SENSOR_TYPES,
     DOMAIN,
     SENSOR_TYPES,
     SajModbusSensorEntityDescription,
@@ -34,6 +35,14 @@ async def async_setup_entry(hass, entry, async_add_entities):
     entities = []
     for sensor_description in SENSOR_TYPES.values():
         sensor = SajSensor(
+            hub_name,
+            hub,
+            device_info,
+            sensor_description,
+        )
+        entities.append(sensor)
+    for sensor_description in COUNTER_SENSOR_TYPES.values():
+        sensor = SajCounterSensor(
             hub_name,
             hub,
             device_info,
@@ -79,3 +88,14 @@ class SajSensor(CoordinatorEntity, SensorEntity):
             if self.entity_description.key in self.coordinator.data
             else None
         )
+
+class SajCounterSensor(SajSensor):
+    """Representation of a SAJ Modbus counter sensor."""
+
+    @property
+    def native_value(self):
+        # When the inverter working mode is not "Waiting" or "Normal",
+        # the values returned by the inverter are not reliable.
+        if self.coordinator.data.get("mpvmode") in (1, 2):  # "Waiting" or "Normal"
+            return self.coordinator.data.get(self.entity_description.key)
+        return None

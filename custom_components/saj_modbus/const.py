@@ -44,6 +44,56 @@ NUMBER_TYPES: dict[str, list[SajModbusNumberEntityDescription]] = {
 class SajModbusSensorEntityDescription(SensorEntityDescription):
     """A class that describes SAJ number entities."""
 
+COUNTER_SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
+    "TodayEnergy": SajModbusSensorEntityDescription(
+        name="Power generation on current day",
+        key="todayenergy",
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        icon="mdi:solar-power",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+    ),
+    "MonthEnergy": SajModbusSensorEntityDescription(
+        name="Power generation in current month",
+        key="monthenergy",
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        icon="mdi:solar-power",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        entity_registry_enabled_default=False,
+    ),
+    "YearEnergy": SajModbusSensorEntityDescription(
+        name="Power generation in current year",
+        key="yearenergy",
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        icon="mdi:solar-power",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        entity_registry_enabled_default=False,
+    ),
+    "TotalEnergy": SajModbusSensorEntityDescription(
+        name="Total power generation",
+        key="totalenergy",
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        icon="mdi:solar-power",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+    ),
+    "TodayHour": SajModbusSensorEntityDescription(
+        name="Daily working hours",
+        key="todayhour",
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        icon="mdi:progress-clock",
+        state_class=SensorStateClass.TOTAL_INCREASING,
+    ),
+    "TotalHour": SajModbusSensorEntityDescription(
+        name="Total working hours",
+        key="totalhour",
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        icon="mdi:progress-clock",
+        state_class=SensorStateClass.TOTAL_INCREASING,
+    ),
+}
 
 SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
     "DevType": SajModbusSensorEntityDescription(
@@ -421,54 +471,6 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         native_unit_of_measurement="kΩ",
         icon="mdi:omega",
         entity_registry_enabled_default=False,
-    ),
-    "TodayEnergy": SajModbusSensorEntityDescription(
-        name="Power generation on current day",
-        key="todayenergy",
-        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
-        icon="mdi:solar-power",
-        device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
-    ),
-    "MonthEnergy": SajModbusSensorEntityDescription(
-        name="Power generation in current month",
-        key="monthenergy",
-        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
-        icon="mdi:solar-power",
-        device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        entity_registry_enabled_default=False,
-    ),
-    "YearEnergy": SajModbusSensorEntityDescription(
-        name="Power generation in current year",
-        key="yearenergy",
-        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
-        icon="mdi:solar-power",
-        device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        entity_registry_enabled_default=False,
-    ),
-    "TotalEnergy": SajModbusSensorEntityDescription(
-        name="Total power generation",
-        key="totalenergy",
-        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
-        icon="mdi:solar-power",
-        device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
-    ),
-    "TodayHour": SajModbusSensorEntityDescription(
-        name="Daily working hours",
-        key="todayhour",
-        native_unit_of_measurement=UnitOfTime.HOURS,
-        icon="mdi:progress-clock",
-        state_class=SensorStateClass.TOTAL_INCREASING,
-    ),
-    "TotalHour": SajModbusSensorEntityDescription(
-        name="Total working hours",
-        key="totalhour",
-        native_unit_of_measurement=UnitOfTime.HOURS,
-        icon="mdi:progress-clock",
-        state_class=SensorStateClass.TOTAL_INCREASING,
     ),
     "ErrorCount": SajModbusSensorEntityDescription(
         name="Error count",
