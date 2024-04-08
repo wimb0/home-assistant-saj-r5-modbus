@@ -17,5 +17,21 @@
     "abort": {
       "already_configured": "Device is already configured"
     }
+  },
+  "services": {
+    "set_datetime": {
+      "name": "Set date and time",
+      "description": "Sets the date and time on the inverter.",
+      "fields": {
+        "device_id": {
+          "name": "Device",
+          "description": "The inverter on which the date and time will be set."
+        },
+        "datetime": {
+          "name": "Date and time",
+          "description": "The date and time to be set on the inverter."
+        }
+      }
+    }
   }
 }

@@ -1,0 +1,12 @@
+set_datetime:
+  fields:
+    device_id:
+      required: true
+      selector:
+        device:
+          integration: saj_modbus
+    datetime:
+      required: false
+      example: "2024-01-23T12:34:56"
+      selector:
+        datetime:
