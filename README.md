@@ -86,7 +86,7 @@ Cut an old USB-A cable and connect as follows:
 
 **Serial port settings:**
 * Baudrate 115200
-* Databit 0
+* Databit 8
 * Stopbit 1
 * Parity None
 * Flow Control Settings Disable
