@@ -33,6 +33,8 @@ class SajModbusNumberEntityDescription(NumberEntityDescription):
 NUMBER_TYPES: dict[str, list[SajModbusNumberEntityDescription]] = {
     "LimitPower": SajModbusNumberEntityDescription(
         name="Limit Power",
+        native_max_value=110,
+        native_min_value=0,
         key="limitpower",
         icon="mdi:solar-power",
         native_unit_of_measurement="%",

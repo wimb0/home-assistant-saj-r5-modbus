@@ -56,23 +56,19 @@ class SajNumber(CoordinatorEntity, NumberEntity):
         """Initialize the sensor."""
         self._platform_name = platform_name
         self._attr_device_info = device_info
+        self._attr_unique_id = f"{platform_name}_{description.key}"
         self.entity_description: SajModbusNumberEntityDescription = description
 
         super().__init__(coordinator=hub)
 
     @property
-    def name(self):
-        """Return the name."""
-        return f"{self._platform_name} {self.entity_description.name}"
+    def available(self) -> bool:
+        return self.native_value is not None
 
     @property
-    def unique_id(self) -> Optional[str]:
-        return f"{self._platform_name}_{self.entity_description.key}"
-
-    @property
-    def native_value(self):
+    def native_value(self) -> Optional[int]:
         """Return the state of the number entity."""
-        return getattr(self.coordinator, self.entity_description.key, None)
+        return self.coordinator.data.get(self.entity_description.key, None)
 
     def set_native_value(self, value: float) -> None:
         """Update the current value."""
