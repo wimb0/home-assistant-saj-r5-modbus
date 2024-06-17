@@ -48,7 +48,6 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
 
         self.inverter_data: dict = {}
         self.data: dict = {}
-        self.limitpower: int = 100
 
     @callback
     def async_remove_listener(self, update_callback: CALLBACK_TYPE) -> None:
@@ -62,7 +61,6 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
     def close(self) -> None:
         """Disconnect client."""
         with self._lock:
-            self.set_limitpower(100)
             self._client.close()
 
     def _read_holding_registers(
@@ -86,10 +84,6 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
             if not self.inverter_data:
                 self.inverter_data = await self.hass.async_add_executor_job(
                     self.read_modbus_inverter_data
-                )
-                await self.hass.async_add_executor_job(
-                    self.set_limitpower,
-                    self.limitpower
                 )
             """Read realtime data"""
             realtime_data = await self.hass.async_add_executor_job(
@@ -156,6 +150,11 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         )
 
         mpvmode = decoder.decode_16bit_uint()
+
+        if mpvmode == 2:
+            data["limitpower"] = (110 if mpvmode != self.data.get("mpvmode")
+                else self.data.get("limitpower"))
+
         data["mpvmode"] = mpvmode
 
         if mpvmode in DEVICE_STATUSSES:
@@ -317,7 +316,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         response = self._write_registers(unit=1, address=0x801F, values=int(value*10))
         if response.isError():
             return
-        self.limitpower = value
+        self.data["limitpower"] = value
         self.hass.add_job(self.async_update_listeners)
 
     def set_date_and_time(self, date_time: datetime = None):
