@@ -1,5 +1,5 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
-## SAJ Inverter Modbus - A Home Assistant custom component for SAJ R5, Sununo and Suntrio inverters
+## SAJ R5 Inverter Modbus - A Home Assistant custom component for SAJ R5, Sununo and Suntrio inverters
 
 Home assistant Custom Component for reading data from SAJ R5, Sununo and Suntrio Inverters through modbus TCP.
 
@@ -19,7 +19,7 @@ Idea based on [`home-assistant-solaredge-modbus`](https://github.com/binsentsu/h
 
 
 ### Configuration
-Go to the integrations page in your configuration and click on new integration -> SAJ Modbus
+Go to the integrations page in your configuration and click on new integration -> SAJ R5 Modbus
 
 Home Assistant Custom Component for reading data from SAJ R5, Sununo and Suntrio Inverters through modbus over TCP.
 This integration should work with SAJ R5, Sununo and Suntrio inverters.
@@ -27,16 +27,16 @@ This integration should work with SAJ R5, Sununo and Suntrio inverters.
 ## Installation
 This integration is available in the HACS default repository.
 
-Search for "SAJ R5, Sununo and Suntrio Inverter Modus" and install it.
+Search for SAJ R5 Inverter Modus" and install it.
 
 After reboot of Home-Assistant, this integration can be configured through the integration setup UI
 
-## Connection via Modbus TCP to a SAJ Inverter via the RS485 port
+## Connection via Modbus TCP to a SAJ R5 Inverter via the RS485 port
 Connect a Modbus to Wifi device to the Modbus port of your SAJ Inverter.
 
 Guide below uses a Hi-Flying Elfin-EW11 (www.hi-flying.com/elfin-ew10-elfin-ew11).
 
-**Cable Layout for EW11A to SAJ Inverter:**
+**Cable Layout for EW11A to SAJ R5 Inverter:**
 
 Both connectors are RJ45.
 | SAJ RJ45 pin | Function | EW11 RJ45 pin |
@@ -62,12 +62,12 @@ Both connectors are RJ45.
 * Protocol Modbus
 
 
-## Connection via Serial TCP to a SAJ Inverter via the USB port
+## Connection via Serial TCP to a SAJ R5 Inverter via the USB port
 Connect a Modbus to Wifi device to the USB style port of your SAJ Inverter.
 
 Tested using a Hi-Flying Elfin-EW10 (www.hi-flying.com/elfin-ew10-elfin-ew11).
 
-**Cable Layout for EW10 to SAJ Inverter:**
+**Cable Layout for EW10 to SAJ R5 Inverter:**
 
 Cut an old USB-A cable and connect as follows:
 
