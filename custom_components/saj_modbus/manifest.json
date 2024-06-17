@@ -1,6 +1,6 @@
 {
   "domain": "saj_modbus",
-  "name": "SAJ R5, Sununo and Suntrio Inverter Modbus",
+  "name": "SAJ R5 Inverter Modbus",
   "codeowners": [
     "@wimb0",
     "@fsaris"
