@@ -1,0 +1,37 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Definujte svoje pripojenie SAJ Inverter modbus",
+        "data": {
+          "host": "IP adresa vášho zariadenia SAJ Inverter modbus",
+          "name": "Predpona, ktorá sa má použiť pre vaše senzory SAJ Inverter",
+          "port": "TCP port, na ktorý sa má pripojiť k meniču SAJ",
+          "scan_interval": "Frekvencia dopytovania modbus registrov v sekundách"
+        }
+      }
+    },
+    "error": {
+      "already_configured": "Zariadenie je už nakonfigurované"
+    },
+    "abort": {
+      "already_configured": "Zariadenie je už nakonfigurované"
+    }
+  },
+  "services": {
+    "set_datetime": {
+      "name": "Nastavte dátum a čas",
+      "description": "Nastavuje dátum a čas na meniči.",
+      "fields": {
+        "device_id": {
+          "name": "Zariadenie",
+          "description": "Menič, na ktorom bude nastavený dátum a čas."
+        },
+        "datetime": {
+          "name": "Dátum a čas",
+          "description": "Dátum a čas, ktorý sa má nastaviť na striedači."
+        }
+      }
+    }
+  }
+}
