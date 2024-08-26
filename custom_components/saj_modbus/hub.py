@@ -3,11 +3,14 @@ from pymodbus.register_read_message import ReadHoldingRegistersResponse
 from pymodbus.register_write_message import ModbusResponse
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from voluptuous.validators import Number
-from homeassistant.helpers.typing import HomeAssistantType
 import logging
 import threading
 from datetime import datetime, timedelta
-from homeassistant.core import CALLBACK_TYPE, callback
+from homeassistant.core import (
+    CALLBACK_TYPE,
+    callback, 
+    HomeAssistant
+)
 from homeassistant.helpers import entity_registry
 from homeassistant.components.number import DOMAIN as NUMBER_DOMAIN
 from pymodbus.client import ModbusTcpClient
@@ -29,7 +32,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
 
     def __init__(
         self,
-        hass: HomeAssistantType,
+        hass: HomeAssistant,
         name: str,
         host: str,
         port: Number,
