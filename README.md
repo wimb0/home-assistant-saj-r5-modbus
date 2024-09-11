@@ -2,6 +2,8 @@
 [![release][release-badge]][release-url]
 ![downloads][downloads-badge]
 
+<a href="https://buymeacoffee.com/wimbo" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/white_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
+
 ## SAJ R5 Inverter Modbus - A Home Assistant custom component for SAJ R5, Sununo and Suntrio inverters
 
 Home assistant Custom Component for reading data from SAJ R5, Sununo and Suntrio Inverters through modbus TCP.
