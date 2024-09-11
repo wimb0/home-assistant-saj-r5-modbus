@@ -23,12 +23,12 @@ jobs:
       - name: Create Zip File
         run: |
           cd ${{ github.workspace }}/custom_components/saj_modbus
-          zip ha-saj_modbus.zip -r ./
+          zip home-assistant-saj-r5-modbus.zip -r ./
       - name: Upload zip to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ github.workspace }}/custom_components/saj_modbus/ha-saj_modbus.zip
-          asset_name: ha-saj_modbus.zip
+          file: ${{ github.workspace }}/custom_components/saj_modbus/home-assistant-saj-r5-modbus.zip
+          asset_name: home-assistant-saj-r5-modbus.zip
           tag: ${{ github.ref }}
           overwrite: true
