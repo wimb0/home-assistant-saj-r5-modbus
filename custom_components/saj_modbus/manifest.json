@@ -2,8 +2,7 @@
   "domain": "saj_modbus",
   "name": "SAJ R5 Inverter Modbus",
   "codeowners": [
-    "@wimb0",
-    "@fsaris"
+    "@wimb0"
   ],
   "config_flow": true,
   "dependencies": [], 
