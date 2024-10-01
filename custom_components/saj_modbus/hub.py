@@ -92,6 +92,8 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
             realtime_data = await self.hass.async_add_executor_job(
                 self.read_modbus_realtime_data
             )
+
+            self.close()
         except ConnectionException:
             _LOGGER.error("Reading realtime data failed! Inverter is unreachable.")
             realtime_data["mpvmode"] = 0
