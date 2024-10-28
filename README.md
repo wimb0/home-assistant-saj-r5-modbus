@@ -1,6 +1,9 @@
-[![hacs][hacs-badge]][hacs-url]
 [![release][release-badge]][release-url]
+![active][active-badge]
 ![downloads][downloads-badge]
+[![hacs][hacs-badge]][hacs-url]
+![license][lic-badge]
+
 
 <a href="https://buymeacoffee.com/wimbo" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/white_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
 
@@ -115,9 +118,11 @@ Cut an old USB-A cable and connect as follows:
 
 <!-- Badges -->
 [hacs-url]: https://github.com/hacs/integration
-[hacs-badge]: https://img.shields.io/badge/hacs-default-orange.svg?style=flat-square
-[release-badge]: https://img.shields.io/github/v/release/wimb0/home-assistant-saj-r5-modbus?style=flat-square
-[downloads-badge]: https://img.shields.io/github/downloads/wimb0/home-assistant-saj-r5-modbus/total?style=flat-square
+[hacs-badge]: https://img.shields.io/badge/hacs-default-orange.svg?style=for-the-badge
+[release-badge]: https://img.shields.io/github/v/release/wimb0/home-assistant-saj-r5-modbus?style=for-the-badge
+[downloads-badge]: https://img.shields.io/github/downloads/wimb0/home-assistant-saj-r5-modbus/total?style=for-the-badge
+[active-badge]: https://badge.t-haber.de/badge/saj_modbus?kill_cache=1
+[lic-badge]: https://img.shields.io/github/license/wimb0/home-assistant-saj-r5-modbus?style=for-the-badge
 
 <!-- References -->
 
