@@ -2,7 +2,6 @@
   "name": "SAJ R5 Inverter Modbus",
   "content_in_root": false,
   "homeassistant": "2024.9.0",
-  "hacs": "1.28.4",
   "render_readme": true,
   "country": "NL",
   "hide_default_branch": false
