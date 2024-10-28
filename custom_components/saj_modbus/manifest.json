@@ -12,5 +12,5 @@
   "requirements": [
     "pymodbus>=3.5.1"
   ],
-  "version": "2.2.4"
+  "version": "2.2.6"
 }
