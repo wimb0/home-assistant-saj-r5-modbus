@@ -20,7 +20,11 @@ jobs:
 
       - name: "Set version numbmer"
         run: |
+          echo $NEW_VERSION
           sed -i '/version/c\  \"version\": \"$NEW_VERSION\"' ${{ github.workspace }}/custom_components/saj_modbus/manifest.json
+        env:
+          NEW_VERSION: ${{ env.NEW_VERSION }}
+          
       # Pack the ha-saj_modbus dir as a zip and upload to the release
       - name: Create Zip File
         run: |
