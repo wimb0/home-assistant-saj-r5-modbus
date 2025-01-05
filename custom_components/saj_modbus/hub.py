@@ -1,6 +1,6 @@
 """SAJ Modbus Hub"""
 from pymodbus.pdu.register_read_message import ReadHoldingRegistersResponse
-from pymodbus.register_write_message import ModbusResponse
+from pymodbus.pdu import ModbusPDU
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from voluptuous.validators import Number
 import logging
@@ -75,10 +75,10 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
 
     def _write_registers(
         self, unit: int, address: int, values: list[int] | int
-    ) -> ModbusResponse:
+    ) -> ModbusPDU:
         """Write values to registers."""
         with self._lock:
-            return self._client.write_registers(address=address, values=values, slave=unit)
+            return (address=address, values=values, slave=unit)
 
     async def _async_update_data(self) -> dict:
         realtime_data = {}
