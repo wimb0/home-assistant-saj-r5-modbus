@@ -78,7 +78,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
     ) -> ModbusPDU:
         """Write values to registers."""
         with self._lock:
-            return (address=address, values=values, slave=unit)
+            return self._client.write_registers(address=address, values=values, slave=unit)
 
     async def _async_update_data(self) -> dict:
         realtime_data = {}
