@@ -14,7 +14,7 @@ from homeassistant.components.number import DOMAIN as NUMBER_DOMAIN
 from pymodbus.client import ModbusTcpClient
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ConnectionException
-from.payload import BinaryPayloadDecoder
+from .payload import BinaryPayloadDecoder
 
 from .const import (
     DEVICE_STATUSSES,
