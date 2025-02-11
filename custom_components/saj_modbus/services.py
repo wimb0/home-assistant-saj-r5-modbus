@@ -70,3 +70,4 @@ async def async_set_date_time(hass: HomeAssistant, data: Mapping[str, Any]) -> N
         hub.set_date_and_time,
         data.get(ATTR_DATETIME, None)
     )
+
