@@ -1,0 +1,55 @@
+{
+    "name": "SAJ R5 Inverter Modbus integration development",
+    "image": "mcr.microsoft.com/devcontainers/python:3.11-bullseye",
+    "postCreateCommand": "scripts/setup",
+    "forwardPorts": [
+        8123
+    ],
+    "portsAttributes": {
+        "8123": {
+            "label": "Home Assistant",
+            "onAutoForward": "notify"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "github.vscode-pull-request-github",
+                "ryanluker.vscode-coverage-gutters",
+                "ms-python.vscode-pylance",
+                "charliermarsh.ruff",
+                "ms-python.black-formatter",
+                "esbenp.prettier-vscode"
+            ],
+            "settings": {
+                "files.eol": "\n",
+                "files.trimTrailingWhitespace": true,
+                "editor.tabSize": 4,
+                "editor.formatOnPaste": false,
+                "editor.formatOnSave": true,
+                "editor.formatOnType": true,
+                "editor.defaultFormatter": "esbenp.prettier-vscode",
+                // Ruff config
+                "notebook.formatOnSave.enabled": false,
+                "notebook.codeActionsOnSave": {
+                    "notebook.source.fixAll": false,
+                    "notebook.source.organizeImports": false
+                },
+                "[python]": {
+                    "editor.formatOnSave": true,
+                    "editor.codeActionsOnSave": {
+                        "source.fixAll": true,
+                        "source.organizeImports": true
+                    },
+                    "editor.defaultFormatter": "charliermarsh.ruff"
+                }
+                // End Ruff config
+            }
+        }
+    },
+    "remoteUser": "vscode",
+    "features": {
+        "ghcr.io/devcontainers/features/rust:1": {}
+    }
+}
