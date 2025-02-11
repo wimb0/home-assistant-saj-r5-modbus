@@ -1,4 +1,5 @@
 """Number entity for SAJ Modbus integration."""
+
 from __future__ import annotations
 
 import logging
@@ -46,6 +47,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class SajNumber(CoordinatorEntity, NumberEntity):
     """Representation of an SAJ Modbus number."""
 
+    coordinator: SAJModbusHub
+
     def __init__(
         self,
         platform_name: str,
@@ -63,14 +66,14 @@ class SajNumber(CoordinatorEntity, NumberEntity):
 
     @property
     def available(self) -> bool:
+        """Return entity availability."""
         return self.native_value is not None
 
     @property
-    def native_value(self) -> Optional[int]:
+    def native_value(self) -> float | None:
         """Return the state of the number entity."""
         return self.coordinator.data.get(self.entity_description.key, None)
 
     def set_native_value(self, value: float) -> None:
         """Update the current value."""
         self.coordinator.set_value(self.entity_description.key, value)
-
