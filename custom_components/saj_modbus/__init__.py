@@ -14,7 +14,6 @@ from .const import (
     DOMAIN,
 )
 from .hub import SAJModbusHub
-from .services import async_setup_services
 
 _LOGGER = logging.getLogger(__name__)
 
