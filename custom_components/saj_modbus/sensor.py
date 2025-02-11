@@ -1,3 +1,5 @@
+"""Sensor Platform Device for SAJ R5 Inverter Modbus."""
+
 from __future__ import annotations
 from datetime import datetime
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -99,3 +101,5 @@ class SajCounterSensor(SajSensor):
         if self.coordinator.data.get("mpvmode") in (1, 2):  # "Waiting" or "Normal"
             return self.coordinator.data.get(self.entity_description.key)
         return None
+
+
