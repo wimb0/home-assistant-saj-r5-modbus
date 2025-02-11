@@ -1,6 +1,6 @@
 {
-    "name": "SAJ R5 Inverter Modbus integration development",
-    "image": "mcr.microsoft.com/devcontainers/python:3.11-bullseye",
+    "name": "wimb0/home-assistant-saj-r5-modbus",
+    "image": "mcr.microsoft.com/devcontainers/python:3.12",
     "postCreateCommand": "scripts/setup",
     "forwardPorts": [
         8123
@@ -14,42 +14,36 @@
     "customizations": {
         "vscode": {
             "extensions": [
-                "ms-python.python",
-                "github.vscode-pull-request-github",
-                "ryanluker.vscode-coverage-gutters",
-                "ms-python.vscode-pylance",
                 "charliermarsh.ruff",
-                "ms-python.black-formatter",
-                "esbenp.prettier-vscode"
+                "github.vscode-pull-request-github",
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "ryanluker.vscode-coverage-gutters"
             ],
             "settings": {
                 "files.eol": "\n",
-                "files.trimTrailingWhitespace": true,
                 "editor.tabSize": 4,
-                "editor.formatOnPaste": false,
+                "editor.formatOnPaste": true,
                 "editor.formatOnSave": true,
-                "editor.formatOnType": true,
-                "editor.defaultFormatter": "esbenp.prettier-vscode",
-                // Ruff config
-                "notebook.formatOnSave.enabled": false,
-                "notebook.codeActionsOnSave": {
-                    "notebook.source.fixAll": false,
-                    "notebook.source.organizeImports": false
-                },
+                "editor.formatOnType": false,
+                "files.trimTrailingWhitespace": true,
+                "python.analysis.typeCheckingMode": "basic",
+                "python.analysis.autoImportCompletions": true,
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
                 "[python]": {
-                    "editor.formatOnSave": true,
-                    "editor.codeActionsOnSave": {
-                        "source.fixAll": true,
-                        "source.organizeImports": true
-                    },
                     "editor.defaultFormatter": "charliermarsh.ruff"
                 }
-                // End Ruff config
             }
         }
     },
     "remoteUser": "vscode",
     "features": {
-        "ghcr.io/devcontainers/features/rust:1": {}
+        "ghcr.io/devcontainers-extra/features/apt-packages:1": {
+            "packages": [
+                "ffmpeg",
+                "libturbojpeg0",
+                "libpcap-dev"
+            ]
+        }
     }
 }
