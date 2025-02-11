@@ -295,7 +295,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
     def translate_fault_code_to_messages(
         self, fault_code: int, fault_messages: list
     ) -> list:
-        """Translate faultcodes to readable messages."""  
+        """Translate faultcodes to readable messages."""
         messages = []
         if not fault_code:
             return messages
