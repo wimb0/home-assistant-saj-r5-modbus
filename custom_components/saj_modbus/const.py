@@ -1,3 +1,5 @@
+"""Constants for SAJ R5 Inverter Modbus."""
+
 from dataclasses import dataclass
 
 from homeassistant.components.number import NumberEntityDescription
