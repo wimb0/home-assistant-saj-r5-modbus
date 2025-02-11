@@ -6,7 +6,7 @@ import threading
 from datetime import datetime, timedelta
 from homeassistant.core import (
     CALLBACK_TYPE,
-    callback, 
+    callback,
     HomeAssistant
 )
 from homeassistant.helpers import entity_registry
@@ -102,7 +102,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         return {**self.inverter_data, **realtime_data}
 
     def read_modbus_inverter_data(self) -> dict:
-
+        """Read data about inverter."""
         inverter_data = self._read_holding_registers(unit=1, address=0x8F00, count=29)
 
         if inverter_data.isError():
@@ -141,7 +141,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         return data
 
     def read_modbus_realtime_data(self) -> dict:
-
+        """Read realtime data from inverter."""
         realtime_data = self._read_holding_registers(unit=1, address=0x100, count=60)
 
         if realtime_data.isError():
@@ -293,6 +293,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         return data
 
     def translate_fault_code_to_messages(
+        """Translate faultcodes to readable messages."""  
         self, fault_code: int, fault_messages: list
     ) -> list:
         messages = []
