@@ -1,3 +1,5 @@
+"""Sensor Platform Device for SAJ R5 Inverter Modbus."""
+
 from __future__ import annotations
 from datetime import datetime
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
