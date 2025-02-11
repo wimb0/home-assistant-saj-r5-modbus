@@ -84,9 +84,7 @@ class SajSensor(CoordinatorEntity, SensorEntity):
     def native_value(self):
         """Return the native value of the sensor."""
         return (
-            self.coordinator.data[self.entity_description.key]
-            if self.entity_description.key in self.coordinator.data
-            else None
+            self.coordinator.data.get(self.entity_description.key, None)
         )
 
 class SajCounterSensor(SajSensor):
@@ -94,6 +92,7 @@ class SajCounterSensor(SajSensor):
 
     @property
     def native_value(self):
+        """Return the value of the sensor."""
         # When the inverter working mode is not "Waiting" or "Normal",
         # the values returned by the inverter are not reliable.
         if self.coordinator.data.get("mpvmode") in (1, 2):  # "Waiting" or "Normal"
