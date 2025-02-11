@@ -1,15 +1,11 @@
 """Sensor Platform Device for SAJ R5 Inverter Modbus."""
 
 from __future__ import annotations
-from datetime import datetime
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.components.sensor import SensorEntity
 import logging
-from typing import Optional
 
 from homeassistant.const import CONF_NAME
-from homeassistant.core import callback
-import homeassistant.util.dt as dt_util
 
 from .const import (
     ATTR_MANUFACTURER,
@@ -25,6 +21,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
+    """Set up entry for hub."""
     hub_name = entry.data[CONF_NAME]
     hub = hass.data[DOMAIN][hub_name]["hub"]
 
@@ -79,12 +76,13 @@ class SajSensor(CoordinatorEntity, SensorEntity):
         return f"{self._platform_name} {self.entity_description.name}"
 
     @property
-    def unique_id(self) -> Optional[str]:
+    def unique_id(self) -> str | None:
+        """Return unique ID fro sensor."""
         return f"{self._platform_name}_{self.entity_description.key}"
 
     @property
     def native_value(self):
-        """Return the state of the sensor."""
+        """Return the native value of the sensor."""
         return (
             self.coordinator.data[self.entity_description.key]
             if self.entity_description.key in self.coordinator.data
