@@ -3,6 +3,12 @@ import re
 
 import voluptuous as vol
 from homeassistant import config_entries
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlow,
+)
 from homeassistant.const import (CONF_HOST, CONF_NAME, CONF_PORT,
                                  CONF_SCAN_INTERVAL)
 from homeassistant.core import HomeAssistant, callback
@@ -32,10 +38,10 @@ def host_valid(host):
 @callback
 def saj_modbus_entries(hass: HomeAssistant):
     """Return the hosts already configured."""
-    return set(
-        entry.data[CONF_HOST] for entry in hass.config_entries.async_entries(DOMAIN)
-    )
-
+    return {
+        config_entry.data.get(CONF_HOST)
+        for config_entry in hass.config_entries.async_entries(DOMAIN)
+    }
 
 class SAJModbusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """SAJ Modbus configflow."""
