@@ -32,6 +32,7 @@ ATTR_MANUFACTURER = "SAJ Electric"
 class SajModbusNumberEntityDescription(NumberEntityDescription):
     """A class that describes SAJ number entities."""
 
+
 NUMBER_TYPES: dict[str, list[SajModbusNumberEntityDescription]] = {
     "LimitPower": SajModbusNumberEntityDescription(
         name="Limit Power",
@@ -47,6 +48,7 @@ NUMBER_TYPES: dict[str, list[SajModbusNumberEntityDescription]] = {
 @dataclass
 class SajModbusSensorEntityDescription(SensorEntityDescription):
     """A class that describes SAJ sensor entities."""
+
 
 COUNTER_SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
     "TodayEnergy": SajModbusSensorEntityDescription(

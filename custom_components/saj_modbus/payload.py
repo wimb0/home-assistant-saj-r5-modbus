@@ -7,6 +7,7 @@ Brougt to home-assistant-saj-r5-modbus since it was deprecated and causing a lot
 
 Based up on the original of pyModbus https://github.com/pymodbus-dev/pymodbus/blob/v3.8.3/pymodbus/payload.py
 """
+
 from __future__ import annotations
 
 
@@ -273,7 +274,6 @@ class BinaryPayloadDecoder:
         self._pointer = 0x00
         self._byteorder = byteorder
         self._wordorder = wordorder
-
 
     @classmethod
     def fromRegisters(

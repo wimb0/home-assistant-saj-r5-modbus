@@ -7,10 +7,7 @@ import voluptuous as vol
 
 from homeassistant.const import ATTR_DEVICE_ID
 from homeassistant.core import HomeAssistant, ServiceCall, callback
-from homeassistant.helpers import (
-    device_registry as dr,
-    config_validation as cv
-)
+from homeassistant.helpers import device_registry as dr, config_validation as cv
 
 from .const import DOMAIN as SAJ_DOMAIN
 
@@ -19,10 +16,12 @@ ATTR_DATETIME = "datetime"
 SERVICE_SET_DATE_TIME = "set_datetime"
 
 SERVICE_SET_DATE_TIME_SCHEMA = vol.All(
-    vol.Schema({
-        vol.Required(ATTR_DEVICE_ID): str,
-        vol.Optional(ATTR_DATETIME): cv.datetime,
-    })
+    vol.Schema(
+        {
+            vol.Required(ATTR_DEVICE_ID): str,
+            vol.Optional(ATTR_DATETIME): cv.datetime,
+        }
+    )
 )
 
 SUPPORTED_SERVICES = (SERVICE_SET_DATE_TIME,)
@@ -67,7 +66,5 @@ async def async_set_date_time(hass: HomeAssistant, data: Mapping[str, Any]) -> N
 
     hub = hass.data[SAJ_DOMAIN][device_entry.name]["hub"]
     await hass.async_add_executor_job(
-        hub.set_date_and_time,
-        data.get(ATTR_DATETIME, None)
+        hub.set_date_and_time, data.get(ATTR_DATETIME, None)
     )
-

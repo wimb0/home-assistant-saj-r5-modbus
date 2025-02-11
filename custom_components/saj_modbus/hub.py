@@ -1,14 +1,11 @@
 """SAJ Modbus Hub."""
+
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from voluptuous.validators import Number
 import logging
 import threading
 from datetime import datetime, timedelta
-from homeassistant.core import (
-    CALLBACK_TYPE,
-    callback,
-    HomeAssistant
-)
+from homeassistant.core import CALLBACK_TYPE, callback, HomeAssistant
 from homeassistant.helpers import entity_registry
 from homeassistant.components.number import DOMAIN as NUMBER_DOMAIN
 from pymodbus.client import ModbusTcpClient
@@ -156,8 +153,11 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         mpvmode = decoder.decode_16bit_uint()
 
         if mpvmode == 2:
-            data["limitpower"] = (110 if mpvmode != self.data.get("mpvmode")
-                else self.data.get("limitpower"))
+            data["limitpower"] = (
+                110
+                if mpvmode != self.data.get("mpvmode")
+                else self.data.get("limitpower")
+            )
 
         data["mpvmode"] = mpvmode
 
@@ -323,7 +323,9 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         """Limit the power output of the inverter."""
         if self.limiter_is_disabled():
             return
-        response = self._write_registers(unit=1, address=0x801F, values=[int(value * 10)])
+        response = self._write_registers(
+            unit=1, address=0x801F, values=[int(value * 10)]
+        )
         if response.isError():
             return
         self.data["limitpower"] = value
