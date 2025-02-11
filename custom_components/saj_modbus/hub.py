@@ -1,4 +1,4 @@
-"""SAJ Modbus Hub"""
+"""SAJ Modbus Hub."""
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from voluptuous.validators import Number
 import logging
