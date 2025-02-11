@@ -316,7 +316,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         """Limit the power output of the inverter."""
         if self.limiter_is_disabled():
             return
-        response = self._write_registers(unit=1, address=0x801F, values=int(value*10))
+        response = self._write_registers(unit=1, address=0x801F, values=[int(value*10)])
         if response.isError():
             return
         self.data["limitpower"] = value
