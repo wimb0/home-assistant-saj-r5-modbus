@@ -4,5 +4,7 @@
   "homeassistant": "2025.1.0",
   "render_readme": true,
   "country": "NL",
-  "hide_default_branch": false
+  "hide_default_branch": true,
+  "zip_release": true,
+  "filename": "home-assistant-saj-r5-modbus.zip"
 }
