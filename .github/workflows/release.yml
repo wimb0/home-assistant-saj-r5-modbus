@@ -1,38 +1,35 @@
-name: Release
+name: "Release"
 
 on:
   release:
-    types: [published]
+    types:
+      - "published"
+
+permissions: {}
 
 jobs:
-  release_zip_file:
-    name: Prepare release asset
-    runs-on: ubuntu-latest
+  release:
+    name: "Release"
+    runs-on: "ubuntu-latest"
+    permissions:
+      contents: write
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+      - name: "Checkout the repository"
+        uses: "actions/checkout@v4.1.0"
 
-      - name: Get Version
-        id: get_version
-        run: echo "NEW_VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+      - name: "Adjust version number"
+        shell: "bash"
+        run: |
+          yq -i -o json '.version="${{ github.event.release.tag_name }}"' \
+            "${{ github.workspace }}/custom_components/saj_modbus/manifest.json"
 
-      - name: "Set version numbmer"
+      - name: "ZIP the integration directory"
+        shell: "bash"
         run: |
-          echo $NEW_VERSION
-          sed -i '/version/c\  \"version\": \"$NEW_VERSION\"' ${{ github.workspace }}/custom_components/saj_modbus/manifest.json
-        env:
-          NEW_VERSION: ${{ env.NEW_VERSION }}
-          
-      # Pack the ha-saj_modbus dir as a zip and upload to the release
-      - name: Create Zip File
-        run: |
-          cd ${{ github.workspace }}/custom_components/saj_modbus
+          cd "${{ github.workspace }}/custom_components/saj_modbus"
           zip home-assistant-saj-r5-modbus.zip -r ./
-      - name: Upload zip to release
-        uses: svenstaro/upload-release-action@v2
+
+      - name: "Upload the ZIP file to the release"
+        uses: softprops/action-gh-release@v0.1.15
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ github.workspace }}/custom_components/saj_modbus/home-assistant-saj-r5-modbus.zip
-          asset_name: home-assistant-saj-r5-modbus.zip
-          tag: ${{ github.ref }}
-          overwrite: true
+          files: ${{ github.workspace }}/custom_components/saj_modbus/home-assistant-saj-r5-modbus.zip
