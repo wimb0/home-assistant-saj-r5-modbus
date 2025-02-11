@@ -101,3 +101,5 @@ class SajCounterSensor(SajSensor):
         if self.coordinator.data.get("mpvmode") in (1, 2):  # "Waiting" or "Normal"
             return self.coordinator.data.get(self.entity_description.key)
         return None
+
+
