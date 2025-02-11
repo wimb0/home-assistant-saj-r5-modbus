@@ -1,3 +1,5 @@
+"""Config flow for SAJ R5 Inverter Modbus."""
+
 import ipaddress
 import re
 
