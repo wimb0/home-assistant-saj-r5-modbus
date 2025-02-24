@@ -95,7 +95,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
             realtime_data["mpvmode"] = 0
             realtime_data["mpvstatus"] = DEVICE_STATUSSES[0]
             realtime_data["power"] = 0
-            
+
         self.close()
         return {**self.inverter_data, **realtime_data}
 
