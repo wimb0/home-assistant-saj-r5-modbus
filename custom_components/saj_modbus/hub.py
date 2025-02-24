@@ -89,13 +89,14 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
                 self.read_modbus_realtime_data
             )
 
-            self.close()
-        except ConnectionException:
+        except (BrokenPipeError, ConnectionResetError, ConnectionException) as conerr:
             _LOGGER.error("Reading realtime data failed! Inverter is unreachable.")
+            _LOGGER.debug("Connection error: %s", conerr)
             realtime_data["mpvmode"] = 0
             realtime_data["mpvstatus"] = DEVICE_STATUSSES[0]
             realtime_data["power"] = 0
-
+            
+        self.close()
         return {**self.inverter_data, **realtime_data}
 
     def read_modbus_inverter_data(self) -> dict:
