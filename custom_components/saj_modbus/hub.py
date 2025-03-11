@@ -98,7 +98,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
 
     def read_modbus_inverter_data(self) -> dict:
         """Read data about inverter."""
-        inverter_data = self.read_holding_registers(unit=1, address=0x8F00, count=29)
+        inverter_data = self._read_holding_registers(unit=1, address=0x8F00, count=29)
 
         if inverter_data.isError():
             return {}
@@ -122,7 +122,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
 
     def read_modbus_realtime_data(self) -> dict:
         """Read realtime data from inverter."""
-        realtime_data = self.read_holding_registers(unit=1, address=0x100, count=60)
+        realtime_data = self._read_holding_registers(unit=1, address=0x100, count=60)
 
         if realtime_data.isError():
             return {}
