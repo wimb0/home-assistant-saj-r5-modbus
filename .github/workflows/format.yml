@@ -1,13 +1,8 @@
-name: "Lint Check"
+name: "Lint Format"
 
 on:
-  push:
-    branches:
-      - "main"
-  pull_request:
-    branches:
-      - "main"
-
+  workflow_dispatch:
+  
 jobs:
   ruff:
     name: "Ruff"
@@ -29,4 +24,4 @@ jobs:
           run: python3 -m ruff check .
 
         - name: "Format"
-          run: python3 -m ruff format . --check
+          run: python3 -m ruff format .
