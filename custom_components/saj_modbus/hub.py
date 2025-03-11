@@ -9,7 +9,6 @@ from homeassistant.core import CALLBACK_TYPE, callback, HomeAssistant
 from homeassistant.helpers import entity_registry
 from homeassistant.components.number import DOMAIN as NUMBER_DOMAIN
 from pymodbus.client import ModbusTcpClient
-from pymodbus.constants import Endian
 from pymodbus.exceptions import ConnectionException, ModbusException
 from pymodbus.pdu import ModbusPDU
 
@@ -20,14 +19,6 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
-
-DEVICE_STATUSSES = {
-    0: "Not Connected",
-    1: "Waiting",
-    2: "Normal",
-    3: "Error",
-    4: "Upgrading",
-}
 
 class SAJModbusHub(DataUpdateCoordinator[dict]):
     """Thread safe wrapper class for pymodbus."""
@@ -107,7 +98,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
 
     def read_modbus_inverter_data(self) -> dict:
         """Read data about inverter."""
-        inverter_data = client.read_holding_registers(unit=1, address=0x8F00, count=29)
+        inverter_data = self.read_holding_registers(unit=1, address=0x8F00, count=29)
 
         if inverter_data.isError():
             return {}
@@ -131,7 +122,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
 
     def read_modbus_realtime_data(self) -> dict:
         """Read realtime data from inverter."""
-        realtime_data = client.read_holding_registers(unit=1, address=0x100, count=60)
+        realtime_data = self.read_holding_registers(unit=1, address=0x100, count=60)
 
         if realtime_data.isError():
             return {}
@@ -148,13 +139,21 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
                 if mpvmode != self.data.get("mpvmode")
                 else self.data.get("limitpower")
             )
-    
+
+        DEVICE_STATUSSES = {
+            0: "Not Connected",
+            1: "Waiting",
+            2: "Normal",
+            3: "Error",
+            4: "Upgrading",
+        }
+
         data["mpvstatus"] = DEVICE_STATUSSES.get(mpvmode, "Unknown")
 
         faultMsg0 = registers[1] << 16 | registers[2]
         faultMsg1 = registers[3] << 16 | registers[4]
         faultMsg2 = registers[5] << 16 | registers[6]
-
+        
         faultMsg = []
         faultMsg.extend(
             self.translate_fault_code_to_messages(faultMsg0, FAULT_MESSAGES[0].items())
@@ -184,15 +183,10 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         data["pv3power"] = round(registers[15] * 1, 0)
 
         data["busvolt"] = round(registers[16] * 0.1, 1)
-    
         data["invtempc"] = round(registers[17] * 0.1, 1)
-    
         data["gfci"] = registers[18]
-    
         data["power"] = registers[19]
-    
         data["qpower"] = registers[20]
-    
         data["pf"] = round(registers[21] * 0.001, 3)
 
         data["l1volt"] = round(registers[22] * 0.1, 1)
@@ -201,36 +195,36 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         data["l1dci"] = registers[25]
         data["l1power"] = registers[26]
         data["l1pf"] = round(registers[27] * 0.001, 3)
-    
+
         data["l2volt"] = round(registers[28] * 0.1, 1)
         data["l2curr"] = round(registers[29] * 0.01, 2)
         data["l2freq"] = round(registers[30] * 0.01, 2)
         data["l2dci"] = registers[31]
         data["l2power"] = registers[32]
         data["l2pf"] = round(registers[33] * 0.001, 3)
-    
+
         data["l3volt"] = round(registers[34] * 0.1, 1)
         data["l3curr"] = round(registers[35] * 0.01, 2)
         data["l3freq"] = round(registers[36] * 0.01, 2)
         data["l3dci"] = registers[37]
         data["l3power"] = registers[38]
         data["l3pf"] = round(registers[39] * 0.001, 3)
-    
+
         data["iso1"] = registers[40]
         data["iso2"] = registers[41]
         data["iso3"] = registers[42]
         data["iso4"] = registers[43]
-    
+
         data["todayenergy"] = round(registers[44] * 0.01, 2)
         data["monthenergy"] = round((registers[45] << 16 | registers[46]) * 0.01, 2)
         data["yearenergy"] = round((registers[47] << 16 | registers[48]) * 0.01, 2)
         data["totalenergy"] = round((registers[49] << 16 | registers[50]) * 0.01, 2)
-    
+
         data["todayhour"] = round(registers[51] * 0.1, 1)
         data["totalhour"] = round((registers[52] << 16 | registers[53]) * 0.1, 1)
-    
+
         data["errorcount"] = registers[54]
-    
+
         return data
 
     def translate_fault_code_to_messages(
