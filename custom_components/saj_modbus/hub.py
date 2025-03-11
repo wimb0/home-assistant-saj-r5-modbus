@@ -12,7 +12,6 @@ from pymodbus.client import ModbusTcpClient
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ConnectionException, ModbusException
 from pymodbus.pdu import ModbusPDU
-from .payload import BinaryPayloadDecoder
 
 from .const import (
     DEVICE_STATUSSES,
@@ -22,6 +21,13 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+DEVICE_STATUSSES = {
+    0: "Not Connected",
+    1: "Waiting",
+    2: "Normal",
+    3: "Error",
+    4: "Upgrading",
+}
 
 class SAJModbusHub(DataUpdateCoordinator[dict]):
     """Thread safe wrapper class for pymodbus."""
@@ -101,75 +107,53 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
 
     def read_modbus_inverter_data(self) -> dict:
         """Read data about inverter."""
-        inverter_data = self._read_holding_registers(unit=1, address=0x8F00, count=29)
-
+        inverter_data = client.read_holding_registers(unit=1, address=0x8F00, count=29)
+    
         if inverter_data.isError():
             return {}
-
-        data = {}
-        decoder = BinaryPayloadDecoder.fromRegisters(
-            inverter_data.registers, byteorder=Endian.BIG
-        )
-
-        devtype = decoder.decode_16bit_uint()
-        data["devtype"] = devtype
-        subtype = decoder.decode_16bit_uint()
-        data["subtype"] = subtype
-        commver = decoder.decode_16bit_uint()
-        data["commver"] = round(commver * 0.001, 3)
-
-        sn = decoder.decode_string(20).decode("ascii")
-        data["sn"] = str(sn)
-        pc = decoder.decode_string(20).decode("ascii")
-        data["pc"] = str(pc)
-
-        dv = decoder.decode_16bit_uint()
-        data["dv"] = round(dv * 0.001, 3)
-        mcv = decoder.decode_16bit_uint()
-        data["mcv"] = round(mcv * 0.001, 3)
-        scv = decoder.decode_16bit_uint()
-        data["scv"] = round(scv * 0.001, 3)
-        disphwversion = decoder.decode_16bit_uint()
-        data["disphwversion"] = round(disphwversion * 0.001, 3)
-        ctrlhwversion = decoder.decode_16bit_uint()
-        data["ctrlhwversion"] = round(ctrlhwversion * 0.001, 3)
-        powerhwversion = decoder.decode_16bit_uint()
-        data["powerhwversion"] = round(powerhwversion * 0.001, 3)
-
+    
+        registers = inverter_data.registers
+        data = {
+            "devtype": registers[0],
+            "subtype": registers[1],
+            "commver": round(registers[2] * 0.001, 3),
+            "sn": ''.join(chr(registers[i] >> 8) + chr(registers[i] & 0xFF) for i in range(3, 13)).rstrip('\x00'),
+            "pc": ''.join(chr(registers[i] >> 8) + chr(registers[i] & 0xFF) for i in range(13, 23)).rstrip('\x00'),
+            "dv": round(registers[23] * 0.001, 3),
+            "mcv": round(registers[24] * 0.001, 3),
+            "scv": round(registers[25] * 0.001, 3),
+            "disphwversion": round(registers[26] * 0.001, 3),
+            "ctrlhwversion": round(registers[27] * 0.001, 3),
+            "powerhwversion": round(registers[28] * 0.001, 3)
+        }
+    
         return data
 
     def read_modbus_realtime_data(self) -> dict:
         """Read realtime data from inverter."""
-        realtime_data = self._read_holding_registers(unit=1, address=0x100, count=60)
-
+        realtime_data = client.read_holding_registers(unit=1, address=0x100, count=60)
+    
         if realtime_data.isError():
             return {}
-
+    
+        registers = realtime_data.registers
         data = {}
-
-        decoder = BinaryPayloadDecoder.fromRegisters(
-            realtime_data.registers, byteorder=Endian.BIG
-        )
-
-        mpvmode = decoder.decode_16bit_uint()
-
+    
+        mpvmode = registers[0]
+        data["mpvmode"] = mpvmode
+    
         if mpvmode == 2:
             data["limitpower"] = (
                 110
                 if mpvmode != self.data.get("mpvmode")
                 else self.data.get("limitpower")
             )
+    
+        data["mpvstatus"] = DEVICE_STATUSSES.get(mpvmode, "Unknown")
 
-        data["mpvmode"] = mpvmode
-
-        if mpvmode in DEVICE_STATUSSES:
-            data["mpvstatus"] = DEVICE_STATUSSES[mpvmode]
-        else:
-            data["mpvstatus"] = "Unknown"
-
-        faultMsg0 = decoder.decode_32bit_uint()
-        faultMsg1 = decoder.decode_32bit_uint()
-        faultMsg2 = decoder.decode_32bit_uint()
+        faultMsg0 = registers[1] << 16 | registers[2]
+        faultMsg1 = registers[3] << 16 | registers[4]
+        faultMsg2 = registers[5] << 16 | registers[6]
 
         faultMsg = []
         faultMsg.extend(
@@ -187,110 +171,66 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         if faultMsg:
             _LOGGER.error("Fault message: " + ", ".join(faultMsg).strip())
 
-        pv1volt = decoder.decode_16bit_uint()
-        pv1curr = decoder.decode_16bit_uint()
-        pv1power = decoder.decode_16bit_uint()
-        data["pv1volt"] = round(pv1volt * 0.1, 1)
-        data["pv1curr"] = round(pv1curr * 0.01, 2)
-        data["pv1power"] = round(pv1power * 1, 0)
+        data["pv1volt"] = round(registers[7] * 0.1, 1)
+        data["pv1curr"] = round(registers[8] * 0.01, 2)
+        data["pv1power"] = round(registers[9] * 1, 0)
 
-        pv2volt = decoder.decode_16bit_uint()
-        pv2curr = decoder.decode_16bit_uint()
-        pv2power = decoder.decode_16bit_uint()
-        data["pv2volt"] = round(pv2volt * 0.1, 1)
-        data["pv2curr"] = round(pv2curr * 0.01, 2)
-        data["pv2power"] = round(pv2power * 1, 0)
+        data["pv2volt"] = round(registers[10] * 0.1, 1)
+        data["pv2curr"] = round(registers[11] * 0.01, 2)
+        data["pv2power"] = round(registers[12] * 1, 0)
 
-        pv3volt = decoder.decode_16bit_uint()
-        pv3curr = decoder.decode_16bit_uint()
-        pv3power = decoder.decode_16bit_uint()
-        data["pv3volt"] = round(pv3volt * 0.1, 1)
-        data["pv3curr"] = round(pv3curr * 0.01, 2)
-        data["pv3power"] = round(pv3power * 1, 0)
+        data["pv3volt"] = round(registers[13] * 0.1, 1)
+        data["pv3curr"] = round(registers[14] * 0.01, 2)
+        data["pv3power"] = round(registers[15] * 1, 0)
 
-        busvolt = decoder.decode_16bit_uint()
-        data["busvolt"] = round(busvolt * 0.1, 1)
+        data["busvolt"] = round(registers[16] * 0.1, 1)
+    
+        data["invtempc"] = round(registers[17] * 0.1, 1)
+    
+        data["gfci"] = registers[18]
+    
+        data["power"] = registers[19]
+    
+        data["qpower"] = registers[20]
+    
+        data["pf"] = round(registers[21] * 0.001, 3)
 
-        invtempc = decoder.decode_16bit_int()
-        data["invtempc"] = round(invtempc * 0.1, 1)
-
-        gfci = decoder.decode_16bit_int()
-        data["gfci"] = gfci
-
-        power = decoder.decode_16bit_uint()
-        data["power"] = power
-
-        qpower = decoder.decode_16bit_int()
-        data["qpower"] = qpower
-
-        pf = decoder.decode_16bit_int()
-        data["pf"] = round(pf * 0.001, 3)
-
-        l1volt = decoder.decode_16bit_uint()
-        l1curr = decoder.decode_16bit_uint()
-        l1freq = decoder.decode_16bit_uint()
-        l1dci = decoder.decode_16bit_int()
-        l1power = decoder.decode_16bit_uint()
-        l1pf = decoder.decode_16bit_int()
-        data["l1volt"] = round(l1volt * 0.1, 1)
-        data["l1curr"] = round(l1curr * 0.01, 2)
-        data["l1freq"] = round(l1freq * 0.01, 2)
-        data["l1dci"] = l1dci
-        data["l1power"] = l1power
-        data["l1pf"] = round(l1pf * 0.001, 3)
-
-        l2volt = decoder.decode_16bit_uint()
-        l2curr = decoder.decode_16bit_uint()
-        l2freq = decoder.decode_16bit_uint()
-        l2dci = decoder.decode_16bit_int()
-        l2power = decoder.decode_16bit_uint()
-        l2pf = decoder.decode_16bit_int()
-        data["l2volt"] = round(l2volt * 0.1, 1)
-        data["l2curr"] = round(l2curr * 0.01, 2)
-        data["l2freq"] = round(l2freq * 0.01, 2)
-        data["l2dci"] = l2dci
-        data["l2power"] = l2power
-        data["l2pf"] = round(l2pf * 0.001, 3)
-
-        l3volt = decoder.decode_16bit_uint()
-        l3curr = decoder.decode_16bit_uint()
-        l3freq = decoder.decode_16bit_uint()
-        l3dci = decoder.decode_16bit_int()
-        l3power = decoder.decode_16bit_uint()
-        l3pf = decoder.decode_16bit_int()
-        data["l3volt"] = round(l3volt * 0.1, 1)
-        data["l3curr"] = round(l3curr * 0.01, 2)
-        data["l3freq"] = round(l3freq * 0.01, 2)
-        data["l3dci"] = l3dci
-        data["l3power"] = l3power
-        data["l3pf"] = round(l3pf * 0.001, 3)
-
-        iso1 = decoder.decode_16bit_uint()
-        iso2 = decoder.decode_16bit_uint()
-        iso3 = decoder.decode_16bit_uint()
-        iso4 = decoder.decode_16bit_uint()
-        data["iso1"] = iso1
-        data["iso2"] = iso2
-        data["iso3"] = iso3
-        data["iso4"] = iso4
-
-        todayenergy = decoder.decode_16bit_uint()
-        monthenergy = decoder.decode_32bit_uint()
-        yearenergy = decoder.decode_32bit_uint()
-        totalenergy = decoder.decode_32bit_uint()
-        data["todayenergy"] = round(todayenergy * 0.01, 2)
-        data["monthenergy"] = round(monthenergy * 0.01, 2)
-        data["yearenergy"] = round(yearenergy * 0.01, 2)
-        data["totalenergy"] = round(totalenergy * 0.01, 2)
-
-        todayhour = decoder.decode_16bit_uint()
-        data["todayhour"] = round(todayhour * 0.1, 1)
-        totalhour = decoder.decode_32bit_uint()
-        data["totalhour"] = round(totalhour * 0.1, 1)
-
-        errorcount = decoder.decode_16bit_uint()
-        data["errorcount"] = errorcount
-
+        data["l1volt"] = round(registers[22] * 0.1, 1)
+        data["l1curr"] = round(registers[23] * 0.01, 2)
+        data["l1freq"] = round(registers[24] * 0.01, 2)
+        data["l1dci"] = registers[25]
+        data["l1power"] = registers[26]
+        data["l1pf"] = round(registers[27] * 0.001, 3)
+    
+        data["l2volt"] = round(registers[28] * 0.1, 1)
+        data["l2curr"] = round(registers[29] * 0.01, 2)
+        data["l2freq"] = round(registers[30] * 0.01, 2)
+        data["l2dci"] = registers[31]
+        data["l2power"] = registers[32]
+        data["l2pf"] = round(registers[33] * 0.001, 3)
+    
+        data["l3volt"] = round(registers[34] * 0.1, 1)
+        data["l3curr"] = round(registers[35] * 0.01, 2)
+        data["l3freq"] = round(registers[36] * 0.01, 2)
+        data["l3dci"] = registers[37]
+        data["l3power"] = registers[38]
+        data["l3pf"] = round(registers[39] * 0.001, 3)
+    
+        data["iso1"] = registers[40]
+        data["iso2"] = registers[41]
+        data["iso3"] = registers[42]
+        data["iso4"] = registers[43]
+    
+        data["todayenergy"] = round(registers[44] * 0.01, 2)
+        data["monthenergy"] = round((registers[45] << 16 | registers[46]) * 0.01, 2)
+        data["yearenergy"] = round((registers[47] << 16 | registers[48]) * 0.01, 2)
+        data["totalenergy"] = round((registers[49] << 16 | registers[50]) * 0.01, 2)
+    
+        data["todayhour"] = round(registers[51] * 0.1, 1)
+        data["totalhour"] = round((registers[52] << 16 | registers[53]) * 0.1, 1)
+    
+        data["errorcount"] = registers[54]
+    
         return data
 
     def translate_fault_code_to_messages(
