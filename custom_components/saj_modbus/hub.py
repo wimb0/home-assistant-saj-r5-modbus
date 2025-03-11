@@ -117,7 +117,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
             "ctrlhwversion": round(registers[27] * 0.001, 3),
             "powerhwversion": round(registers[28] * 0.001, 3)
         }
-    
+
         return data
 
     def read_modbus_realtime_data(self) -> dict:
@@ -153,7 +153,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         faultMsg0 = registers[1] << 16 | registers[2]
         faultMsg1 = registers[3] << 16 | registers[4]
         faultMsg2 = registers[5] << 16 | registers[6]
-        
+
         faultMsg = []
         faultMsg.extend(
             self.translate_fault_code_to_messages(faultMsg0, FAULT_MESSAGES[0].items())
