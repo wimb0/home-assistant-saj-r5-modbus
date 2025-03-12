@@ -72,7 +72,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
             return self._client.write_registers(
                 address=address, values=values, slave=unit
             )
-    def convert_to_signed(value):
+    def convert_to_signed(self, value):
         """Convert unsigned integers to signed integers."""
         if value >= 0x8000:
             return value - 0x10000
@@ -189,32 +189,32 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         data["pv3power"] = round(registers[15] * 1, 0)
 
         data["busvolt"] = round(registers[16] * 0.1, 1)
-        data["invtempc"] = round(convert_to_signed(registers[21]) * 0.1, 1)
-        data["gfci"] = convert_to_signed(registers[18])
+        data["invtempc"] = round(self.convert_to_signed(registers[21]) * 0.1, 1)
+        data["gfci"] = self.convert_to_signed(registers[18])
         data["power"] = registers[19]
-        data["qpower"] = convert_to_signed(registers[20])
-        data["pf"] = round(convert_to_signed(registers[21]) * 0.001, 3)
+        data["qpower"] = self.convert_to_signed(registers[20])
+        data["pf"] = round(self.convert_to_signed(registers[21]) * 0.001, 3)
 
         data["l1volt"] = round(registers[22] * 0.1, 1)
         data["l1curr"] = round(registers[23] * 0.01, 2)
         data["l1freq"] = round(registers[24] * 0.01, 2)
-        data["l1dci"] = convert_to_signed(registers[25])
+        data["l1dci"] = self.convert_to_signed(registers[25])
         data["l1power"] = registers[26]
-        data["l1pf"] = round(convert_to_signed(registers[27]) * 0.001, 3)
+        data["l1pf"] = round(self.convert_to_signed(registers[27]) * 0.001, 3)
 
         data["l2volt"] = round(registers[28] * 0.1, 1)
         data["l2curr"] = round(registers[29] * 0.01, 2)
         data["l2freq"] = round(registers[30] * 0.01, 2)
-        data["l2dci"] = convert_to_signed(registers[31])
+        data["l2dci"] = self.convert_to_signed(registers[31])
         data["l2power"] = registers[32]
-        data["l2pf"] = round(convert_to_signed(registers[33]) * 0.001, 3)
+        data["l2pf"] = round(self.convert_to_signed(registers[33]) * 0.001, 3)
 
         data["l3volt"] = round(registers[34] * 0.1, 1)
         data["l3curr"] = round(registers[35] * 0.01, 2)
         data["l3freq"] = round(registers[36] * 0.01, 2)
-        data["l3dci"] = convert_to_signed(registers[37])
+        data["l3dci"] = self.convert_to_signed(registers[37])
         data["l3power"] = registers[38]
-        data["l3pf"] = round(convert_to_signed(registers[39]) * 0.001, 3)
+        data["l3pf"] = round(self.convert_to_signed(registers[39]) * 0.001, 3)
 
         data["iso1"] = registers[40]
         data["iso2"] = registers[41]
