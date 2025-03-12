@@ -73,11 +73,12 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
                 address=address, values=values, slave=unit
             )
     def convert_to_signed(value):
+        """Convert unsigned integers to signed integers."""
         if value >= 0x8000:
             return value - 0x10000
         else:
             return value
-            
+
     async def _async_update_data(self) -> dict:
         realtime_data = {}
         try:
