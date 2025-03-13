@@ -189,7 +189,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         data["pv3power"] = round(registers[15] * 1, 0)
 
         data["busvolt"] = round(registers[16] * 0.1, 1)
-        data["invtempc"] = round(self.convert_to_signed(registers[21]) * 0.1, 1)
+        data["invtempc"] = round(self.convert_to_signed(registers[17]) * 0.1, 1)
         data["gfci"] = self.convert_to_signed(registers[18])
         data["power"] = registers[19]
         data["qpower"] = self.convert_to_signed(registers[20])
