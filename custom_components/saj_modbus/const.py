@@ -188,6 +188,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         device_class=SensorDeviceClass.TIMESTAMP,
         key="datetime",
         icon="mdi:clock-outline",
+        entity_registry_enabled_default=False,
     ),
     "PV1Volt": SajModbusSensorEntityDescription(
         name="PV1 voltage",
