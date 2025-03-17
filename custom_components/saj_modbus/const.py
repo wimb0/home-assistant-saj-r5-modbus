@@ -185,7 +185,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
     ),
     "DateTime": SajModbusSensorEntityDescription(
         name="Inverter date and time",
-        device_class=SensorDeviceClass.TIMESTAMP	
+        device_class=SensorDeviceClass.TIMESTAMP,
         key="datetime",
         icon="mdi:clock-outline",
     ),
