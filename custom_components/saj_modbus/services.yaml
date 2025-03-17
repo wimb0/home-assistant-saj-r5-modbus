@@ -1,4 +1,6 @@
 set_datetime:
+  name: Set Date and Time
+  description: Set SAJ R5 Inverter Date and Time
   fields:
     device_id:
       required: true
@@ -7,6 +9,6 @@ set_datetime:
           integration: saj_modbus
     datetime:
       required: false
-      example: "2024-01-23T12:34:56"
+      example: "2025-04-19T12:34:56"
       selector:
         datetime:
