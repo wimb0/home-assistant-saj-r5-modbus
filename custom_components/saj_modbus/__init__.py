@@ -63,7 +63,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
-    """Unload SAJ mobus entry."""
+    """Unload SAJ modbus entry."""
 
     unload_ok = all(
         await asyncio.gather(
