@@ -183,6 +183,12 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         key="faultmsg",
         icon="mdi:message-alert-outline",
     ),
+    "DateTime": SajModbusSensorEntityDescription(
+        name="Inverter date and time",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        key="datetime",
+        icon="mdi:clock-outline",
+    ),
     "PV1Volt": SajModbusSensorEntityDescription(
         name="PV1 voltage",
         key="pv1volt",
