@@ -4,7 +4,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from voluptuous.validators import Number
 import logging
 import threading
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from homeassistant.core import CALLBACK_TYPE, callback, HomeAssistant
 from homeassistant.helpers import entity_registry
 from homeassistant.components.number import DOMAIN as NUMBER_DOMAIN
@@ -91,7 +91,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
 
         timevalues = f"{year}{month:02}{day:02}{hour:02}{minute:02}{second:02}"
         # Convert to datetime object
-        date_time_obj = datetime.strptime(timevalues, '%Y%m%d%H%M%S')
+        date_time_obj = datetime.astimezone(datetime.strptime(timevalues, '%Y%m%d%H%M%S'))
 
         return(date_time_obj)
 
