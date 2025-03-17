@@ -1,9 +1,6 @@
 set_datetime:
   name: Set Date and Time
   description: Set SAJ R5 Inverter Date and Time
-  target:
-    entity:
-      integration: saj_modbus
   fields:
     device_id:
       required: true
