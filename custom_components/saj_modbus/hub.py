@@ -107,7 +107,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
                 )
             """Read realtime data"""
             realtime_data = await self.hass.async_add_executor_job(
-                self.read_modbus_realtime_data
+                self.read_modbus_r5_realtime_data
             )
 
         except (BrokenPipeError, ConnectionResetError, ConnectionException) as conerr:
