@@ -93,9 +93,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         # Convert to datetime object
         date_time_obj = datetime.strptime(timevalues, '%Y%m%d%H%M%S')
 
-        # Format to readable string
-        readable_date_time = str(date_time_obj.strftime('%Y-%m-%d %H:%M:%S'))
-        return(readable_date_time)
+        return(date_time_obj)
 
     async def _async_update_data(self) -> dict:
         realtime_data = {}
