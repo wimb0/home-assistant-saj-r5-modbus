@@ -248,7 +248,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         data["totalhour"] = round((registers[52] << 16 | registers[53]) * 0.1, 1)
 
         data["errorcount"] = registers[54]
-        data["datetime"] parse_datetime(registers[55:60])
+        data["datetime"] = self.parse_datetime(registers[55:60])
         
         return data
 
