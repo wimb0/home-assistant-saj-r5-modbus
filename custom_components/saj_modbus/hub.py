@@ -1,3 +1,5 @@
+"""Modified 'SAJ Modbus Hub' to support R6 registers"""
+
 """SAJ Modbus Hub."""
 import logging
 import threading
@@ -42,7 +44,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         self._client = ModbusTcpClient(host=host, port=port, timeout=5)
         self._lock = threading.Lock()
         self.inverter_data: dict[str, int | float | str] = {}
-        self._power_limit: float = 110.0
+        self._power_limit: float = 220.0
         self._power_on_off: bool = False
 
     async def async_setup(self) -> None:
@@ -62,7 +64,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
                 await self.async_setup()
 
             realtime_data = await self.hass.async_add_executor_job(
-                self.read_modbus_r5_realtime_data
+                self.read_modbus_r6_realtime_data
             )
             power_state = await self.hass.async_add_executor_job(
                 self.read_modbus_inverter_power_state
@@ -147,21 +149,41 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         }
         return data
 
-
-    def read_modbus_r5_realtime_data(self) -> dict[str, int | float | str]:
+    def read_modbus_r6_realtime_data(self) -> dict[str, int | float | str]:
         """Read realtime data from inverter."""
-        realtime_data = self._read_holding_registers(unit=1, address=0x100, count=60)
-        if realtime_data.isError():
-            _LOGGER.debug("Error reading realtime data")
+       # Read in two batches due to Modbus limit of 125 registers
+        first_read = self._read_holding_registers(unit=1, address=0x4000, count=125)
+        second_read = self._read_holding_registers(unit=1, address=0x407D, count=121)
+    
+        if first_read.isError() or second_read.isError():
             return {}
-        registers = realtime_data.registers
-        data: dict[str, int | float | str] = {}
-        mpvmode = registers[0]
+    
+        registers = first_read.registers + second_read.registers
+        data = {}
+        # MPV Mode
+        mpvmode = registers[4]  # 0x4004
         data["mpvmode"] = mpvmode
+    
+        DEVICE_STATUSSES = {
+            0: "Initialize",
+            1: "Waiting",
+            2: "Normal",
+            3: "Off-Grid",
+            4: "Grid with Load",
+            5: "Fault",
+            6: "Upgrading",
+            7: "Debug",
+            8: "Auto-Check",
+            9: "Reset",
+        }
+    
         data["mpvstatus"] = DEVICE_STATUSSES.get(mpvmode, "Unknown")
-        faultMsg0 = (registers[1] << 16) | registers[2]
-        faultMsg1 = (registers[3] << 16) | registers[4]
-        faultMsg2 = (registers[5] << 16) | registers[6]
+    
+        # Fault messages
+        faultMsg0 = registers[5] << 16 | registers[6]  # 0x4005 + 0x4006
+        faultMsg1 = registers[7] << 16 | registers[8]  # 0x4007 + 0x4008
+        faultMsg2 = registers[9] << 16 | registers[10]  # 0x4009 + 0x400A
+    
         fault_messages_list = self.translate_fault_code_to_messages(
             faultMsg0, list(FAULT_MESSAGES[0].items())
         )
@@ -170,59 +192,78 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
                 faultMsg1, list(FAULT_MESSAGES[1].items())
             )
         )
-        fault_messages_list.extend(
-            self.translate_fault_code_to_messages(
-                faultMsg2, list(FAULT_MESSAGES[2].items())
-            )
-        )
         data["faultmsg"] = ", ".join(fault_messages_list).strip()[:254]
         if fault_messages_list:
             _LOGGER.error("Fault message: %s", ", ".join(fault_messages_list).strip())
-        data["pv1volt"] = round(registers[7] * 0.1, 1)
-        data["pv1curr"] = round(registers[8] * 0.01, 2)
-        data["pv1power"] = registers[9]
-        data["pv2volt"] = round(registers[10] * 0.1, 1)
-        data["pv2curr"] = round(registers[11] * 0.01, 2)
-        data["pv2power"] = registers[12]
-        data["pv3volt"] = round(registers[13] * 0.1, 1)
-        data["pv3curr"] = round(registers[14] * 0.01, 2)
-        data["pv3power"] = registers[15]
-        data["busvolt"] = round(registers[16] * 0.1, 1)
-        data["invtempc"] = round(self.convert_to_signed(registers[17]) * 0.1, 1)
-        data["gfci"] = self.convert_to_signed(registers[18])
-        data["power"] = registers[19]
-        data["qpower"] = self.convert_to_signed(registers[20])
-        data["pf"] = round(self.convert_to_signed(registers[21]) * 0.001, 3)
-        data["l1volt"] = round(registers[22] * 0.1, 1)
-        data["l1curr"] = round(registers[23] * 0.01, 2)
-        data["l1freq"] = round(registers[24] * 0.01, 2)
-        data["l1dci"] = self.convert_to_signed(registers[25])
-        data["l1power"] = registers[26]
-        data["l1pf"] = round(self.convert_to_signed(registers[27]) * 0.001, 3)
-        data["l2volt"] = round(registers[28] * 0.1, 1)
-        data["l2curr"] = round(registers[29] * 0.01, 2)
-        data["l2freq"] = round(registers[30] * 0.01, 2)
-        data["l2dci"] = self.convert_to_signed(registers[31])
-        data["l2power"] = registers[32]
-        data["l2pf"] = round(self.convert_to_signed(registers[33]) * 0.001, 3)
-        data["l3volt"] = round(registers[34] * 0.1, 1)
-        data["l3curr"] = round(registers[35] * 0.01, 2)
-        data["l3freq"] = round(registers[36] * 0.01, 2)
-        data["l3dci"] = self.convert_to_signed(registers[37])
-        data["l3power"] = registers[38]
-        data["l3pf"] = round(self.convert_to_signed(registers[39]) * 0.001, 3)
-        data["iso1"] = registers[40]
-        data["iso2"] = registers[41]
-        data["iso3"] = registers[42]
-        data["iso4"] = registers[43]
-        data["todayenergy"] = round(registers[44] * 0.01, 2)
-        data["monthenergy"] = round(((registers[45] << 16) | registers[46]) * 0.01, 2)
-        data["yearenergy"] = round(((registers[47] << 16) | registers[48]) * 0.01, 2)
-        data["totalenergy"] = round(((registers[49] << 16) | registers[50]) * 0.01, 2)
-        data["todayhour"] = round(registers[51] * 0.1, 1)
-        data["totalhour"] = round(((registers[52] << 16) | registers[53]) * 0.1, 1)
-        data["errorcount"] = registers[54]
-        data["datetime"] = self.parse_datetime(registers[55:60])
+
+        # PV Values
+        data["pv1volt"] = round(registers[113] * 0.1, 1)  # 0x4071
+        data["pv1curr"] = round(registers[114] * 0.01, 2)  # 0x4072
+        data["pv1power"] = round(registers[115], 0)        # 0x4073
+    
+        data["pv2volt"] = round(registers[116] * 0.1, 1)   # 0x4074
+        data["pv2curr"] = round(registers[117] * 0.01, 2)  # 0x4075
+        data["pv2power"] = round(registers[118], 0)        # 0x4076
+    
+        data["pv3volt"] = round(registers[119] * 0.1, 1)   # 0x4077
+        data["pv3curr"] = round(registers[120] * 0.01, 2)  # 0x4078
+        data["pv3power"] = round(registers[121], 0)        # 0x4079
+    
+        # Bus Voltage
+        data["busvolt"] = round(registers[103] * 0.1, 1)  # 0x4067 BusVoltMaster
+    
+        # Temperatures
+        data["invtempc"] = round(self.convert_to_signed(registers[16]) * 0.1, 1)  # 0x4010 SinkTempC
+    
+        # Earth Leakage Current
+        data["gfci"] = self.convert_to_signed(registers[18])  # 0x4012 GFCI
+    
+
+        # Phase measurements (l1 - RGrid)
+        data["l1volt"] = round(registers[49] * 0.1, 1)  # 0x4031 RGridVolt
+        data["l1curr"] = round(self.convert_to_signed(registers[50]) * 0.01, 2)  # 0x4032
+        data["l1freq"] = round(registers[51] * 0.01, 2)  # 0x4033
+        data["l1dci"] = self.convert_to_signed(registers[52])  # 0x4034
+        data["l1power"] = self.convert_to_signed(registers[53])  # 0x4035
+        data["l1pf"] = round(self.convert_to_signed(registers[55]) * 0.001, 3)  # 0x4037 (phase PF)
+    
+        # Phase measurements (l2 - SGrid)
+        data["l2volt"] = round(registers[56] * 0.1, 1)  # 0x4038 SGridVolt
+        data["l2curr"] = round(self.convert_to_signed(registers[57]) * 0.01, 2)  # 0x4039
+        data["l2freq"] = round(registers[58] * 0.01, 2)  # 0x403A
+        data["l2dci"] = self.convert_to_signed(registers[59])  # 0x403B
+        data["l2power"] = self.convert_to_signed(registers[60])  # 0x403C
+        data["l2pf"] = round(self.convert_to_signed(registers[62]) * 0.001, 3)  # 0x403E (phase PF)
+
+        # Phase measurements (l3 - TGrid)
+        data["l3volt"] = round(registers[63] * 0.1, 1)  # 0x403F TGridVolt
+        data["l3curr"] = round(self.convert_to_signed(registers[64]) * 0.01, 2)  # 0x4040
+        data["l3freq"] = round(registers[65] * 0.01, 2)  # 0x4041
+        data["l3dci"] = self.convert_to_signed(registers[66])  # 0x4042
+        data["l3power"] = self.convert_to_signed(registers[67])  # 0x4043
+        data["l3pf"] = round(self.convert_to_signed(registers[69]) * 0.001, 3)  # 0x4045 (phase PF)
+
+        # Isolation resistances
+        data["iso1"] = registers[19]  # 0x4013
+        data["iso2"] = registers[20]  # 0x4014
+        data["iso3"] = registers[21]  # 0x4015
+        data["iso4"] = registers[22]  # 0x4016
+    
+        # Energy counters
+        data["todayenergy"] = round((registers[191] << 16 | registers[192]) * 0.01, 2)  # 0x40BF
+        data["monthenergy"] = round((registers[193] << 16 | registers[194]) * 0.01, 2)  # 0x40C1
+        data["yearenergy"] = round((registers[195] << 16 | registers[196]) * 0.01, 2)   # 0x40C3
+        data["totalenergy"] = round((registers[197] << 16 | registers[198]) * 0.01, 2)  # 0x40C5
+    
+        # Working hours
+        data["todayhour"] = round(registers[188] * 0.1, 1)  # 0x40BC
+        data["totalhour"] = round((registers[189] << 16 | registers[190]) * 0.1, 1)  # 0x40BD
+    
+        # Error count
+        data["errorcount"] = registers[15]  # 0x400F
+    
+        # Datetime
+        data["datetime"] = self.parse_datetime(registers[0:4])  # from 0x4000
         return data
 
     def read_modbus_inverter_power_state(self) -> dict[str, bool]:
