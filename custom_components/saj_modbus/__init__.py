@@ -45,10 +45,13 @@ async def async_setup(hass, config):
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up a SAJ mobus."""
-    host = entry.data[CONF_HOST]
-    name = entry.data[CONF_NAME]
-    port = entry.data[CONF_PORT]
-    scan_interval = entry.data[CONF_SCAN_INTERVAL]
+    hass.data.setdefault(DOMAIN, {})
+    
+    host = entry.data.get(CONF_HOST)
+    name = entry.data.get(CONF_NAME)
+    port = entry.data.get(CONF_PORT)
+    scan_interval_seconds = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+    scan_interval = timedelta(seconds=scan_interval_seconds)
 
     _LOGGER.debug("Setup %s.%s", DOMAIN, name)
 
