@@ -6,8 +6,7 @@
         "data": {
           "host": "O endereço ip do modbus do inversor SAJ",
           "name": "O prefixo a usar nos sensores do inversor SAJ",
-          "port": "Qual TCP porta usada para ligar ao inversor SAJ",
-          "scan_interval": "Frequencia de atualização em segundos"
+          "port": "Qual TCP porta usada para ligar ao inversor SAJ"
         }
       }
     },
@@ -16,6 +15,15 @@
     },
     "abort": {
       "already_configured": "Equipamento já configurado"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Frequencia de atualização em segundos"
+        }
+      }
     }
   },
   "services": {

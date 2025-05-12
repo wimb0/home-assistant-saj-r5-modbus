@@ -4,6 +4,7 @@ import ipaddress
 import re
 from typing import Any
 import voluptuous as vol
+import logging
 
 from homeassistant.config_entries import (
     ConfigEntry,
@@ -16,6 +17,8 @@ from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTER
 from homeassistant.core import HomeAssistant, callback
 
 from .const import DEFAULT_NAME, DEFAULT_PORT, DEFAULT_SCAN_INTERVAL, DOMAIN
+
+_LOGGER = logging.getLogger(__name__)
 
 DATA_SCHEMA = vol.Schema(
     {
@@ -49,7 +52,7 @@ def saj_modbus_entries(hass: HomeAssistant):
 class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
     """SAJ Modbus configflow."""
 
-    VERSION = 1
+    VERSION = 2
 
     def _host_in_configuration_exists(self, host) -> bool:
         """Return True if host exists in configuration."""

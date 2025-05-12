@@ -45,10 +45,13 @@ async def async_setup(hass, config):
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up a SAJ mobus."""
-    host = entry.data[CONF_HOST]
-    name = entry.data[CONF_NAME]
-    port = entry.data[CONF_PORT]
-    scan_interval = entry.data[CONF_SCAN_INTERVAL]
+    hass.data.setdefault(DOMAIN, {})
+    
+    host = entry.data.get(CONF_HOST)
+    name = entry.data.get(CONF_NAME)
+    port = entry.data.get(CONF_PORT)
+    scan_interval_seconds = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+    scan_interval = timedelta(seconds=scan_interval_seconds)
 
     _LOGGER.debug("Setup %s.%s", DOMAIN, name)
 
@@ -89,3 +92,23 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload config entry."""
     await async_unload_entry(hass, entry)
     await async_setup_entry(hass, entry)
+
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Migrate old entry."""
+    _LOGGER.debug("Migrating from version %s", config_entry.version)
+
+    if config_entry.version == 1:
+        hass.config_entries.async_update_entry(config_entry, version=2)
+
+        entity_registry = er.async_get(hass)
+        existing_entries = er.async_entries_for_config_entry(
+            entity_registry, config_entry.entry_id
+        )
+
+        for entry in list(existing_entries):
+            _LOGGER.debug("Deleting version 1 entity: %s", entry.entity_id)
+            entity_registry.async_remove(entry.entity_id)
+
+    _LOGGER.debug("Migration to version %s successful", config_entry.version)
+
+    return True
