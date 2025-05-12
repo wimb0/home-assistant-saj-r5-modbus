@@ -2,7 +2,7 @@
 
 import ipaddress
 import re
-
+from typing import Any
 import voluptuous as vol
 from homeassistant import config_entries
 
@@ -76,8 +76,9 @@ class SAJModbusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry: config_entries.ConfigEntry) -> OptionsFlow:
-        return SAJModbusOptionsFlowHandler()
+    def async_get_options_flow(config_entry: config_entries.ConfigEntry) -> config_entries.OptionsFlow:
+        """Handle options flow."""
+        return SAJModbusOptionsFlowHandler(config_entry)
 
 
 class SAJModbusOptionsFlowHandler(config_entries.OptionsFlow):
@@ -85,7 +86,7 @@ class SAJModbusOptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> config_entries.FlowResult:
         """Manage the options."""
         if user_input is not None:
             return self.async_create_entry(
