@@ -44,11 +44,10 @@ async def async_setup(hass, config):
     hass.data[DOMAIN] = {}
     return True
 
-
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up a SAJ mobus."""
     hass.data.setdefault(DOMAIN, {})
-    
+
     host = entry.data.get(CONF_HOST)
     name = entry.data.get(CONF_NAME)
     port = entry.data.get(CONF_PORT)
