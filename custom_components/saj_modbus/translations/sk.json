@@ -19,7 +19,6 @@
   },
   "options": {
     "step": {
-      "user": {
       "init": {
         "data": {
           "scan_interval": "Frekvencia dopytovania modbus registrov v sekundách"
