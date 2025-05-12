@@ -6,8 +6,7 @@
         "data": {
           "host": "The ip-address of your SAJ Inverter modbus device",
           "name": "The prefix to be used for your SAJ Inverter sensors",
-          "port": "The TCP port on which to connect to the SAJ Inverter",
-          "scan_interval": "The polling frequency of the modbus registers in seconds"
+          "port": "The TCP port on which to connect to the SAJ Inverter"
         }
       }
     },
@@ -22,7 +21,7 @@
     "step": {
       "init": {
         "data": {
-          "scan_interval": "Scan interval (seconds)"
+          "scan_interval": "The polling frequency of the modbus registers in seconds"
         }
       }
     }
