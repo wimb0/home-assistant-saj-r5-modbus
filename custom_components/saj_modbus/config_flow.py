@@ -73,14 +73,14 @@ class SAJModbusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user", data_schema=DATA_SCHEMA, errors=errors
         )
-        
+
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+    def async_get_options_flow(config_entry: config_entries.ConfigEntry) -> OptionsFlow:
         return SAJModbusOptionsFlowHandler()
 
 
-class SAJModbusOptionsFlowHandler(OptionsFlow):
+class SAJModbusOptionsFlowHandler(config_entries.OptionsFlow):
     """SAJ Modbus config flow options handler."""
 
     async def async_step_init(
