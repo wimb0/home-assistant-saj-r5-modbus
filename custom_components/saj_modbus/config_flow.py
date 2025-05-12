@@ -73,3 +73,28 @@ class SAJModbusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user", data_schema=DATA_SCHEMA, errors=errors
         )
+
+    async def async_step_reconfigure_interval(self, user_input=None):
+        """Allow users to reconfigure the scan interval."""
+        errors = {}
+
+        if user_input is not None:
+            scan_interval = user_input.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+
+            if not isinstance(scan_interval, int) or scan_interval <= 10:
+                errors[CONF_SCAN_INTERVAL] = "invalid_scan_interval"
+            else:
+                # Update the entry with new scan interval
+                entry = await self.async_set_unique_id(user_input[CONF_HOST])
+                self.hass.config_entries.async_update_entry(entry, data=user_input)
+                return self.async_create_entry(title="Reconfigure Interval", data=user_input)
+
+        # Show the form for reconfiguring the scan interval
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): int,
+            }
+        )
+        return self.async_show_form(
+            step_id="reconfigure_interval", data_schema=schema, errors=errors
+        )
