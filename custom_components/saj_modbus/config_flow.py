@@ -4,7 +4,13 @@ import ipaddress
 import re
 from typing import Any
 import voluptuous as vol
-from homeassistant import config_entries
+
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    FlowResult,
+    OptionsFlow,
+)
 
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant, callback
@@ -40,11 +46,10 @@ def saj_modbus_entries(hass: HomeAssistant):
     }
 
 
-class SAJModbusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
     """SAJ Modbus configflow."""
 
     VERSION = 1
-    CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     def _host_in_configuration_exists(self, host) -> bool:
         """Return True if host exists in configuration."""
@@ -52,8 +57,9 @@ class SAJModbusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return True
         return False
 
-    async def async_step_user(self, user_input=None):
-        """Handle the initial step."""
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
         errors = {}
 
         if user_input is not None:
@@ -76,12 +82,11 @@ class SAJModbusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry: config_entries.ConfigEntry) -> config_entries.OptionsFlow:
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
         """Handle options flow."""
         return SAJModbusOptionsFlowHandler()
 
-
-class SAJModbusOptionsFlowHandler(config_entries.OptionsFlow):
+class SAJModbusOptionsFlowHandler(OptionsFlow):
     """SAJ Modbus config flow options handler."""
 
     async def async_step_init(
