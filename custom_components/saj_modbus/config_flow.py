@@ -62,7 +62,7 @@ class SAJModbusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if self._host_in_configuration_exists(host):
                 errors[CONF_HOST] = "already_configured"
             elif not host_valid(user_input[CONF_HOST]):
-                errors[CONF_HOST] = "invalid host IP"
+                errors[CONF_HOST] = "Invalid host IP"
             else:
                 await self.async_set_unique_id(user_input[CONF_HOST])
                 self._abort_if_unique_id_configured()
@@ -82,7 +82,7 @@ class SAJModbusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             scan_interval = user_input.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
 
             if not isinstance(scan_interval, int) or scan_interval <= 10:
-                errors[CONF_SCAN_INTERVAL] = "invalid_scan_interval"
+                errors[CONF_SCAN_INTERVAL] = "Invalid scan interval"
             else:
                 # Update the entry with new scan interval
                 entry = await self.async_set_unique_id(user_input[CONF_HOST])
