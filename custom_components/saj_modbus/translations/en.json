@@ -18,6 +18,15 @@
       "already_configured": "Device is already configured"
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Scan interval (seconds)"
+        }
+      }
+    }
+  },
   "services": {
     "set_datetime": {
       "name": "Set date and time",
