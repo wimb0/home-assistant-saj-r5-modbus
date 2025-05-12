@@ -78,7 +78,7 @@ class SAJModbusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry: config_entries.ConfigEntry) -> config_entries.OptionsFlow:
         """Handle options flow."""
-        return SAJModbusOptionsFlowHandler(config_entry)
+        return SAJModbusOptionsFlowHandler()
 
 
 class SAJModbusOptionsFlowHandler(config_entries.OptionsFlow):
