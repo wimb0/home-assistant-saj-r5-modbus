@@ -52,7 +52,7 @@ def saj_modbus_entries(hass: HomeAssistant):
 class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
     """SAJ Modbus configflow."""
 
-    VERSION = 1
+    VERSION = 2
 
     def _host_in_configuration_exists(self, host) -> bool:
         """Return True if host exists in configuration."""
