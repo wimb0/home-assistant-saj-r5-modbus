@@ -2,7 +2,6 @@
 
 import asyncio
 import logging
-from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
@@ -51,8 +50,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     host = entry.data.get(CONF_HOST)
     name = entry.data.get(CONF_NAME)
     port = entry.data.get(CONF_PORT)
-    scan_interval_seconds = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
-    scan_interval = timedelta(seconds=scan_interval_seconds)
+    scan_interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
 
     _LOGGER.debug("Setup %s.%s", DOMAIN, name)
 
