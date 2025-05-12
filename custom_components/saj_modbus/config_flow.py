@@ -73,28 +73,35 @@ class SAJModbusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user", data_schema=DATA_SCHEMA, errors=errors
         )
+        
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+        return SAJModbusOptionsFlowHandler()
 
-    async def async_step_reconfigure(self, user_input=None):
-        """Allow users to reconfigure the scan interval."""
-        errors = {}
 
+class SAJModbusOptionsFlowHandler(OptionsFlow):
+    """SAJ Modbus config flow options handler."""
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Manage the options."""
         if user_input is not None:
-            scan_interval = user_input.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+            return self.async_create_entry(
+                title=self.config_entry.data.get(CONF_NAME), data=user_input
+            )
 
-            if not isinstance(scan_interval, int) or scan_interval <= 10:
-                errors[CONF_SCAN_INTERVAL] = "Invalid scan interval"
-            else:
-                # Update the entry with new scan interval
-                entry = await self.async_set_unique_id(user_input[CONF_HOST])
-                self.hass.config_entries.async_update_entry(entry, data=user_input)
-                return self.async_create_entry(title="Reconfigure Interval", data=user_input)
-
-        # Show the form for reconfiguring the scan interval
-        schema = vol.Schema(
-            {
-                vol.Required(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): int,
-            }
-        )
         return self.async_show_form(
-            step_id="reconfigure", data_schema=schema, errors=errors
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_SCAN_INTERVAL,
+                        default=self.config_entry.options.get(
+                            CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+                        ),
+                    ): vol.All(vol.Coerce(int), vol.Range(min=10, max=600))
+                }
+            ),
         )
