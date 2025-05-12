@@ -89,3 +89,23 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload config entry."""
     await async_unload_entry(hass, entry)
     await async_setup_entry(hass, entry)
+
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Migrate old entry."""
+    _LOGGER.debug("Migrating from version %s", config_entry.version)
+
+    if config_entry.version == 1:
+        hass.config_entries.async_update_entry(config_entry, version=2)
+
+        entity_registry = er.async_get(hass)
+        existing_entries = er.async_entries_for_config_entry(
+            entity_registry, config_entry.entry_id
+        )
+
+        for entry in list(existing_entries):
+            _LOGGER.debug("Deleting version 1 entity: %s", entry.entity_id)
+            entity_registry.async_remove(entry.entity_id)
+
+    _LOGGER.debug("Migration to version %s successful", config_entry.version)
+
+    return True
