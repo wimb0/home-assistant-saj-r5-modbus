@@ -74,7 +74,7 @@ class SAJModbusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user", data_schema=DATA_SCHEMA, errors=errors
         )
 
-    async def async_step_reconfigure_interval(self, user_input=None):
+    async def async_step_reconfigure(self, user_input=None):
         """Allow users to reconfigure the scan interval."""
         errors = {}
 
@@ -96,5 +96,5 @@ class SAJModbusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }
         )
         return self.async_show_form(
-            step_id="reconfigure_interval", data_schema=schema, errors=errors
+            step_id="reconfigure", data_schema=schema, errors=errors
         )
