@@ -6,7 +6,8 @@
         "data": {
           "host": "IP adresa vášho zariadenia SAJ Inverter modbus",
           "name": "Predpona, ktorá sa má použiť pre vaše senzory SAJ Inverter",
-          "port": "TCP port, na ktorý sa má pripojiť k meniču SAJ"
+          "port": "TCP port, na ktorý sa má pripojiť k meniču SAJ",
+          "scan_interval": "Frekvencia dopytovania modbus registrov v sekundách"
         }
       }
     },
