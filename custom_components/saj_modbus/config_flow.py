@@ -111,7 +111,7 @@ class SAJModbusOptionsFlowHandler(OptionsFlow):
                         default=self.config_entry.options.get(
                             CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
                         ),
-                    ): vol.All(vol.Coerce(int), vol.Range(min=10, max=600))
+                    ): vol.All(vol.Coerce(int), vol.Range(min=1, max=600))
                 }
             ),
         )
