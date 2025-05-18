@@ -18,6 +18,15 @@
       "already_configured": "Apparaat is al geconfigureerd"
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "De polling-frequentie van de modbus registratie in seconden"
+        }
+      }
+    }
+  },
   "services": {
     "set_datetime": {
       "name": "Stel datum en tijd in",

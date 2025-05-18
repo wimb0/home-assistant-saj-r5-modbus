@@ -18,6 +18,15 @@
       "already_configured": "Zariadenie je už nakonfigurované"
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Frekvencia dopytovania modbus registrov v sekundách"
+        }
+      }
+    }
+  },
   "services": {
     "set_datetime": {
       "name": "Nastavte dátum a čas",

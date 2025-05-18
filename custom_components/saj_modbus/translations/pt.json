@@ -18,6 +18,15 @@
       "already_configured": "Equipamento já configurado"
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Frequencia de atualização em segundos"
+        }
+      }
+    }
+  },
   "services": {
     "set_datetime": {
       "name": "Definir data e hora",
