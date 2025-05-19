@@ -8,7 +8,7 @@
     "@jeffmeager"
   ],
   "config_flow": true,
-  "documentation": "https://github.com/wimb0/home-assistant-saj-r5-modbus",
+  "dependencies": [],
   "iot_class": "local_polling",
   "requirements": [
     "pymodbus>=3.10"
