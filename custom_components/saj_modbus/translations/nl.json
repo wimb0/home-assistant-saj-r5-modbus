@@ -42,5 +42,191 @@
         }
       }
     }
+  },
+  "entity": {
+    "number": {
+      "limit_power": {
+        "name": "Vermogenslimiet"
+      }
+    },
+    "sensor": {
+      "today_energy": {
+        "name": "Energieopbrengst vandaag"
+      },
+      "month_energy": {
+        "name": "Energieopbrengst deze maand"
+      },
+      "year_energy": {
+        "name": "Energieopbrengst dit jaar"
+      },
+      "total_energy": {
+        "name": "Totale energieopbrengst"
+      },
+      "today_hour": {
+        "name": "Draaiuren vandaag"
+      },
+      "total_hour": {
+        "name": "Totaal draaiuren"
+      },
+      "device_type": {
+        "name": "Apparaattype"
+      },
+      "sub_type": {
+        "name": "Subtype"
+      },
+      "comms_protocol_version": {
+        "name": "Communicatieprotocolversie"
+      },
+      "serial_number": {
+        "name": "Serienummer"
+      },
+      "product_code": {
+        "name": "Productcode"
+      },
+      "display_software_version": {
+        "name": "Display softwareversie"
+      },
+      "master_ctrl_software_version": {
+        "name": "Master controller softwareversie"
+      },
+      "slave_ctrl_software_version": {
+        "name": "Slave controller softwareversie"
+      },
+      "display_board_hardware_version": {
+        "name": "Display hardwareversie"
+      },
+      "control_board_hardware_version": {
+        "name": "Controller hardwareversie"
+      },
+      "power_board_hardware_version": {
+        "name": "Voeding hardwareversie"
+      },
+      "inverter_status": {
+        "name": "Status omvormer"
+      },
+      "inverter_working_mode": {
+        "name": "Werkmodus omvormer"
+      },
+      "inverter_error_message": {
+        "name": "Foutmelding omvormer"
+      },
+      "inverter_date_and_time": {
+        "name": "Datum en tijd omvormer"
+      },
+      "pv1_voltage": {
+        "name": "PV1 spanning"
+      },
+      "pv1_current": {
+        "name": "PV1 stroom"
+      },
+      "pv1_power": {
+        "name": "PV1 vermogen"
+      },
+      "pv2_voltage": {
+        "name": "PV2 spanning"
+      },
+      "pv2_current": {
+        "name": "PV2 stroom"
+      },
+      "pv2_power": {
+        "name": "PV2 vermogen"
+      },
+      "pv3_voltage": {
+        "name": "PV3 spanning"
+      },
+      "pv3_current": {
+        "name": "PV3 stroom"
+      },
+      "pv3_power": {
+        "name": "PV3 vermogen"
+      },
+      "bus_voltage": {
+        "name": "BUS spanning"
+      },
+      "inverter_temperature": {
+        "name": "Temperatuur omvormer"
+      },
+      "gfci": {
+        "name": "GFCI"
+      },
+      "active_power": {
+        "name": "Actief vermogen omvormer"
+      },
+      "reactive_power": {
+        "name": "Reactief vermogen omvormer"
+      },
+      "power_factor": {
+        "name": "Totale power factor omvormer"
+      },
+      "l1_voltage": {
+        "name": "L1 spanning"
+      },
+      "l1_current": {
+        "name": "L1 stroom"
+      },
+      "l1_frequency": {
+        "name": "L1 frequentie"
+      },
+      "l1_dc_component": {
+        "name": "L1 DC component"
+      },
+      "l1_power": {
+        "name": "L1 vermogen"
+      },
+      "l1_power_factor": {
+        "name": "L1 power factor"
+      },
+      "l2_voltage": {
+        "name": "L2 spanning"
+      },
+      "l2_current": {
+        "name": "L2 stroom"
+      },
+      "l2_frequency": {
+        "name": "L2 frequentie"
+      },
+      "l2_dc_component": {
+        "name": "L2 DC component"
+      },
+      "l2_power": {
+        "name": "L2 vermogen"
+      },
+      "l2_power_factor": {
+        "name": "L2 power factor"
+      },
+      "l3_voltage": {
+        "name": "L3 spanning"
+      },
+      "l3_current": {
+        "name": "L3 stroom"
+      },
+      "l3_frequency": {
+        "name": "L3 frequentie"
+      },
+      "l3_dc_component": {
+        "name": "L3 DC component"
+      },
+      "l3_power": {
+        "name": "L3 vermogen"
+      },
+      "l3_power_factor": {
+        "name": "L3 power factor"
+      },
+      "pv1_iso": {
+        "name": "PV1+_ISO"
+      },
+      "pv2_iso": {
+        "name": "PV2+_ISO"
+      },
+      "pv3_iso": {
+        "name": "PV3+_ISO"
+      },
+      "pv_iso": {
+        "name": "PV__ISO"
+      },
+      "error_count": {
+        "name": "Aantal fouten"
+      }
+    }
   }
 }
