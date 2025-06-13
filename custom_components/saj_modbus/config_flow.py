@@ -88,19 +88,21 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
         """Handle options flow."""
-        return SAJModbusOptionsFlowHandler()
+        return SAJModbusOptionsFlowHandler(config_entry)
 
 class SAJModbusOptionsFlowHandler(OptionsFlow):
     """SAJ Modbus config flow options handler."""
+
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
-            return self.async_create_entry(
-                title=self.config_entry.data.get(CONF_NAME), data=user_input
-            )
+            return self.async_create_entry(title="", data=user_input)
 
         return self.async_show_form(
             step_id="init",
