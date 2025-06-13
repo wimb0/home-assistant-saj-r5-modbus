@@ -42,5 +42,191 @@
         }
       }
     }
+  },
+  "entity": {
+    "number": {
+      "limit_power": {
+        "name": "Limitar Potência"
+      }
+    },
+    "sensor": {
+      "today_energy": {
+        "name": "Produção de energia no dia de hoje"
+      },
+      "month_energy": {
+        "name": "Produção de energia no mês corrente"
+      },
+      "year_energy": {
+        "name": "Produção de energia no ano corrente"
+      },
+      "total_energy": {
+        "name": "Produção total de energia"
+      },
+      "today_hour": {
+        "name": "Horas de funcionamento diárias"
+      },
+      "total_hour": {
+        "name": "Total de horas de funcionamento"
+      },
+      "device_type": {
+        "name": "Tipo de Equipamento"
+      },
+      "sub_type": {
+        "name": "Subtipo"
+      },
+      "comms_protocol_version": {
+        "name": "Versão do Protocolo de Comunicação"
+      },
+      "serial_number": {
+        "name": "Número de Série"
+      },
+      "product_code": {
+        "name": "Código do Produto"
+      },
+      "display_software_version": {
+        "name": "Versão do Software do Display"
+      },
+      "master_ctrl_software_version": {
+        "name": "Versão do Software do Controlador Principal"
+      },
+      "slave_ctrl_software_version": {
+        "name": "Versão do Software do Controlador Escravo"
+      },
+      "display_board_hardware_version": {
+        "name": "Versão do Hardware da Placa do Display"
+      },
+      "control_board_hardware_version": {
+        "name": "Versão do Hardware da Placa de Controle"
+      },
+      "power_board_hardware_version": {
+        "name": "Versão do Hardware da Placa de Potência"
+      },
+      "inverter_status": {
+        "name": "Estado do inversor"
+      },
+      "inverter_working_mode": {
+        "name": "Modo de funcionamento do inversor"
+      },
+      "inverter_error_message": {
+        "name": "Mensagem de erro do inversor"
+      },
+      "inverter_date_and_time": {
+        "name": "Data e hora do inversor"
+      },
+      "pv1_voltage": {
+        "name": "Tensão PV1"
+      },
+      "pv1_current": {
+        "name": "Corrente total PV1"
+      },
+      "pv1_power": {
+        "name": "Potência PV1"
+      },
+      "pv2_voltage": {
+        "name": "Tensão PV2"
+      },
+      "pv2_current": {
+        "name": "Corrente total PV2"
+      },
+      "pv2_power": {
+        "name": "Potência PV2"
+      },
+      "pv3_voltage": {
+        "name": "Tensão PV3"
+      },
+      "pv3_current": {
+        "name": "Corrente total PV3"
+      },
+      "pv3_power": {
+        "name": "Potência PV3"
+      },
+      "bus_voltage": {
+        "name": "Tensão BUS"
+      },
+      "inverter_temperature": {
+        "name": "Temperatura do inversor"
+      },
+      "gfci": {
+        "name": "GFCI"
+      },
+      "active_power": {
+        "name": "Potência ativa da saída total do inversor"
+      },
+      "reactive_power": {
+        "name": "Potência reativa da saída total do inversor"
+      },
+      "power_factor": {
+        "name": "Fator de potência total do inversor"
+      },
+      "l1_voltage": {
+        "name": "Tensão L1"
+      },
+      "l1_current": {
+        "name": "Corrente L1"
+      },
+      "l1_frequency": {
+        "name": "Frequência L1"
+      },
+      "l1_dc_component": {
+        "name": "Componente DC L1"
+      },
+      "l1_power": {
+        "name": "Potência L1"
+      },
+      "l1_power_factor": {
+        "name": "Fator de potência L1"
+      },
+      "l2_voltage": {
+        "name": "Tensão L2"
+      },
+      "l2_current": {
+        "name": "Corrente L2"
+      },
+      "l2_frequency": {
+        "name": "Frequência L2"
+      },
+      "l2_dc_component": {
+        "name": "Componente DC L2"
+      },
+      "l2_power": {
+        "name": "Potência L2"
+      },
+      "l2_power_factor": {
+        "name": "Fator de potência L2"
+      },
+      "l3_voltage": {
+        "name": "Tensão L3"
+      },
+      "l3_current": {
+        "name": "Corrente L3"
+      },
+      "l3_frequency": {
+        "name": "Frequência L3"
+      },
+      "l3_dc_component": {
+        "name": "Componente DC L3"
+      },
+      "l3_power": {
+        "name": "Potência L3"
+      },
+      "l3_power_factor": {
+        "name": "Fator de potência L3"
+      },
+      "pv1_iso": {
+        "name": "PV1+_ISO"
+      },
+      "pv2_iso": {
+        "name": "PV2+_ISO"
+      },
+      "pv3_iso": {
+        "name": "PV3+_ISO"
+      },
+      "pv_iso": {
+        "name": "PV__ISO"
+      },
+      "error_count": {
+        "name": "Contagem de erros"
+      }
+    }
   }
 }
