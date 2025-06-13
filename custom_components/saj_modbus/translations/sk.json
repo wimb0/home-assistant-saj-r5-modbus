@@ -42,5 +42,191 @@
         }
       }
     }
+  },
+  "entity": {
+    "number": {
+      "limit_power": {
+        "name": "Obmedzenie výkonu"
+      }
+    },
+    "sensor": {
+      "today_energy": {
+        "name": "Denná výroba energie"
+      },
+      "month_energy": {
+        "name": "Mesačná výroba energie"
+      },
+      "year_energy": {
+        "name": "Ročná výroba energie"
+      },
+      "total_energy": {
+        "name": "Celková výroba energie"
+      },
+      "today_hour": {
+        "name": "Denné prevádzkové hodiny"
+      },
+      "total_hour": {
+        "name": "Celkové prevádzkové hodiny"
+      },
+      "device_type": {
+        "name": "Typ zariadenia"
+      },
+      "sub_type": {
+        "name": "Podtyp"
+      },
+      "comms_protocol_version": {
+        "name": "Verzia komunikačného protokolu"
+      },
+      "serial_number": {
+        "name": "Sériové číslo"
+      },
+      "product_code": {
+        "name": "Kód produktu"
+      },
+      "display_software_version": {
+        "name": "Verzia softvéru displeja"
+      },
+      "master_ctrl_software_version": {
+        "name": "Verzia softvéru hlavného ovládača"
+      },
+      "slave_ctrl_software_version": {
+        "name": "Verzia softvéru podradeného ovládača"
+      },
+      "display_board_hardware_version": {
+        "name": "Verzia hardvéru dosky displeja"
+      },
+      "control_board_hardware_version": {
+        "name": "Verzia hardvéru riadiacej dosky"
+      },
+      "power_board_hardware_version": {
+        "name": "Verzia hardvéru napájacej dosky"
+      },
+      "inverter_status": {
+        "name": "Stav meniča"
+      },
+      "inverter_working_mode": {
+        "name": "Pracovný režim meniča"
+      },
+      "inverter_error_message": {
+        "name": "Chybové hlásenie meniča"
+      },
+      "inverter_date_and_time": {
+        "name": "Dátum a čas meniča"
+      },
+      "pv1_voltage": {
+        "name": "Napätie PV1"
+      },
+      "pv1_current": {
+        "name": "Celkový prúd PV1"
+      },
+      "pv1_power": {
+        "name": "Výkon PV1"
+      },
+      "pv2_voltage": {
+        "name": "Napätie PV2"
+      },
+      "pv2_current": {
+        "name": "Celkový prúd PV2"
+      },
+      "pv2_power": {
+        "name": "Výkon PV2"
+      },
+      "pv3_voltage": {
+        "name": "Napätie PV3"
+      },
+      "pv3_current": {
+        "name": "Celkový prúd PV3"
+      },
+      "pv3_power": {
+        "name": "Výkon PV3"
+      },
+      "bus_voltage": {
+        "name": "Napätie zbernice BUS"
+      },
+      "inverter_temperature": {
+        "name": "Teplota meniča"
+      },
+      "gfci": {
+        "name": "GFCI"
+      },
+      "active_power": {
+        "name": "Aktívny výkon celkového výstupu meniča"
+      },
+      "reactive_power": {
+        "name": "Jalový výkon celkového výstupu meniča"
+      },
+      "power_factor": {
+        "name": "Celkový účinník meniča"
+      },
+      "l1_voltage": {
+        "name": "Napätie L1"
+      },
+      "l1_current": {
+        "name": "Prúd L1"
+      },
+      "l1_frequency": {
+        "name": "Frekvencia L1"
+      },
+      "l1_dc_component": {
+        "name": "DC zložka L1"
+      },
+      "l1_power": {
+        "name": "Výkon L1"
+      },
+      "l1_power_factor": {
+        "name": "Účinník L1"
+      },
+      "l2_voltage": {
+        "name": "Napätie L2"
+      },
+      "l2_current": {
+        "name": "Prúd L2"
+      },
+      "l2_frequency": {
+        "name": "Frekvencia L2"
+      },
+      "l2_dc_component": {
+        "name": "DC zložka L2"
+      },
+      "l2_power": {
+        "name": "Výkon L2"
+      },
+      "l2_power_factor": {
+        "name": "Účinník L2"
+      },
+      "l3_voltage": {
+        "name": "Napätie L3"
+      },
+      "l3_current": {
+        "name": "Prúd L3"
+      },
+      "l3_frequency": {
+        "name": "Frekvencia L3"
+      },
+      "l3_dc_component": {
+        "name": "DC zložka L3"
+      },
+      "l3_power": {
+        "name": "Výkon L3"
+      },
+      "l3_power_factor": {
+        "name": "Účinník L3"
+      },
+      "pv1_iso": {
+        "name": "PV1+_ISO"
+      },
+      "pv2_iso": {
+        "name": "PV2+_ISO"
+      },
+      "pv3_iso": {
+        "name": "PV3+_ISO"
+      },
+      "pv_iso": {
+        "name": "PV__ISO"
+      },
+      "error_count": {
+        "name": "Počet chýb"
+      }
+    }
   }
 }
