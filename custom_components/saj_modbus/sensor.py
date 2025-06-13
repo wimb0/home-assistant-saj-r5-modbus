@@ -6,6 +6,9 @@ from homeassistant.components.sensor import SensorEntity
 import logging
 
 from homeassistant.const import CONF_NAME
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.config_entries import ConfigEntry
 
 from .const import (
     ATTR_MANUFACTURER,
@@ -20,16 +23,16 @@ from .hub import SAJModbusHub
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
     """Set up entry for hub."""
     hub_name = entry.data[CONF_NAME]
     hub = hass.data[DOMAIN][hub_name]["hub"]
 
-    device_info = {
-        "identifiers": {(DOMAIN, hub_name)},
-        "name": hub_name,
-        "manufacturer": ATTR_MANUFACTURER,
-    }
+    device_info = DeviceInfo(
+        identifiers={(DOMAIN, hub_name)},
+        name=hub_name,
+        manufacturer=ATTR_MANUFACTURER,
+    )
 
     entities = []
     for sensor_description in SENSOR_TYPES.values():
@@ -56,29 +59,21 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class SajSensor(CoordinatorEntity, SensorEntity):
     """Representation of an SAJ Modbus sensor."""
 
+    _attr_has_entity_name = True
+    entity_description: SajModbusSensorEntityDescription
+
     def __init__(
         self,
         platform_name: str,
         hub: SAJModbusHub,
-        device_info,
+        device_info: DeviceInfo,
         description: SajModbusSensorEntityDescription,
     ):
         """Initialize the sensor."""
-        self._platform_name = platform_name
         self._attr_device_info = device_info
-        self.entity_description: SajModbusSensorEntityDescription = description
-
+        self.entity_description = description
+        self._attr_unique_id = f"{platform_name}_{self.entity_description.key}"
         super().__init__(coordinator=hub)
-
-    @property
-    def name(self):
-        """Return the name."""
-        return f"{self._platform_name} {self.entity_description.name}"
-
-    @property
-    def unique_id(self) -> str | None:
-        """Return unique ID fro sensor."""
-        return f"{self._platform_name}_{self.entity_description.key}"
 
     @property
     def native_value(self):
