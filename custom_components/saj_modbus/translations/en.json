@@ -42,5 +42,191 @@
         }
       }
     }
+  },
+  "entity": {
+    "number": {
+      "limit_power": {
+        "name": "Limit Power"
+      }
+    },
+    "sensor": {
+      "today_energy": {
+        "name": "Power generation on current day"
+      },
+      "month_energy": {
+        "name": "Power generation in current month"
+      },
+      "year_energy": {
+        "name": "Power generation in current year"
+      },
+      "total_energy": {
+        "name": "Total power generation"
+      },
+      "today_hour": {
+        "name": "Daily working hours"
+      },
+      "total_hour": {
+        "name": "Total working hours"
+      },
+      "device_type": {
+        "name": "Device Type"
+      },
+      "sub_type": {
+        "name": "Sub Type"
+      },
+      "comms_protocol_version": {
+        "name": "Comms Protocol Version"
+      },
+      "serial_number": {
+        "name": "Serial Number"
+      },
+      "product_code": {
+        "name": "Product Code"
+      },
+      "display_software_version": {
+        "name": "Display Software Version"
+      },
+      "master_ctrl_software_version": {
+        "name": "Master Ctrl Software Version"
+      },
+      "slave_ctrl_software_version": {
+        "name": "Slave Ctrl Software Version"
+      },
+      "display_board_hardware_version": {
+        "name": "Display Board Hardware Version"
+      },
+      "control_board_hardware_version": {
+        "name": "Control Board Hardware Version"
+      },
+      "power_board_hardware_version": {
+        "name": "Power Board Hardware Version"
+      },
+      "inverter_status": {
+        "name": "Inverter status"
+      },
+      "inverter_working_mode": {
+        "name": "Inverter working mode"
+      },
+      "inverter_error_message": {
+        "name": "Inverter error message"
+      },
+      "inverter_date_and_time": {
+        "name": "Inverter date and time"
+      },
+      "pv1_voltage": {
+        "name": "PV1 voltage"
+      },
+      "pv1_current": {
+        "name": "PV1 total current"
+      },
+      "pv1_power": {
+        "name": "PV1 power"
+      },
+      "pv2_voltage": {
+        "name": "PV2 voltage"
+      },
+      "pv2_current": {
+        "name": "PV2 total current"
+      },
+      "pv2_power": {
+        "name": "PV2 power"
+      },
+      "pv3_voltage": {
+        "name": "PV3 voltage"
+      },
+      "pv3_current": {
+        "name": "PV3 total current"
+      },
+      "pv3_power": {
+        "name": "PV3 power"
+      },
+      "bus_voltage": {
+        "name": "BUS voltage"
+      },
+      "inverter_temperature": {
+        "name": "Inverter temperature"
+      },
+      "gfci": {
+        "name": "GFCI"
+      },
+      "active_power": {
+        "name": "Active power of inverter total output"
+      },
+      "reactive_power": {
+        "name": "Reactive power of inverter total output"
+      },
+      "power_factor": {
+        "name": "Total power factor of inverter"
+      },
+      "l1_voltage": {
+        "name": "L1 voltage"
+      },
+      "l1_current": {
+        "name": "L1 current"
+      },
+      "l1_frequency": {
+        "name": "L1 frequency"
+      },
+      "l1_dc_component": {
+        "name": "L1 DC component"
+      },
+      "l1_power": {
+        "name": "L1 power"
+      },
+      "l1_power_factor": {
+        "name": "L1 power factor"
+      },
+      "l2_voltage": {
+        "name": "L2 voltage"
+      },
+      "l2_current": {
+        "name": "L2 current"
+      },
+      "l2_frequency": {
+        "name": "L2 frequency"
+      },
+      "l2_dc_component": {
+        "name": "L2 DC component"
+      },
+      "l2_power": {
+        "name": "L2 power"
+      },
+      "l2_power_factor": {
+        "name": "L2 power factor"
+      },
+      "l3_voltage": {
+        "name": "L3 voltage"
+      },
+      "l3_current": {
+        "name": "L3 current"
+      },
+      "l3_frequency": {
+        "name": "L3 frequency"
+      },
+      "l3_dc_component": {
+        "name": "L3 DC component"
+      },
+      "l3_power": {
+        "name": "L3 power"
+      },
+      "l3_power_factor": {
+        "name": "L3 power factor"
+      },
+      "pv1_iso": {
+        "name": "PV1+_ISO"
+      },
+      "pv2_iso": {
+        "name": "PV2+_ISO"
+      },
+      "pv3_iso": {
+        "name": "PV3+_ISO"
+      },
+      "pv_iso": {
+        "name": "PV__ISO"
+      },
+      "error_count": {
+        "name": "Error count"
+      }
+    }
   }
 }
