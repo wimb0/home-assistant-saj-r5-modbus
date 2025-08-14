@@ -92,7 +92,7 @@ class SAJModbusOptionsFlowHandler(OptionsFlow):
     """SAJ Modbus config flow options handler."""
 
     def __init__(self, config_entry: ConfigEntry):
-         """Init options flow."""
+        """Init options flow."""
         self.config_entry = config_entry
 
     async def async_step_init(
