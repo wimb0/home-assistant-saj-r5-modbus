@@ -32,11 +32,10 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         scan_interval: Number,
     ):
         """Initialize the Modbus hub."""
-        self.coordinator = DataUpdateCoordinator(
+        super().__init__(
             hass,
             _LOGGER,
-            name=f"SAJModbusHub_{name}",
-            update_method=self.async_update_data,
+            name=name,
             update_interval=timedelta(seconds=scan_interval),
         )
 
@@ -45,10 +44,6 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
 
         self.inverter_data: dict = {}
         self.data: dict = {}
-
-    async def async_first_refresh(self):
-        """Perform an initial data refresh and wait for its result."""
-        await self.coordinator.async_config_entry_first_refresh()
 
     @callback
     def async_remove_listener(self, update_callback: CALLBACK_TYPE) -> None:
@@ -100,8 +95,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
 
         return(date_time_obj)
 
-    async def async_update_data(self):
-        """Update realtime data."""
+    async def _async_update_data(self) -> dict:
         realtime_data = {}
         try:
             """Inverter info is only fetched once"""
