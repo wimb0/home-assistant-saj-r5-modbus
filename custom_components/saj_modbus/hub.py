@@ -101,7 +101,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         return(date_time_obj)
 
     async def async_update_data(self):
-        """Update realtime data"""
+        """Update realtime data."""
         realtime_data = {}
         try:
             """Inverter info is only fetched once"""
