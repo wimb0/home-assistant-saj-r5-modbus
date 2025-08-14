@@ -19,8 +19,13 @@ from homeassistant.const import (
     UnitOfTime,
 )
 
+from pymodbus.client import AsyncModbusTcpClient
 
-DOMAIN = "saj_modbus"
+# Type aliases for Modbus client and lock
+ModbusClient: TypeAlias = AsyncModbusTcpClient
+Lock: TypeAlias = asyncio.Lock
+
+DOMAIN = "saj_r5_modbus"
 DEFAULT_NAME = "SAJ"
 DEFAULT_SCAN_INTERVAL = 60
 DEFAULT_PORT = 502
