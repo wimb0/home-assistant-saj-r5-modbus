@@ -24,6 +24,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
     """Thread safe wrapper class for pymodbus."""
 
     def __init__(
+        """Init thread safe wrapper class for pymodbus."""
         self,
         hass: HomeAssistant,
         name: str,
@@ -45,11 +46,11 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
 
         self.inverter_data: dict = {}
         self.data: dict = {}
-        
+
     async def async_first_refresh(self):
         """Perform an initial data refresh and wait for its result."""
         await self.coordinator.async_config_entry_first_refresh()
-        
+
     @callback
     def async_remove_listener(self, update_callback: CALLBACK_TYPE) -> None:
         """Remove data update listener."""
@@ -101,6 +102,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         return(date_time_obj)
 
     async def async_update_data(self):
+        """Update realtime data"""
         realtime_data = {}
         try:
             """Inverter info is only fetched once"""
