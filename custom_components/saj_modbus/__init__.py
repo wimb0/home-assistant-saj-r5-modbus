@@ -37,14 +37,13 @@ CONFIG_SCHEMA = vol.Schema(
 
 PLATFORMS = ["sensor", "number"]
 
-
 async def async_setup(hass, config):
     """Set up the SAJ modbus component."""
     hass.data[DOMAIN] = {}
     return True
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
-    """Set up a SAJ mobus."""
+    """Set up a SAJ modbus entry."""
     hass.data.setdefault(DOMAIN, {})
 
     host = entry.data.get(CONF_HOST)
@@ -53,11 +52,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     scan_interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
 
     _LOGGER.debug("Setup %s.%s", DOMAIN, name)
-
     _LOGGER.debug("host is %s, port is %s and scan_interval %s seconds", host, port, scan_interval)
 
     hub = SAJModbusHub(hass, name, host, port, scan_interval)
-    await hub.async_config_entry_first_refresh()
+    await hub.async_first_refresh()
 
     """Register the hub."""
     hass.data[DOMAIN][name] = {"hub": hub}
@@ -68,7 +66,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     async_setup_services(hass)
 
     return True
-
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Unload SAJ modbus entry."""
