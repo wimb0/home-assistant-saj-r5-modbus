@@ -24,7 +24,6 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
     """Thread safe wrapper class for pymodbus."""
 
     def __init__(
-        """Init thread safe wrapper class for pymodbus."""
         self,
         hass: HomeAssistant,
         name: str,
@@ -32,7 +31,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict]):
         port: Number,
         scan_interval: Number,
     ):
-        # DataUpdateCoordinator handles periodic data updates for Home Assistant.
+        """Initialize the Modbus hub."""
         self.coordinator = DataUpdateCoordinator(
             hass,
             _LOGGER,
