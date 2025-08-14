@@ -72,7 +72,7 @@ class SajNumber(CoordinatorEntity, NumberEntity):
     def unique_id(self) -> str | None:
         """Return unique ID fro sensor."""
         return f"{self._platform_name}_{self.entity_description.key}"
-        
+
     @property
     def native_value(self) -> float | None:
         """Return the state of the number entity."""
