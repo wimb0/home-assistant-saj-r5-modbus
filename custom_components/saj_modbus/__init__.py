@@ -1,110 +1,76 @@
 """The SAJ Modbus Integration."""
-
-import asyncio
 import logging
-
-import homeassistant.helpers.config_validation as cv
-import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry as er
+from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL
 
-from .const import (
-    DEFAULT_NAME,
-    DEFAULT_SCAN_INTERVAL,
-    DOMAIN,
-)
 from .hub import SAJModbusHub
-from .services import async_setup_services
+from .const import DOMAIN, ATTR_MANUFACTURER, DEFAULT_SCAN_INTERVAL, DEFAULT_PORT
+from homeassistant.helpers import config_validation as cv
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 _LOGGER = logging.getLogger(__name__)
 
-SAJ_MODBUS_SCHEMA = vol.Schema(
-    {
-        vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
-        vol.Required(CONF_HOST): cv.string,
-        vol.Required(CONF_PORT): cv.string,
-        vol.Optional(
-            CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL
-        ): cv.positive_int,
-    }
-)
+PLATFORMS = ["sensor", "switch", "number", "text"]
 
-CONFIG_SCHEMA = vol.Schema(
-    {DOMAIN: vol.Schema({cv.slug: SAJ_MODBUS_SCHEMA})}, extra=vol.ALLOW_EXTRA
-)
 
-PLATFORMS = ["sensor", "number"]
-
-async def async_setup(hass, config):
-    """Set up the SAJ modbus component."""
-    hass.data[DOMAIN] = {}
-    return True
-
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
-    """Set up a SAJ modbus entry."""
+async def async_setup(hass: HomeAssistant, config: dict) -> bool:
+    """Set up the SAJ Modbus component."""
     hass.data.setdefault(DOMAIN, {})
-
-    host = entry.data.get(CONF_HOST)
-    name = entry.data.get(CONF_NAME)
-    port = entry.data.get(CONF_PORT)
-    scan_interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
-
-    _LOGGER.debug("Setup %s.%s", DOMAIN, name)
-    _LOGGER.debug("host is %s, port is %s and scan_interval %s seconds", host, port, scan_interval)
-
-    hub = SAJModbusHub(hass, name, host, port, scan_interval)
-    await hub.async_first_refresh()
-
-    """Register the hub."""
-    hass.data[DOMAIN][name] = {"hub": hub}
-
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    entry.async_on_unload(entry.add_update_listener(async_reload_entry))
-
-    async_setup_services(hass)
-
     return True
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
-    """Unload SAJ modbus entry."""
-
-    unload_ok = all(
-        await asyncio.gather(
-            *[
-                hass.config_entries.async_forward_entry_unload(entry, component)
-                for component in PLATFORMS
-            ]
-        )
-    )
-    if not unload_ok:
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Set up a SAJ Modbus entry."""
+    hub = await _create_hub(hass, entry)
+    
+    if not hub:
         return False
 
-    hass.data[DOMAIN].pop(entry.data["name"])
+    hass.data[DOMAIN][entry.entry_id] = {
+        "hub": hub,
+        "device_info": _create_device_info(entry)
+    }
+
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    entry.async_on_unload(entry.add_update_listener(async_update_options))
     return True
 
-async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Reload config entry."""
-    await async_unload_entry(hass, entry)
-    await async_setup_entry(hass, entry)
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload a config entry."""
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unload_ok:
+        hass.data[DOMAIN].pop(entry.entry_id)
+    return unload_ok
 
-async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
-    """Migrate old entry."""
-    _LOGGER.debug("Migrating from version %s", config_entry.version)
+async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Update options."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
-    if config_entry.version == 1:
-        hass.config_entries.async_update_entry(config_entry, version=2)
+def _get_config_value(entry: ConfigEntry, key: str, default=None):
+    """Get config value with fallback from options to data."""
+    return entry.options.get(key, entry.data.get(key, default))
 
-        entity_registry = er.async_get(hass)
-        existing_entries = er.async_entries_for_config_entry(
-            entity_registry, config_entry.entry_id
+async def _create_hub(hass: HomeAssistant, entry: ConfigEntry) -> SAJModbusHub:
+    """Helper function to create the SAJ Modbus hub."""
+    try:
+        hub = SAJModbusHub(
+            hass,
+            entry.data[CONF_NAME],  # Name is always in data, not in options
+            _get_config_value(entry, CONF_HOST),
+            _get_config_value(entry, CONF_PORT, DEFAULT_PORT),
+            _get_config_value(entry, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
         )
+        await hub.async_config_entry_first_refresh()
+        return hub
+    except Exception as e:
+        _LOGGER.error(f"Failed to set up SAJ Modbus hub: {e}")
+        return None
 
-        for entry in list(existing_entries):
-            _LOGGER.debug("Deleting version 1 entity: %s", entry.entity_id)
-            entity_registry.async_remove(entry.entity_id)
-
-    _LOGGER.debug("Migration to version %s successful", config_entry.version)
-
-    return True
+def _create_device_info(entry: ConfigEntry) -> dict:
+    """Create the device info for SAJ Modbus hub."""
+    return {
+        "identifiers": {(DOMAIN, entry.data[CONF_NAME])},
+        "name": entry.data[CONF_NAME],
+        "manufacturer": ATTR_MANUFACTURER
+    }
