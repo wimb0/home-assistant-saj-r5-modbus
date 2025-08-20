@@ -8,8 +8,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 
 from .const import (
+    ATTR_MANUFACTURER,
     DEFAULT_NAME,
     DEFAULT_SCAN_INTERVAL,
+    DOMAIN,
 )
 from .hub import SAJModbusHub
 from .services import async_setup_services
@@ -27,13 +29,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     scan_interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
 
     hub = SAJModbusHub(hass, name, host, port, scan_interval)
+    
+    device_info = {
+        "identifiers": {(DOMAIN, name)},
+        "name": name,
+        "manufacturer": ATTR_MANUFACTURER,
+    }
+
+    entry.runtime_data = {"hub": hub, "device_info": device_info}
 
     try:
         await hub.async_config_entry_first_refresh()
     except ConfigEntryNotReady:
         raise
-
-    entry.runtime_data = hub
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
@@ -45,7 +53,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    if hub := entry.runtime_data:
+    # The hub is now nested in the runtime_data dict
+    if hub := entry.runtime_data.get("hub"):
         hub.close()
 
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
