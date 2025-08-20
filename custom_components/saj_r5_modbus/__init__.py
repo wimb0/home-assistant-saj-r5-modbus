@@ -10,7 +10,6 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from .const import (
     DEFAULT_NAME,
     DEFAULT_SCAN_INTERVAL,
-    DOMAIN,
 )
 from .hub import SAJModbusHub
 from .services import async_setup_services

@@ -29,7 +29,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up sensor entities from a config entry."""
     hub: SAJModbusHub = entry.runtime_data
-    
+
     device_info = {
         "identifiers": {(DOMAIN, entry.data[CONF_NAME])},
         "name": entry.data[CONF_NAME],

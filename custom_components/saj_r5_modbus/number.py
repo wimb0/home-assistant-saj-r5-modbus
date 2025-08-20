@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import logging
-
 from homeassistant.components.number import NumberEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME
@@ -27,7 +25,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up number entities from a config entry."""
     hub: SAJModbusHub = entry.runtime_data
-    
+
     device_info = {
         "identifiers": {(DOMAIN, entry.data[CONF_NAME])},
         "name": entry.data[CONF_NAME],

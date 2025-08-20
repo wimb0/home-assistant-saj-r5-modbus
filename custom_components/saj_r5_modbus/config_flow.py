@@ -72,7 +72,7 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                 return self.async_create_entry(
                     title=data[CONF_NAME], data=data, options=options
                 )
-        
+
         setup_schema = vol.Schema(
             {
                 vol.Optional(CONF_NAME, default=DEFAULT_NAME): str,
@@ -122,7 +122,7 @@ class SAJModbusOptionsFlowHandler(OptionsFlow):
                 self.hass.config_entries.async_update_entry(
                     self.config_entry, data=new_data, options=new_options
                 )
-                
+
                 return self.async_abort(reason="reconfigure_successful")
 
         current_host = self.config_entry.data.get(CONF_HOST)

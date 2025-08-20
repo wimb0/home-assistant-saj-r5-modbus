@@ -1,10 +1,7 @@
 """SAJ Modbus Hub."""
-
-import asyncio
 import logging
 import threading
 from datetime import datetime, timedelta
-from typing import cast
 
 from homeassistant.components.number import DOMAIN as NUMBER_DOMAIN
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
@@ -13,7 +10,6 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from pymodbus.client import ModbusTcpClient
 from pymodbus.exceptions import ConnectionException, ModbusException
 from pymodbus.pdu import ModbusPDU
-from voluptuous.validators import Number
 
 from .const import (
     DEVICE_STATUSSES,
@@ -233,7 +229,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         return messages
 
     def _write_limit_power_sync(self, value: float) -> bool:
-        """(Synchronous) Helper to write the power limit to the inverter."""
+        """Synchronous Helper to write the power limit to the inverter."""
         response = self._write_registers(unit=1, address=0x801F, values=[int(value * 10)])
         if response.isError():
             _LOGGER.error("Failed to set limitpower")
