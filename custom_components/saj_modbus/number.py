@@ -2,20 +2,22 @@
 
 from __future__ import annotations
 
+import logging
+
 from homeassistant.components.number import NumberEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
-    ATTR_MANUFACTURER,
     DOMAIN,
     NUMBER_TYPES,
     SajModbusNumberEntityDescription,
 )
 from .hub import SAJModbusHub
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -24,13 +26,9 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up number entities from a config entry."""
-    hub: SAJModbusHub = entry.runtime_data
 
-    device_info = {
-        "identifiers": {(DOMAIN, entry.data[CONF_NAME])},
-        "name": entry.data[CONF_NAME],
-        "manufacturer": ATTR_MANUFACTURER,
-    }
+    hub: SAJModbusHub = entry.runtime_data["hub"]
+    device_info = entry.runtime_data["device_info"]
 
     entities = [
         SajNumber(
