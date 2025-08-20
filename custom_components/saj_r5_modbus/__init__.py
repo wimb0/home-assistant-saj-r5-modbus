@@ -27,7 +27,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     scan_interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
 
     hub = SAJModbusHub(hass, name, host, port, scan_interval)
-    
+
     try:
         await hub.async_config_entry_first_refresh()
     except ConfigEntryNotReady:
