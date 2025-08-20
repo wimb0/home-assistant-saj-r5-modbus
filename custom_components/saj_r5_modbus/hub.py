@@ -229,7 +229,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         return messages
 
     def _write_limit_power_sync(self, value: float) -> bool:
-        """Helper to write the power limit to the inverter."""
+        """Synchronously Write the power limit to the inverter."""
         response = self._write_registers(unit=1, address=0x801F, values=[int(value * 10)])
         if response.isError():
             _LOGGER.error("Failed to set limitpower")
