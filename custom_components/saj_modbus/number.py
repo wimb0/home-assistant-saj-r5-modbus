@@ -26,8 +26,13 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up number entities from a config entry."""
-    hub: SAJModbusHub = entry.runtime_data["hub"]
-    device_info = entry.runtime_data["device_info"]
+    hub: SAJModbusHub = entry.runtime_data
+    
+    device_info = {
+        "identifiers": {(DOMAIN, entry.data[CONF_NAME])},
+        "name": entry.data[CONF_NAME],
+        "manufacturer": ATTR_MANUFACTURER,
+    }
 
     entities = [
         SajNumber(
