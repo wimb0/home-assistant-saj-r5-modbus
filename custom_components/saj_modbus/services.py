@@ -1,6 +1,5 @@
 """SAJ Modbus services."""
 import logging
-from typing import Any
 
 import voluptuous as vol
 
