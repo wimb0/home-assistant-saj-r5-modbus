@@ -10,7 +10,6 @@ from homeassistant.core import HomeAssistant
 
 from .hub import SAJModbusHub
 
-# Data to redact from diagnostics
 TO_REDACT = {
     CONF_HOST,
     CONF_NAME,
