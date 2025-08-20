@@ -70,4 +70,6 @@ def async_setup_services(hass: HomeAssistant) -> None:
 
 
 @callback
-def async_unload_services(hass
+def async_unload_services(hass: HomeAssistant) -> None:
+    """Unload SAJ Modbus services."""
+    hass.services.async_remove(SAJ_DOMAIN, SERVICE_SET_DATE_TIME)
