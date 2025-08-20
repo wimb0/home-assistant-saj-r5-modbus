@@ -32,10 +32,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     try:
         await hub.async_config_entry_first_refresh()
     except ConfigEntryNotReady:
-        # Dit vangt de UpdateFailed exception van de hub op en zorgt voor een correcte retry
         raise
 
-    # Sla de hub op in runtime_data; dit is de moderne, veilige methode
     entry.runtime_data = hub
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -48,7 +46,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    # De hub is nu direct beschikbaar via entry.runtime_data, wat veel stabieler is.
     if hub := entry.runtime_data:
         hub.close()
 
