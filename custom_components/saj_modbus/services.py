@@ -42,7 +42,6 @@ def async_setup_services(hass: HomeAssistant) -> None:
         if not device_entry:
             raise HomeAssistantError(f"Device not found: {device_id}")
 
-        # Find the config entry associated with this device
         config_entry_id = next(iter(device_entry.config_entries))
         config_entry = hass.config_entries.async_get_entry(config_entry_id)
 
