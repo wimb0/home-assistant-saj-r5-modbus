@@ -14,6 +14,7 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant, callback
+
 from .const import DEFAULT_NAME, DEFAULT_PORT, DEFAULT_SCAN_INTERVAL, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -111,6 +112,7 @@ class SAJModbusOptionsFlowHandler(OptionsFlow):
             if not host_valid(user_input[CONF_HOST]):
                 errors[CONF_HOST] = "invalid_host"
             else:
+                # Maak bijgewerkte data en opties
                 new_data = self.config_entry.data.copy()
                 new_data[CONF_HOST] = user_input[CONF_HOST]
                 new_data[CONF_PORT] = user_input[CONF_PORT]
@@ -118,12 +120,15 @@ class SAJModbusOptionsFlowHandler(OptionsFlow):
                 new_options = self.config_entry.options.copy()
                 new_options[CONF_SCAN_INTERVAL] = user_input[CONF_SCAN_INTERVAL]
 
+                # Werk de entry bij met ZOWEL data als opties
                 self.hass.config_entries.async_update_entry(
                     self.config_entry, data=new_data, options=new_options
                 )
                 
-                return self.async_create_entry(title="", data={})
+                # Sluit de flow af zonder de opties te overschrijven
+                return self.async_abort(reason="reconfigure_successful")
 
+        # Haal de huidige waarden op om in het formulier te tonen
         current_host = self.config_entry.data.get(CONF_HOST)
         current_port = self.config_entry.data.get(CONF_PORT, DEFAULT_PORT)
         current_scan_interval = self.config_entry.options.get(
