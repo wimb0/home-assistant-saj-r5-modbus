@@ -1,22 +1,20 @@
 """Sensor Platform Device for SAJ R5 Inverter Modbus."""
 
 from __future__ import annotations
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.components.sensor import SensorEntity
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_NAME
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
 import logging
 
+from homeassistant.components.sensor import SensorEntity
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
 from .const import (
-    ATTR_MANUFACTURER,
     COUNTER_SENSOR_TYPES,
-    DOMAIN,
     SENSOR_TYPES,
     SajModbusSensorEntityDescription,
 )
-
 from .hub import SAJModbusHub
 
 _LOGGER = logging.getLogger(__name__)
@@ -28,29 +26,15 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up sensor entities from a config entry."""
-    hub: SAJModbusHub = entry.runtime_data
-
-    device_info = {
-        "identifiers": {(DOMAIN, entry.data[CONF_NAME])},
-        "name": entry.data[CONF_NAME],
-        "manufacturer": ATTR_MANUFACTURER,
-    }
+    # Retrieve the hub and device_info from the central runtime_data.
+    hub: SAJModbusHub = entry.runtime_data["hub"]
+    device_info = entry.runtime_data["device_info"]
 
     entities = []
     for sensor_description in SENSOR_TYPES.values():
-        sensor = SajSensor(
-            hub,
-            device_info,
-            sensor_description,
-        )
-        entities.append(sensor)
+        entities.append(SajSensor(hub, device_info, sensor_description))
     for sensor_description in COUNTER_SENSOR_TYPES.values():
-        sensor = SajCounterSensor(
-            hub,
-            device_info,
-            sensor_description,
-        )
-        entities.append(sensor)
+        entities.append(SajCounterSensor(hub, device_info, sensor_description))
 
     async_add_entities(entities)
 
