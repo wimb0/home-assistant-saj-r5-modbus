@@ -21,12 +21,12 @@ jobs:
         shell: "bash"
         run: |
           yq -i -o json '.version="${{ github.event.release.tag_name }}"' \
-            "${{ github.workspace }}/custom_components/saj_r5_modbus/manifest.json"
+            "${{ github.workspace }}/custom_components/saj_modbus/manifest.json"
 
       - name: "ZIP the integration directory"
         shell: "bash"
         run: |
-          cd "${{ github.workspace }}/custom_components/saj_r5_modbus"
+          cd "${{ github.workspace }}/custom_components/saj_modbus"
           zip home-assistant-saj-r5-modbus.zip -r ./
 
       - name: "Upload the ZIP file to the release"
