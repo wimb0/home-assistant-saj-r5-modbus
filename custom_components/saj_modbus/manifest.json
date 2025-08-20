@@ -1,5 +1,5 @@
 {
-  "domain": "saj_r5_modbus",
+  "domain": "saj_modbus",
   "name": "SAJ R5 Inverter Modbus",
   "codeowners": [
     "@wimb0"
