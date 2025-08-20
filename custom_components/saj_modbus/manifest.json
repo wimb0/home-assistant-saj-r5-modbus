@@ -1,5 +1,5 @@
 {
-  "domain": "saj_modbus",
+  "domain": "saj_r5_modbus",
   "name": "SAJ R5 Inverter Modbus",
   "codeowners": [
     "@wimb0"
@@ -12,5 +12,5 @@
   "requirements": [
     "pymodbus>=3.7.4"
   ],
-  "version": "2.4.4"
+  "version": "3.0.0"
 }
