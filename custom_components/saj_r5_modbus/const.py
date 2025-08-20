@@ -20,7 +20,7 @@ from homeassistant.const import (
 )
 
 
-DOMAIN = "saj_modbus"
+DOMAIN = "saj_r5_modbus"
 DEFAULT_NAME = "SAJ"
 DEFAULT_SCAN_INTERVAL = 60
 DEFAULT_PORT = 502

@@ -6,7 +6,7 @@ set_datetime:
       required: true
       selector:
         device:
-          integration: saj_modbus
+          integration: saj_r5_modbus
     datetime:
       required: false
       example: "2025-04-19T12:34:56"
