@@ -27,44 +27,43 @@ SERVICE_SET_DATE_TIME_SCHEMA = vol.All(
 )
 
 
-async def async_set_date_time(service_call: ServiceCall, hass: HomeAssistant) -> None:
-    """Service handler to set the date and time on the inverter."""
-    device_registry = dr.async_get(hass)
-    device_id = service_call.data[ATTR_DEVICE_ID]
-    date_time = service_call.data.get(ATTR_DATETIME)
-
-    device_entry = device_registry.async_get(device_id)
-    if not device_entry:
-        raise HomeAssistantError(f"Device not found: {device_id}")
-
-    # Find the config entry associated with this device
-    config_entry_id = next(iter(device_entry.config_entries))
-    config_entry = hass.config_entries.async_get_entry(config_entry_id)
-
-    if not config_entry or not hasattr(config_entry, "runtime_data"):
-        raise HomeAssistantError(f"Config entry not found for device: {device_id}")
-
-    hub: SAJModbusHub | None = config_entry.runtime_data.get("hub")
-    if not hub:
-        raise HomeAssistantError(f"Hub not found for device: {device_id}")
-
-    try:
-        await hass.async_add_executor_job(hub.set_date_and_time, date_time)
-    except Exception as ex:
-        _LOGGER.error("Error setting date and time on inverter: %s", ex)
-        raise HomeAssistantError(
-            f"Error setting date and time on inverter: {ex}"
-        ) from ex
-
-
 @callback
 def async_setup_services(hass: HomeAssistant) -> None:
     """Set up services for the SAJ Modbus integration."""
-    # Register the service handler directly, which is the modern approach
+
+    async def async_set_date_time(service_call: ServiceCall) -> None:
+        """Service handler to set the date and time on the inverter."""
+        device_registry = dr.async_get(hass)
+        device_id = service_call.data[ATTR_DEVICE_ID]
+        date_time = service_call.data.get(ATTR_DATETIME)
+
+        device_entry = device_registry.async_get(device_id)
+        if not device_entry:
+            raise HomeAssistantError(f"Device not found: {device_id}")
+
+        # Vind de config entry die bij dit apparaat hoort
+        config_entry_id = next(iter(device_entry.config_entries))
+        config_entry = hass.config_entries.async_get_entry(config_entry_id)
+
+        if not config_entry or not hasattr(config_entry, "runtime_data"):
+            raise HomeAssistantError(f"Config entry not found for device: {device_id}")
+
+        hub: SAJModbusHub | None = config_entry.runtime_data.get("hub")
+        if not hub:
+            raise HomeAssistantError(f"Hub not found for device: {device_id}")
+
+        try:
+            await hass.async_add_executor_job(hub.set_date_and_time, date_time)
+        except Exception as ex:
+            _LOGGER.error("Error setting date and time on inverter: %s", ex)
+            raise HomeAssistantError(
+                f"Error setting date and time on inverter: {ex}"
+            ) from ex
+
     hass.services.async_register(
         SAJ_DOMAIN,
         SERVICE_SET_DATE_TIME,
-        lambda service_call: async_set_date_time(service_call, hass),
+        async_set_date_time,
         schema=SERVICE_SET_DATE_TIME_SCHEMA,
     )
 
