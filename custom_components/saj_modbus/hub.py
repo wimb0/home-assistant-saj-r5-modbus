@@ -99,7 +99,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
             return value - 0x10000
         return value
 
-    def parse_datetime(self, registers: list[int]) -> str:
+    def parse_datetime(self, registers: list[int]) -> datetime:
         """Extract date and time values from registers."""
         year = registers[0]
         month = registers[1] >> 8
@@ -110,7 +110,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
 
         timevalues = f"{year}{month:02}{day:02}{hour:02}{minute:02}{second:02}"
         date_time_obj = datetime.strptime(timevalues, "%Y%m%d%H%M%S").astimezone()
-        return date_time_obj.isoformat()
+        return date_time_obj
 
     def read_modbus_inverter_data(self) -> dict[str, int | float | str]:
         """Read data about inverter."""
