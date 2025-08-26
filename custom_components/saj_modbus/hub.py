@@ -43,6 +43,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         self._lock = threading.Lock()
         self.inverter_data: dict[str, int | float | str] = {}
         self._power_limit: float = 110.0
+        self._power_on_off: bool = False
 
     async def _async_setup(self) -> None:
         """Fetch data that is needed only once."""
@@ -59,8 +60,12 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
             realtime_data = await self.hass.async_add_executor_job(
                 self.read_modbus_r5_realtime_data
             )
-            combined_data = {**self.inverter_data, **realtime_data}
+            power_state = await self.hass.async_add_executor_job(
+                self.read_modbus_inverter_power_state
+            )
+            combined_data = {**self.inverter_data, **realtime_data, **power_state}
             combined_data["limitpower"] = self._power_limit
+            combined_data["poweronoff"] = self._power_on_off
             return combined_data
         except (ConnectionException, ModbusException) as ex:
             raise UpdateFailed(f"Failed to fetch realtime data: {ex}") from ex
@@ -216,6 +221,15 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         data["datetime"] = self.parse_datetime(registers[55:60])
         return data
 
+    def read_modbus_inverter_power_state(self) -> dict[str, bool]:
+        """Read the power state from the inverter."""
+        power_state_data = self._read_holding_registers(unit=1, address=0x1037, count=1)
+        if power_state_data.isError():
+            _LOGGER.debug("Error reading power state data")
+            return {}
+        self._power_on_off = power_state_data.registers[0] == 1
+        return {"poweronoff": self._power_on_off}
+
     def translate_fault_code_to_messages(
         self, fault_code: int, fault_messages: list[tuple[int, str]]
     ) -> list[str]:
@@ -235,6 +249,28 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
             _LOGGER.error("Failed to set limitpower")
             return False
         return True
+
+    def _write_power_on_off_sync(self, value: bool) -> bool:
+        """Write the power on/off command to the inverter."""
+        # According to the documentation, address 0x1037 is used for remote power on/off
+        # 0: power off, 1: power on
+        register_value = 1 if value else 0
+        response = self._write_registers(unit=1, address=0x1037, values=[register_value])
+        if response.isError():
+            _LOGGER.error("Failed to set power on/off")
+            return False
+        return True
+
+    async def async_set_power_on_off(self, value: bool) -> bool:
+        """Set the power on/off on the inverter."""
+        if await self.hass.async_add_executor_job(self._write_power_on_off_sync, value):
+            self._power_on_off = value
+            if self.data:
+                new_data = self.data.copy()
+                new_data["poweronoff"] = value
+                self.async_set_updated_data(new_data)
+            return True
+        return False
 
     async def async_set_limit_power(self, value: float) -> bool:
         """Set the power limit on the inverter."""
