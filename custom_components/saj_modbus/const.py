@@ -54,6 +54,7 @@ SWITCH_TYPES: dict[str, list[SajModbusSwitchEntityDescription]] = {
         name="Power On Off",
         key="poweronoff",
         icon="mdi:power",
+        entity_registry_enabled_default=False,
     )
 }
 
