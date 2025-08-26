@@ -66,8 +66,10 @@ class SajSwitch(CoordinatorEntity[SAJModbusHub], SwitchEntity):
 
     async def async_turn_on(self, **kwargs) -> None:
         """Turn the switch on."""
-        await self.coordinator.async_set_power_on_off(True)
+        if not await self.coordinator.async_set_power_on_off(True):
+            await self.coordinator.async_request_refresh()
 
     async def async_turn_off(self, **kwargs) -> None:
         """Turn the switch off."""
-        await self.coordinator.async_set_power_on_off(False)
+        if not await self.coordinator.async_set_power_on_off(False):
+            await self.coordinator.async_request_refresh()
