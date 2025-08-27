@@ -9,8 +9,9 @@
 
 # Home Assistant SAJ R5 Series Inverter Modbus Integration
 
-This is a custom component for Home Assistant to read data from SAJ R5, Sununo, and Suntrio inverters through Modbus TCP.
-This integration allows you to monitor your solar inverter's performance directly within Home Assistant.
+This is an unofficial integration for SAJ R5 Series inverters.
+It enables Home Assistant to read data from SAJ R5, Sununo, and Suntrio inverters through Modbus TCP.
+This integration allows you to monitor your solar inverter's performance directly without any cloud connected dongle.
 
 This integration is also compatible with Zonneplan ONE inverters, which are rebranded SAJ R5 inverters.
 
@@ -20,11 +21,11 @@ Implements SAJ Inverter registers from [`saj-plus-series-inverter-modbus-protoca
 
 ## Features ✨
 
-* **Easy Installation:** Set up the integration through the Home Assistant UI.
-* **Comprehensive Sensing:** Each Modbus register is exposed as a separate sensor.
+* **Easy Installation:** Set up (and reconfigure) the integration through the Home Assistant UI.
+* **Detailed Sensors:** Each Modbus register is exposed as a separate sensor.
 * **Automatic Scaling:** The integration automatically applies the correct scaling factor to the raw data.
 * **Configurable Polling:** You can set your desired polling interval for data updates.
-* **Data Consistency:** All Modbus registers are read in a single cycle to ensure data consistency across all sensors.
+* **Data Consistency:** All realtime Modbus registers are read in a single cycle to ensure data consistency across all sensors.
 * **Remote Control:** Turn the inverter on or off and limit the power output.
 * **Set Date and Time:** A service is provided to set the date and time on your inverter.
 
@@ -63,12 +64,12 @@ _or_
 3.  **Restart Home Assistant:** After installation, you must restart Home Assistant.
 
 
-
 ## Connecting to the Inverter 🔌
 You will need a Modbus to Wi-Fi or Ethernet adapter to connect your SAJ inverter to your network.
 The following instructions are for the Hi-Flying Elfin-EW11/EW10, but other similar devices should work as well.
 
-### Connection via RS485 Port (EW11A)
+<details>
+<summary>Connection via RS485 Port (EW11A)</summary>
 
 Connect the EW11A to the RS485 port on your SAJ R5 inverter.
 
@@ -93,9 +94,10 @@ Connect the EW11A to the RS485 port on your SAJ R5 inverter.
     * **Stop Bits:** 1
     * **Parity:** None
     * **Protocol:** Modbus
+</details>
 
-
-### Connection via USB Port (EW10)
+<details>
+<summary>Connection via USB Port (EW10)</summary>
 
 Connect the EW10 to the USB port on your SAJ R5 inverter. You will need to create a custom cable from an old USB-A cable.
 
@@ -121,13 +123,70 @@ Connect the EW10 to the USB port on your SAJ R5 inverter. You will need to creat
     * **Parity:** None
     * **Flow Control:** Disable
     * **Protocol:** Modbus
+</details>
 
- ##  Credits
+## Entities 🧩
 
- This integration was inspired by the [`home-assistant-solaredge-modbus`](https://github.com/binsentsu/home-assistant-solaredge-modbus) integration by [@binsentsu](https://github.com/binsentsu).
+This integration will create the following entities:
+
+### Sensors
+
+* **Device Information:** Type, Sub Type, Comms Protocol Version, Serial Number, Product Code, and various hardware/software versions.
+* **Status:** Inverter Status, Inverter Working Mode, and Inverter Error Message.
+* **Real-time Data:** PV voltage, current, and power for each string, bus voltage, inverter temperature, and more.
+* **Grid Information:** L1/L2/L3 voltage, current, frequency, and power.
+* **Energy Production:** Daily, monthly, yearly, and total power generation.
+* **Working Hours:** Daily and total working hours.
+
+### Switches
+
+* **Power On/Off:** A switch to remotely turn the inverter on or off.
+
+### Numbers
+
+* **Limit Power:** A number entity to limit the inverter's power output (in percentage).
+
+### Services
+
+* `saj_modbus.set_datetime` : This service allows you to set the date and time on the inverter. You can call this service from automations or scripts.
+
+
+## Troubleshooting 🐛
+
+If you encounter any issues with the integration, there are two main ways to gather more information to help diagnose the problem.
+
+### Enabling Debug Logging
+
+For detailed logs, you can enable debug logging for this integration by adding the following to your `configuration.yaml` file:
+
+```yaml
+logger:
+  default: info
+  logs:
+    custom_components.saj_modbus: debug
+```
+
+After adding this, restart Home Assistant. The logs can be found in **Settings > System > Logs**.
+
+### Downloading Diagnostics
+
+You can download diagnostic data directly from Home Assistant. This data provides information about the inverter and the integration's status.
+
+1.  Navigate to **Settings > Devices & Services**.
+2.  Find the SAJ R5 Inverter Modbus integration and click on the device.
+3.  Click the three-dot menu on the device card and select **Download diagnostics**.
+
+This will download a text file with diagnostic information that you can share when creating a bug report.
+
+
+## Credits 📣
+
+This integration was inspired by the [`home-assistant-solaredge-modbus`](https://github.com/binsentsu/home-assistant-solaredge-modbus) integration by [@binsentsu](https://github.com/binsentsu).
 
 
 _This is a third-party integration and is not officially supported by SAJ Electric._
+
+
 [![saj_logo](https://github.com/wimb0/home-assistant-saj-r5-modbus/blob/main/images/saj_modbus/logo.png)](https://www.saj-electric.com/)
 
 <!-- Badges -->
