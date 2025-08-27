@@ -7,33 +7,45 @@
 
 <a href="https://buymeacoffee.com/wimbo" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/white_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
 
-## SAJ R5 Inverter Modbus - A Home Assistant custom component for SAJ R5, Sununo and Suntrio inverters
+# Home Assistant SAJ R5 Series Inverter Modbus Integration
 
-Home assistant Custom Component for reading data from SAJ R5, Sununo and Suntrio Inverters through modbus TCP.
+This is a custom component for Home Assistant to read data from SAJ R5, Sununo, and Suntrio inverters through Modbus TCP.
+This integration allows you to monitor your solar inverter's performance directly within Home Assistant.
 
-SAJ R5 Inverters are also sold in The Netherlands as Zonneplan ONE inverters.
+This integration is also compatible with Zonneplan ONE inverters, which are rebranded SAJ R5 inverters.
+
 
 Implements SAJ Inverter registers from [`saj-plus-series-inverter-modbus-protocal.pdf`](https://github.com/wimb0/home-assistant-saj-r5-modbus/blob/main/saj-plus-series-inverter-modbus-protocal.pdf).
 
 
-### Features
+## Features ✨
 
-- Installation through Config Flow UI.
-- Separate sensor per register
-- Auto applies scaling factor
-- Configurable polling interval
-- All modbus registers are read within 1 read cycle for data consistency between sensors.
+* **Easy Installation:** Set up the integration through the Home Assistant UI.
+* **Comprehensive Sensing:** Each Modbus register is exposed as a separate sensor.
+* **Automatic Scaling:** The integration automatically applies the correct scaling factor to the raw data.
+* **Configurable Polling:** You can set your desired polling interval for data updates.
+* **Data Consistency:** All Modbus registers are read in a single cycle to ensure data consistency across all sensors.
+* **Remote Control:** Turn the inverter on or off and limit the power output.
+* **Set Date and Time:** A service is provided to set the date and time on your inverter.
 
 
-### Configuration
-Go to the integrations page in your configuration and click on new integration -> SAJ R5 Modbus
+## Configuration 🛠️
 
-Home Assistant Custom Component for reading data from SAJ R5, Sununo and Suntrio Inverters through modbus over TCP.
-This integration should work with SAJ R5, Sununo and Suntrio inverters.
+Once the integration is installed, you can configure it through the Home Assistant UI.
 
-## Installation
+1.  Go to **Settings > Devices & Services**.
+2.  Click the **+ Add Integration** button.
+3.  Search for "SAJ R5 Modbus" and select it.
+4.  Fill in the required information:
+    * **Name:** A descriptive name for your inverter (e.g., "SAJ Inverter").
+    * **Host:** The IP address of your Modbus to Wi-Fi device.
+    * **Port:** The TCP port for the Modbus connection (default is 502).
+    * **Scan Interval:** The frequency in seconds to poll the inverter for data (default is 60).
 
-SAJ R5 Inverter Modus is available in [HACS][hacs] (Home Assistant Community Store).
+
+## Installation ⚙️
+
+This integration is available in the Home Assistant Community Store [HACS][hacs].
 
 Use this link to directly go to the repository in HACS
 
@@ -41,79 +53,81 @@ Use this link to directly go to the repository in HACS
 
 _or_
 
-1. Install HACS if you don't have it already
-2. Open HACS in Home Assistant
-3. Search for "SAJ R5 Inverter Modus"
-4. Click the download button.
+1.  **Install HACS:** If you don't have HACS installed, follow the [installation instructions](https://hacs.xyz/docs/setup/download).
+2.  **Add Integration:**
+    * Open HACS in Home Assistant.
+    * Go to "Integrations".
+    * Click the three dots in the top right and select "Custom repositories".
+    * Add the repository URL: `https://github.com/wimb0/home-assistant-saj-r5-modbus` and select the "Integration" category.
+    * Search for "SAJ R5 Inverter Modbus" and click "Install".
+3.  **Restart Home Assistant:** After installation, you must restart Home Assistant.
 
 
-## Connection via Modbus TCP to a SAJ R5 Inverter via the RS485 port
-Connect a Modbus to Wifi device to the Modbus port of your SAJ Inverter.
 
-Guide below uses a Hi-Flying Elfin-EW11 (www.hi-flying.com/elfin-ew10-elfin-ew11).
+## Connecting to the Inverter 🔌
+You will need a Modbus to Wi-Fi or Ethernet adapter to connect your SAJ inverter to your network.
+The following instructions are for the Hi-Flying Elfin-EW11/EW10, but other similar devices should work as well.
 
-**Cable Layout for EW11A to SAJ R5 Inverter:**
+### Connection via RS485 Port (EW11A)
 
-Both connectors are RJ45.
-| SAJ RJ45 pin | Function | EW11 RJ45 pin |
-|----------|----------|----------|
-| 2        | GND_W    | 8        |
-| 3        | +7V_W    | 7        |
-| 7        | RS485_A+ | 5        |
-| 8        | RS485_B+ | 6        |
+Connect the EW11A to the RS485 port on your SAJ R5 inverter.
 
-**EW11A settings:**
+**Cable Layout (RJ45 to RJ45):**
 
-**Communication settings:**
-* Configure Tcp Server, choose a port number.
-* Security: Disable
-* Route as Uart
+| SAJ RJ45 Pin | Function | EW11 RJ45 Pin |
+| :---: | :---: | :---: |
+| 2 | GND\_W | 8 |
+| 3 | +7V\_W | 7 |
+| 7 | RS485\_A+ | 5 |
+| 8 | RS485\_B- | 6 |
 
-**Serial port settings:**
-* Baudrate 9600
-* Databit 8
-* Stopbit 1
-* Parity None
-* Cli Disable
-* Protocol Modbus
+**EW11A Settings:**
+
+* **Communication Settings:**
+    * **Protocol:** TCP Server
+    * **Port:** Choose a port number (e.g., 502)
+    * **Security:** Disable
+* **Serial Port Settings:**
+    * **Baud Rate:** 9600
+    * **Data Bits:** 8
+    * **Stop Bits:** 1
+    * **Parity:** None
+    * **Protocol:** Modbus
 
 
-## Connection via Serial TCP to a SAJ R5 Inverter via the USB port
-Connect a Modbus to Wifi device to the USB style port of your SAJ Inverter.
+### Connection via USB Port (EW10)
 
-Tested using a Hi-Flying Elfin-EW10 (www.hi-flying.com/elfin-ew10-elfin-ew11).
+Connect the EW10 to the USB port on your SAJ R5 inverter. You will need to create a custom cable from an old USB-A cable.
 
-**Cable Layout for EW10 to SAJ R5 Inverter:**
+**Cable Layout (USB-A to EW10):**
 
-Cut an old USB-A cable and connect as follows:
+| USB Pin | Function | EW10 Pin |
+| :---: | :---: | :---: |
+| 1 | +7V | 7 |
+| 2 | RS-232 RXD | 6 |
+| 3 | RS-232 TXD | 5 |
+| 4 | GND | 8 |
 
-| USB pin | Function   | EW10 pin |
-|---------|------------|----------|
-| 1       | +7V        | 7        |
-| 2       | RS-232 RXD | 6        |
-| 3       | RS-232 TXD | 5        |
-| 4       | GND        | 8        |
+**EW10 Settings:**
 
-**EW10 settings:**
-
-**Communication settings:**
-* Configure Tcp Server, choose a port number.
-* Security: Disable
-* Route as Uart
-
-**Serial port settings:**
-* Baudrate 115200
-* Databit 8
-* Stopbit 1
-* Parity None
-* Flow Control Settings Disable
-* Cli Disable
-* Protocol Modbus
+* **Communication Settings:**
+    * **Protocol:** TCP Server
+    * **Port:** Choose a port number (e.g., 502)
+    * **Security:** Disable
+* **Serial Port Settings:**
+    * **Baud Rate:** 115200
+    * **Data Bits:** 8
+    * **Stop Bits:** 1
+    * **Parity:** None
+    * **Flow Control:** Disable
+    * **Protocol:** Modbus
 
  ##  Credits
 
- Idea based on [`home-assistant-solaredge-modbus`](https://github.com/binsentsu/home-assistant-solaredge-modbus) from [@binsentsu](https://github.com/binsentsu).
- 
+ This integration was inspired by the [`home-assistant-solaredge-modbus`](https://github.com/binsentsu/home-assistant-solaredge-modbus) integration by [@binsentsu](https://github.com/binsentsu).
+
+
+_This is a third-party integration and is not officially supported by SAJ Electric._
 [![saj_logo](https://github.com/wimb0/home-assistant-saj-r5-modbus/blob/main/images/saj_modbus/logo.png)](https://www.saj-electric.com/)
 
 <!-- Badges -->
