@@ -1,0 +1,47 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Definiera din SAJ Inverter modbus-anslutning",
+        "data": {
+          "host": "IP-adressen till din SAJ Inverter modbus-enhet",
+          "name": "Prefixet som ska användas för dina SAJ Inverter-sensorer",
+          "port": "TCP-porten som du ska ansluta till SAJ-växelriktaren på",
+          "scan_interval": "Avfrågningsfrekvensen för modbus-registren i sekunder"
+        }
+      }
+    },
+    "error": {
+      "already_configured": "Enheten är redan konfigurerad"
+    },
+    "abort": {
+      "already_configured": "Enheten är redan konfigurerad",
+      "reconfigure_successful": "Konfigurationen har uppdaterats!"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Avfrågningsfrekvensen för modbus-registren i sekunder"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_datetime": {
+      "name": "Ställ in datum och tid",
+      "description": "Ställer in datum och tid på växelriktaren.",
+      "fields": {
+        "device_id": {
+          "name": "Enhet",
+          "description": "Växelriktaren som datum och tid kommer att ställas in på."
+        },
+        "datetime": {
+          "name": "Datum och tid",
+          "description": "Datum och tid som ska ställas in på växelriktaren."
+        }
+      }
+    }
+  }
+}
