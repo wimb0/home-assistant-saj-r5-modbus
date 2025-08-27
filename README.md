@@ -9,11 +9,9 @@
 
 # Home Assistant SAJ R5 Series Inverter Modbus Integration
 
-This is an unofficial integration for SAJ R5 Series inverters.
-It enables Home Assistant to read data from SAJ R5, Sununo, and Suntrio inverters through Modbus TCP.
-This integration allows you to monitor your solar inverter's performance directly without any cloud connected dongle.
+This is an unofficial Home Assistant integration that enables you to read data locally from SAJ R5, Sununo, and Suntrio inverters via Modbus TCP, without a cloud-connected dongle.
 
-This integration is also compatible with Zonneplan ONE inverters, which are rebranded SAJ R5 inverters.
+The integration is also compatible with Zonneplan ONE inverters, which are rebranded SAJ R5 inverters.
 
 
 Implements SAJ Inverter registers from [`saj-plus-series-inverter-modbus-protocal.pdf`](https://github.com/wimb0/home-assistant-saj-r5-modbus/blob/main/saj-plus-series-inverter-modbus-protocal.pdf).
