@@ -1,0 +1,47 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Zdefiniuj swoje połączenie modbus z falownikiem SAJ",
+        "data": {
+          "host": "Adres IP Twojego urządzenia modbus z falownikiem SAJ",
+          "name": "Prefiks, który ma być używany dla Twoich czujników falownika SAJ",
+          "port": "Port TCP, na którym należy połączyć się z falownikiem SAJ",
+          "scan_interval": "Częstotliwość odpytywania rejestrów modbus w sekundach"
+        }
+      }
+    },
+    "error": {
+      "already_configured": "Urządzenie jest już skonfigurowane"
+    },
+    "abort": {
+      "already_configured": "Urządzenie jest już skonfigurowane",
+      "reconfigure_successful": "Konfiguracja została pomyślnie zaktualizowana!"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Częstotliwość odpytywania rejestrów modbus w sekundach"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_datetime": {
+      "name": "Ustaw datę i godzinę",
+      "description": "Ustawia datę i godzinę na falowniku.",
+      "fields": {
+        "device_id": {
+          "name": "Urządzenie",
+          "description": "Falownik, na którym zostanie ustawiona data i godzina."
+        },
+        "datetime": {
+          "name": "Data i godzina",
+          "description": "Data i godzina do ustawienia na falowniku."
+        }
+      }
+    }
+  }
+}
