@@ -21,9 +21,8 @@ async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: ConfigEntry
 ) -> dict[str, Any]:
     """Return diagnostics for a config entry."""
-    hub: SAJModbusHub = entry.runtime_data
+    hub: SAJModbusHub = entry.runtime_data["hub"]
 
-    # Gather all relevant data for debugging
     diagnostics_data = {
         "config_entry_data": async_redact_data(entry.data, TO_REDACT),
         "config_entry_options": async_redact_data(entry.options, TO_REDACT),
