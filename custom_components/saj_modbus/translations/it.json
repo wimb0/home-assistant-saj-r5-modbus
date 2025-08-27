@@ -1,0 +1,47 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Definisci la tua connessione modbus SAJ Inverter",
+        "data": {
+          "host": "L'indirizzo IP del tuo dispositivo modbus SAJ Inverter",
+          "name": "Il prefisso da utilizzare per i tuoi sensori SAJ Inverter",
+          "port": "La porta TCP su cui connettersi all'inverter SAJ",
+          "scan_interval": "La frequenza di polling dei registri modbus in secondi"
+        }
+      }
+    },
+    "error": {
+      "already_configured": "Il dispositivo è già configurato"
+    },
+    "abort": {
+      "already_configured": "Il dispositivo è già configurato",
+      "reconfigure_successful": "Configurazione aggiornata con successo!"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "La frequenza di polling dei registri modbus in secondi"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_datetime": {
+      "name": "Imposta data e ora",
+      "description": "Imposta la data e l'ora sull'inverter.",
+      "fields": {
+        "device_id": {
+          "name": "Dispositivo",
+          "description": "L'inverter su cui verranno impostate la data e l'ora."
+        },
+        "datetime": {
+          "name": "Data e ora",
+          "description": "La data e l'ora da impostare sull'inverter."
+        }
+      }
+    }
+  }
+}
