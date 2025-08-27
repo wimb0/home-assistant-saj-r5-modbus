@@ -1,0 +1,47 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Definujte své připojení modbus k měniči SAJ",
+        "data": {
+          "host": "IP adresa vašeho zařízení modbus k měniči SAJ",
+          "name": "Předpona, která se má použít pro vaše snímače měniče SAJ",
+          "port": "TCP port, na kterém se má připojit k měniči SAJ",
+          "scan_interval": "Frekvence dotazování registrů modbus v sekundách"
+        }
+      }
+    },
+    "error": {
+      "already_configured": "Zařízení je již nakonfigurováno"
+    },
+    "abort": {
+      "already_configured": "Zařízení je již nakonfigurováno",
+      "reconfigure_successful": "Konfigurace byla úspěšně aktualizována!"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Frekvence dotazování registrů modbus v sekundách"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_datetime": {
+      "name": "Nastavit datum a čas",
+      "description": "Nastavuje datum a čas na měniči.",
+      "fields": {
+        "device_id": {
+          "name": "Zařízení",
+          "description": "Měnič, na kterém bude nastaveno datum a čas."
+        },
+        "datetime": {
+          "name": "Datum a čas",
+          "description": "Datum a čas, které se mají nastavit na měniči."
+        }
+      }
+    }
+  }
+}
