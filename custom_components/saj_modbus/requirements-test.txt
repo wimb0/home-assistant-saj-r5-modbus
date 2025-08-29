@@ -1,0 +1,6 @@
+# Main dependency needed for tests
+pymodbus>=3.7.4
+
+# Testing libraries
+pytest
+pytest-homeassistant-custom-component
