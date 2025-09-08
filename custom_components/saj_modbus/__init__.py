@@ -14,7 +14,7 @@ from .const import (
     DOMAIN,
 )
 from .hub import SAJModbusHub
-from .services import async_setup_services
+from .services import async_setup_services, async_unload_services
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,9 +39,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.runtime_data = {"hub": hub, "device_info": device_info}
 
     try:
-        await hub.async_config_entry_first_refresh()
-    except ConfigEntryNotReady:
-        raise
+        await hub.async_refresh()
+    except Exception as ex:
+        raise ConfigEntryNotReady from ex
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
@@ -56,6 +56,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # The hub is now nested in the runtime_data dict
     if hub := entry.runtime_data.get("hub"):
         hub.close()
+
+    async_unload_services(hass)
 
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
