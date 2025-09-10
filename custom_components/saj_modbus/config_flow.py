@@ -44,12 +44,6 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
 
     VERSION = 2
 
-    @staticmethod
-    @callback
-    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
-        """Handle options flow."""
-        return SAJModbusOptionsFlowHandler(config_entry)
-
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
@@ -59,6 +53,15 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             host = user_input[CONF_HOST]
 
+            data = {
+                CONF_NAME: user_input[CONF_NAME],
+                CONF_HOST: user_input[CONF_HOST],
+                CONF_PORT: user_input[CONF_PORT],
+            }
+            options = {
+                CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL],
+            }
+
             if host in saj_modbus_entries(self.hass):
                 errors[CONF_HOST] = "already_configured"
             elif not host_valid(host):
@@ -67,7 +70,7 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                 await self.async_set_unique_id(host)
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(
-                    title=user_input[CONF_NAME], data=user_input
+                    title=data[CONF_NAME], data=data, options=options
                 )
 
         setup_schema = vol.Schema(
@@ -85,13 +88,15 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
             step_id="user", data_schema=setup_schema, errors=errors
         )
 
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+        """Handle options flow."""
+        return SAJModbusOptionsFlowHandler(config_entry)
+
 
 class SAJModbusOptionsFlowHandler(OptionsFlow):
     """SAJ Modbus config flow options handler."""
-
-    def __init__(self, config_entry: ConfigEntry) -> None:
-        """Initialize options flow."""
-        super().__init__(config_entry)
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -103,26 +108,32 @@ class SAJModbusOptionsFlowHandler(OptionsFlow):
             if not host_valid(user_input[CONF_HOST]):
                 errors[CONF_HOST] = "invalid_host"
             else:
+                new_data = self.config_entry.data.copy()
+                new_data[CONF_HOST] = user_input[CONF_HOST]
+                new_data[CONF_PORT] = user_input[CONF_PORT]
+
+                new_options = self.config_entry.options.copy()
+                new_options[CONF_SCAN_INTERVAL] = user_input[CONF_SCAN_INTERVAL]
+
                 self.hass.config_entries.async_update_entry(
-                    self.config_entry, data=user_input
+                    self.config_entry, data=new_data, options=new_options
                 )
+
                 return self.async_abort(reason="reconfigure_successful")
+
+        current_host = self.config_entry.data.get(CONF_HOST)
+        current_port = self.config_entry.data.get(CONF_PORT, DEFAULT_PORT)
+        current_scan_interval = self.config_entry.options.get(
+            CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+        )
 
         options_schema = vol.Schema(
             {
-                vol.Required(
-                    CONF_HOST, default=self.config_entry.data.get(CONF_HOST)
-                ): str,
-                vol.Required(
-                    CONF_PORT,
-                    default=self.config_entry.data.get(CONF_PORT, DEFAULT_PORT),
-                ): int,
-                vol.Optional(
-                    CONF_SCAN_INTERVAL,
-                    default=self.config_entry.options.get(
-                        CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
-                    ),
-                ): vol.All(vol.Coerce(int), vol.Range(min=1, max=600)),
+                vol.Required(CONF_HOST, default=current_host): str,
+                vol.Required(CONF_PORT, default=current_port): int,
+                vol.Optional(CONF_SCAN_INTERVAL, default=current_scan_interval): vol.All(
+                    vol.Coerce(int), vol.Range(min=1, max=600)
+                ),
             }
         )
 

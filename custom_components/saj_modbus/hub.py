@@ -45,7 +45,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         self._power_limit: float = 110.0
         self._power_on_off: bool = False
 
-    async def _async_setup(self) -> None:
+    async def async_setup(self) -> None:
         """Fetch data that is needed only once."""
         try:
             self.inverter_data = await self.hass.async_add_executor_job(
@@ -57,6 +57,10 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
     async def _async_update_data(self) -> dict[str, int | float | str]:
         """Fetch realtime data from the inverter."""
         try:
+            # If inverter_data is empty, fetch it.
+            if not self.inverter_data:
+                await self.async_setup()
+
             realtime_data = await self.hass.async_add_executor_job(
                 self.read_modbus_r5_realtime_data
             )
