@@ -6,6 +6,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from .const import (
     ATTR_MANUFACTURER,
@@ -39,9 +40,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.runtime_data = {"hub": hub, "device_info": device_info}
 
     try:
+        # Await the initial setup of the inverter data.
+        await hub.async_setup()
         await hub.async_refresh()
-    except Exception as ex:
-        raise ConfigEntryNotReady from ex
+    except (UpdateFailed, ConfigEntryNotReady) as err:
+        raise ConfigEntryNotReady from err
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
@@ -53,13 +56,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    # The hub is now nested in the runtime_data dict
     if hub := entry.runtime_data.get("hub"):
         hub.close()
 
-    async_unload_services(hass)
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unload_ok:
+        async_unload_services(hass)
 
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    return unload_ok
 
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
