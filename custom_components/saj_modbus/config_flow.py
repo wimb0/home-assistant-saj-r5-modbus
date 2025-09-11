@@ -61,7 +61,6 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                     title=user_input[CONF_NAME], data=user_input
                 )
 
-        # Define the schema for the user setup form
         data_schema = vol.Schema(
             {
                 vol.Optional(CONF_NAME, default=DEFAULT_NAME): str,
@@ -98,7 +97,6 @@ class SAJModbusOptionsFlowHandler(OptionsFlow):
             else:
                 return self.async_create_entry(title="", data=user_input)
 
-        # Define the schema for the options form
         options_schema = vol.Schema(
             {
                 vol.Required(
