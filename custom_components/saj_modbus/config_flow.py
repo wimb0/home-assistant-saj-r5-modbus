@@ -33,7 +33,7 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
         """Get the options flow for this handler."""
-        # This is the corrected line.
+        # This is the corrected line:
         # The handler is now created without any arguments.
         return SAJModbusOptionsFlowHandler()
 
