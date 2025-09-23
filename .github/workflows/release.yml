@@ -1,5 +1,4 @@
 name: Release
-
 on:
   release:
     types: [published]
@@ -9,10 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
-      - name: Checkout
+      - name: Checkout release tag
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
 
       - name: Compute VERSION (strip leading v)
         shell: bash
@@ -24,21 +24,25 @@ jobs:
       - name: Set manifest.json version from tag
         shell: bash
         run: |
-          FILE="${{ github.workspace }}/custom_components/saj_modbus/manifest.json"
+          FILE="custom_components/saj_modbus/manifest.json"
           tmp="$(mktemp)"
           jq --arg v "$VERSION" '.version=$v' "$FILE" > "$tmp" && mv "$tmp" "$FILE"
           jq -r '.version' "$FILE"
 
-      - name: Create release asset zip (includes folder path)
+      - name: Build zips (static + versioned)
         shell: bash
         run: |
           cd "${{ github.workspace }}"
-          ASSET="home-assistant-saj-r6-modbus-${VERSION}.zip"
-          # Zip the folder so HACS can place it under custom_components/saj_modbus
-          zip -r "$ASSET" custom_components/saj_modbus -x "**/__pycache__/*" "**/*.pyc" ".DS_Store"
-          echo "ASSET=$ASSET" >> "$GITHUB_ENV"
+          ASSET_STATIC="home-assistant-saj-r6-modbus.zip"
+          ASSET_VERSIONED="home-assistant-saj-r6-modbus-${VERSION}.zip"
+          zip -r "$ASSET_STATIC" custom_components/saj_modbus -x "**/__pycache__/*" "**/*.pyc" ".DS_Store"
+          cp "$ASSET_STATIC" "$ASSET_VERSIONED"
+          echo "ASSET_STATIC=$ASSET_STATIC" >> "$GITHUB_ENV"
+          echo "ASSET_VERSIONED=$ASSET_VERSIONED" >> "$GITHUB_ENV"
 
-      - name: Upload asset to the GitHub Release
+      - name: Upload assets to the Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ env.ASSET }}
+          files: |
+            ${{ env.ASSET_STATIC }}
+            ${{ env.ASSET_VERSIONED }}
