@@ -1,4 +1,5 @@
 """Config flow for SAJ R5 Inverter Modbus."""
+
 from __future__ import annotations
 
 import ipaddress

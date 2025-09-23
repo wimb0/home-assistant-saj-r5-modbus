@@ -14,7 +14,6 @@ from pymodbus.exceptions import ConnectionException, ModbusException
 from pymodbus.pdu import ModbusPDU
 
 from .const import (
-    DEVICE_STATUSSES,
     DOMAIN,
     FAULT_MESSAGES,
 )
@@ -151,19 +150,19 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
 
     def read_modbus_r6_realtime_data(self) -> dict[str, int | float | str]:
         """Read realtime data from inverter."""
-       # Read in two batches due to Modbus limit of 125 registers
+        # Read in two batches due to Modbus limit of 125 registers
         first_read = self._read_holding_registers(unit=1, address=0x4000, count=125)
         second_read = self._read_holding_registers(unit=1, address=0x407D, count=121)
-    
+
         if first_read.isError() or second_read.isError():
             return {}
-    
+
         registers = first_read.registers + second_read.registers
         data = {}
         # MPV Mode
         mpvmode = registers[4]  # 0x4004
         data["mpvmode"] = mpvmode
-    
+
         DEVICE_STATUSSES = {
             0: "Initialize",
             1: "Waiting",
@@ -176,14 +175,14 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
             8: "Auto-Check",
             9: "Reset",
         }
-    
+
         data["mpvstatus"] = DEVICE_STATUSSES.get(mpvmode, "Unknown")
-    
+
         # Fault messages
         faultMsg0 = registers[5] << 16 | registers[6]  # 0x4005 + 0x4006
         faultMsg1 = registers[7] << 16 | registers[8]  # 0x4007 + 0x4008
         faultMsg2 = registers[9] << 16 | registers[10]  # 0x4009 + 0x400A
-    
+
         fault_messages_list = self.translate_fault_code_to_messages(
             faultMsg0, list(FAULT_MESSAGES[0].items())
         )
@@ -199,69 +198,92 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         # PV Values
         data["pv1volt"] = round(registers[113] * 0.1, 1)  # 0x4071
         data["pv1curr"] = round(registers[114] * 0.01, 2)  # 0x4072
-        data["pv1power"] = round(registers[115], 0)        # 0x4073
-    
-        data["pv2volt"] = round(registers[116] * 0.1, 1)   # 0x4074
+        data["pv1power"] = round(registers[115], 0)  # 0x4073
+
+        data["pv2volt"] = round(registers[116] * 0.1, 1)  # 0x4074
         data["pv2curr"] = round(registers[117] * 0.01, 2)  # 0x4075
-        data["pv2power"] = round(registers[118], 0)        # 0x4076
-    
-        data["pv3volt"] = round(registers[119] * 0.1, 1)   # 0x4077
+        data["pv2power"] = round(registers[118], 0)  # 0x4076
+
+        data["pv3volt"] = round(registers[119] * 0.1, 1)  # 0x4077
         data["pv3curr"] = round(registers[120] * 0.01, 2)  # 0x4078
-        data["pv3power"] = round(registers[121], 0)        # 0x4079
-    
+        data["pv3power"] = round(registers[121], 0)  # 0x4079
+
         # Bus Voltage
         data["busvolt"] = round(registers[103] * 0.1, 1)  # 0x4067 BusVoltMaster
-    
+
         # Temperatures
-        data["invtempc"] = round(self.convert_to_signed(registers[16]) * 0.1, 1)  # 0x4010 SinkTempC
-    
+        data["invtempc"] = round(
+            self.convert_to_signed(registers[16]) * 0.1, 1
+        )  # 0x4010 SinkTempC
+
         # Earth Leakage Current
         data["gfci"] = self.convert_to_signed(registers[18])  # 0x4012 GFCI
-    
 
         # Phase measurements (l1 - RGrid)
         data["l1volt"] = round(registers[49] * 0.1, 1)  # 0x4031 RGridVolt
-        data["l1curr"] = round(self.convert_to_signed(registers[50]) * 0.01, 2)  # 0x4032
+        data["l1curr"] = round(
+            self.convert_to_signed(registers[50]) * 0.01, 2
+        )  # 0x4032
         data["l1freq"] = round(registers[51] * 0.01, 2)  # 0x4033
         data["l1dci"] = self.convert_to_signed(registers[52])  # 0x4034
         data["l1power"] = self.convert_to_signed(registers[53])  # 0x4035
-        data["l1pf"] = round(self.convert_to_signed(registers[55]) * 0.001, 3)  # 0x4037 (phase PF)
-    
+        data["l1pf"] = round(
+            self.convert_to_signed(registers[55]) * 0.001, 3
+        )  # 0x4037 (phase PF)
+
         # Phase measurements (l2 - SGrid)
         data["l2volt"] = round(registers[56] * 0.1, 1)  # 0x4038 SGridVolt
-        data["l2curr"] = round(self.convert_to_signed(registers[57]) * 0.01, 2)  # 0x4039
+        data["l2curr"] = round(
+            self.convert_to_signed(registers[57]) * 0.01, 2
+        )  # 0x4039
         data["l2freq"] = round(registers[58] * 0.01, 2)  # 0x403A
         data["l2dci"] = self.convert_to_signed(registers[59])  # 0x403B
         data["l2power"] = self.convert_to_signed(registers[60])  # 0x403C
-        data["l2pf"] = round(self.convert_to_signed(registers[62]) * 0.001, 3)  # 0x403E (phase PF)
+        data["l2pf"] = round(
+            self.convert_to_signed(registers[62]) * 0.001, 3
+        )  # 0x403E (phase PF)
 
         # Phase measurements (l3 - TGrid)
         data["l3volt"] = round(registers[63] * 0.1, 1)  # 0x403F TGridVolt
-        data["l3curr"] = round(self.convert_to_signed(registers[64]) * 0.01, 2)  # 0x4040
+        data["l3curr"] = round(
+            self.convert_to_signed(registers[64]) * 0.01, 2
+        )  # 0x4040
         data["l3freq"] = round(registers[65] * 0.01, 2)  # 0x4041
         data["l3dci"] = self.convert_to_signed(registers[66])  # 0x4042
         data["l3power"] = self.convert_to_signed(registers[67])  # 0x4043
-        data["l3pf"] = round(self.convert_to_signed(registers[69]) * 0.001, 3)  # 0x4045 (phase PF)
+        data["l3pf"] = round(
+            self.convert_to_signed(registers[69]) * 0.001, 3
+        )  # 0x4045 (phase PF)
 
         # Isolation resistances
         data["iso1"] = registers[19]  # 0x4013
         data["iso2"] = registers[20]  # 0x4014
         data["iso3"] = registers[21]  # 0x4015
         data["iso4"] = registers[22]  # 0x4016
-    
+
         # Energy counters
-        data["todayenergy"] = round((registers[191] << 16 | registers[192]) * 0.01, 2)  # 0x40BF
-        data["monthenergy"] = round((registers[193] << 16 | registers[194]) * 0.01, 2)  # 0x40C1
-        data["yearenergy"] = round((registers[195] << 16 | registers[196]) * 0.01, 2)   # 0x40C3
-        data["totalenergy"] = round((registers[197] << 16 | registers[198]) * 0.01, 2)  # 0x40C5
-    
+        data["todayenergy"] = round(
+            (registers[191] << 16 | registers[192]) * 0.01, 2
+        )  # 0x40BF
+        data["monthenergy"] = round(
+            (registers[193] << 16 | registers[194]) * 0.01, 2
+        )  # 0x40C1
+        data["yearenergy"] = round(
+            (registers[195] << 16 | registers[196]) * 0.01, 2
+        )  # 0x40C3
+        data["totalenergy"] = round(
+            (registers[197] << 16 | registers[198]) * 0.01, 2
+        )  # 0x40C5
+
         # Working hours
         data["todayhour"] = round(registers[188] * 0.1, 1)  # 0x40BC
-        data["totalhour"] = round((registers[189] << 16 | registers[190]) * 0.1, 1)  # 0x40BD
-    
+        data["totalhour"] = round(
+            (registers[189] << 16 | registers[190]) * 0.1, 1
+        )  # 0x40BD
+
         # Error count
         data["errorcount"] = registers[15]  # 0x400F
-    
+
         # Datetime
         data["datetime"] = self.parse_datetime(registers[0:4])  # from 0x4000
         return data
@@ -289,7 +311,9 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
 
     def _write_limit_power_sync(self, value: float) -> bool:
         """Write the power limit to the inverter."""
-        response = self._write_registers(unit=1, address=0x801F, values=[int(value * 10)])
+        response = self._write_registers(
+            unit=1, address=0x801F, values=[int(value * 10)]
+        )
         if response.isError():
             _LOGGER.error("Failed to set limitpower")
             return False
@@ -300,7 +324,9 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         # According to the documentation, address 0x1037 is used for remote power on/off
         # 0: power off, 1: power on
         register_value = 1 if value else 0
-        response = self._write_registers(unit=1, address=0x1037, values=[register_value])
+        response = self._write_registers(
+            unit=1, address=0x1037, values=[register_value]
+        )
         if response.isError():
             _LOGGER.error("Failed to set power on/off")
             return False
@@ -351,8 +377,9 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         limiter_entity_id = ent_reg.async_get_entity_id(
             NUMBER_DOMAIN, DOMAIN, f"{self.name}_limitpower"
         )
-        if limiter_entity_id is None or (
-            ent_reg_entry := ent_reg.async_get(limiter_entity_id)
-        ) is None:
+        if (
+            limiter_entity_id is None
+            or (ent_reg_entry := ent_reg.async_get(limiter_entity_id)) is None
+        ):
             return True
         return ent_reg_entry.disabled

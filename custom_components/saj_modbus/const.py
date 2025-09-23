@@ -45,9 +45,11 @@ NUMBER_TYPES: dict[str, list[SajModbusNumberEntityDescription]] = {
     )
 }
 
+
 @dataclass
 class SajModbusSwitchEntityDescription(SwitchEntityDescription):
     """A class that describes SAJ switch entities."""
+
 
 SWITCH_TYPES: dict[str, list[SajModbusSwitchEntityDescription]] = {
     "PowerOnOff": SajModbusSwitchEntityDescription(
@@ -57,6 +59,7 @@ SWITCH_TYPES: dict[str, list[SajModbusSwitchEntityDescription]] = {
         entity_registry_enabled_default=False,
     )
 }
+
 
 @dataclass
 class SajModbusSensorEntityDescription(SensorEntityDescription):
