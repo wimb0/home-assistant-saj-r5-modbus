@@ -11,8 +11,9 @@ __pycache__
 .vscode
 coverage.xml
 enforce_branch_protection.sh
+.DS_Store
 
 # Home Assistant configuration
 config/*
 !config/configuration.yaml
-venv/
+

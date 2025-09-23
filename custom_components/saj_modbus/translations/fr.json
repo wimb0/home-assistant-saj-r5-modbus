@@ -1,0 +1,47 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Définissez votre connexion modbus SAJ Inverter",
+        "data": {
+          "host": "L'adresse IP de votre appareil modbus SAJ Inverter",
+          "name": "Le préfixe à utiliser pour vos capteurs SAJ Inverter",
+          "port": "Le port TCP sur lequel se connecter à l'onduleur SAJ",
+          "scan_interval": "La fréquence d'interrogation des registres modbus en secondes"
+        }
+      }
+    },
+    "error": {
+      "already_configured": "L'appareil est déjà configuré"
+    },
+    "abort": {
+      "already_configured": "L'appareil est déjà configuré",
+      "reconfigure_successful": "Configuration mise à jour avec succès!"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "La fréquence d'interrogation des registres modbus en secondes"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_datetime": {
+      "name": "Régler la date et l'heure",
+      "description": "Règle la date et l'heure sur l'onduleur.",
+      "fields": {
+        "device_id": {
+          "name": "Appareil",
+          "description": "L'onduleur sur lequel la date et l'heure seront réglées."
+        },
+        "datetime": {
+          "name": "Date et l'heure",
+          "description": "La date et l'heure à régler sur l'onduleur."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "定义您的 SAJ 逆变器 modbus 连接",
+        "data": {
+          "host": "您的 SAJ 逆变器 modbus 设备的 IP 地址",
+          "name": "用于您的 SAJ 逆变器传感器的前缀",
+          "port": "连接到 SAJ 逆变器的 TCP 端口",
+          "scan_interval": "modbus 寄存器的轮询频率（秒）"
+        }
+      }
+    },
+    "error": {
+      "already_configured": "设备已配置"
+    },
+    "abort": {
+      "already_configured": "设备已配置",
+      "reconfigure_successful": "配置已成功更新！"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "modbus 寄存器的轮询频率（秒）"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_datetime": {
+      "name": "设置日期和时间",
+      "description": "在逆变器上设置日期和时间。",
+      "fields": {
+        "device_id": {
+          "name": "设备",
+          "description": "将在其上设置日期和时间的逆变器。"
+        },
+        "datetime": {
+          "name": "日期和时间",
+          "description": "要在逆变器上设置的日期和时间。"
+        }
+      }
+    }
+  }
+}

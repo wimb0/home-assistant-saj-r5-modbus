@@ -15,7 +15,8 @@
       "already_configured": "Equipamento já configurado"
     },
     "abort": {
-      "already_configured": "Equipamento já configurado"
+      "already_configured": "Equipamento já configurado",
+      "reconfigure_successful": "Configuração atualizada com sucesso!"
     }
   },
   "options": {

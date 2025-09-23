@@ -1,0 +1,47 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "SAJインバーターのMODBUS接続を定義してください",
+        "data": {
+          "host": "SAJインバーターMODBUSデバイスのIPアドレス",
+          "name": "SAJインバーターセンサーに使用するプレフィックス",
+          "port": "SAJインバーターへの接続に使用するTCPポート",
+          "scan_interval": "MODBUSレジスタのポーリング頻度（秒）"
+        }
+      }
+    },
+    "error": {
+      "already_configured": "デバイスはすでに設定されています"
+    },
+    "abort": {
+      "already_configured": "デバイスはすでに設定されています",
+      "reconfigure_successful": "設定が正常に更新されました！"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "MODBUSレジスタのポーリング頻度（秒）"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_datetime": {
+      "name": "日付と時刻を設定",
+      "description": "インバーターの日付と時刻を設定します。",
+      "fields": {
+        "device_id": {
+          "name": "デバイス",
+          "description": "日付と時刻を設定するインバーター。"
+        },
+        "datetime": {
+          "name": "日付と時刻",
+          "description": "インバーターに設定する日付と時刻。"
+        }
+      }
+    }
+  }
+}
