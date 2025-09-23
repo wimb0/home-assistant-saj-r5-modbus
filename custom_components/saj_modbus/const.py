@@ -510,11 +510,16 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
 }
 
 DEVICE_STATUSSES = {
-    0: "Not Connected",
+    0: "Initialize",
     1: "Waiting",
     2: "Normal",
-    3: "Error",
-    4: "Upgrading",
+    3: "Off-Grid",
+    4: "Grid with Load",
+    5: "Fault",
+    6: "Upgrading",
+    7: "Debug",
+    8: "Auto-Check",
+    9: "Reset",
 }
 
 FAULT_MESSAGES = {

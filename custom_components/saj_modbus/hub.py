@@ -1,6 +1,5 @@
-"""Modified 'SAJ Modbus Hub' to support R6 registers"""
+"""Modified 'SAJ Modbus Hub' to support R6 registers."""
 
-"""SAJ Modbus Hub."""
 import logging
 import threading
 from datetime import datetime, timedelta
@@ -14,6 +13,7 @@ from pymodbus.exceptions import ConnectionException, ModbusException
 from pymodbus.pdu import ModbusPDU
 
 from .const import (
+    DEVICE_STATUSSES,
     DOMAIN,
     FAULT_MESSAGES,
 )
@@ -163,25 +163,12 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         mpvmode = registers[4]  # 0x4004
         data["mpvmode"] = mpvmode
 
-        DEVICE_STATUSSES = {
-            0: "Initialize",
-            1: "Waiting",
-            2: "Normal",
-            3: "Off-Grid",
-            4: "Grid with Load",
-            5: "Fault",
-            6: "Upgrading",
-            7: "Debug",
-            8: "Auto-Check",
-            9: "Reset",
-        }
-
         data["mpvstatus"] = DEVICE_STATUSSES.get(mpvmode, "Unknown")
 
         # Fault messages
         faultMsg0 = registers[5] << 16 | registers[6]  # 0x4005 + 0x4006
         faultMsg1 = registers[7] << 16 | registers[8]  # 0x4007 + 0x4008
-        faultMsg2 = registers[9] << 16 | registers[10]  # 0x4009 + 0x400A
+        _faultMsg2 = registers[9] << 16 | registers[10]  # 0x4009 + 0x400A
 
         fault_messages_list = self.translate_fault_code_to_messages(
             faultMsg0, list(FAULT_MESSAGES[0].items())
