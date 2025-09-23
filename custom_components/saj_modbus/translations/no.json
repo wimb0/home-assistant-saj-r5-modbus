@@ -1,0 +1,47 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Definer din SAJ Inverter modbus-tilkobling",
+        "data": {
+          "host": "IP-adressen til SAJ Inverter modbus-enheten din",
+          "name": "Prefikset som skal brukes for SAJ Inverter-sensorene dine",
+          "port": "TCP-porten du skal koble til SAJ-inverteren på",
+          "scan_interval": "Pollingfrekvensen til modbus-registrene i sekunder"
+        }
+      }
+    },
+    "error": {
+      "already_configured": "Enheten er allerede konfigurert"
+    },
+    "abort": {
+      "already_configured": "Enheten er allerede konfigurert",
+      "reconfigure_successful": "Konfigurasjonen er oppdatert!"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Pollingfrekvensen til modbus-registrene i sekunder"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_datetime": {
+      "name": "Still inn dato og klokkeslett",
+      "description": "Stiller inn dato og klokkeslett på omformeren.",
+      "fields": {
+        "device_id": {
+          "name": "Enhet",
+          "description": "Omformeren som dato og klokkeslett skal stilles inn på."
+        },
+        "datetime": {
+          "name": "Dato og klokkeslett",
+          "description": "Dato og klokkeslett som skal stilles inn på omformeren."
+        }
+      }
+    }
+  }
+}

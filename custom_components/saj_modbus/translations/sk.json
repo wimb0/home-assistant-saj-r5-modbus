@@ -15,7 +15,8 @@
       "already_configured": "Zariadenie je už nakonfigurované"
     },
     "abort": {
-      "already_configured": "Zariadenie je už nakonfigurované"
+      "already_configured": "Zariadenie je už nakonfigurované",
+    "reconfigure_successful": "Konfigurácia bola úspešne aktualizovaná!"
     }
   },
   "options": {

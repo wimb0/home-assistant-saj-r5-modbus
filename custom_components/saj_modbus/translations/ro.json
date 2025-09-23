@@ -1,0 +1,47 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Definiți conexiunea modbus a invertorului SAJ",
+        "data": {
+          "host": "Adresa IP a dispozitivului dvs. modbus pentru invertorul SAJ",
+          "name": "Prefixul care trebuie utilizat pentru senzorii invertorului SAJ",
+          "port": "Portul TCP la care să vă conectați la invertorul SAJ",
+          "scan_interval": "Frecvența de interogare a registrelor modbus în secunde"
+        }
+      }
+    },
+    "error": {
+      "already_configured": "Dispozitivul este deja configurat"
+    },
+    "abort": {
+      "already_configured": "Dispozitivul este deja configurat",
+      "reconfigure_successful": "Configurația a fost actualizată cu succes!"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Frecvența de interogare a registrelor modbus în secunde"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_datetime": {
+      "name": "Setați data și ora",
+      "description": "Setează data și ora pe invertor.",
+      "fields": {
+        "device_id": {
+          "name": "Dispozitiv",
+          "description": "Invertorul pe care vor fi setate data și ora."
+        },
+        "datetime": {
+          "name": "Data și ora",
+          "description": "Data și ora de setat pe invertor."
+        }
+      }
+    }
+  }
+}

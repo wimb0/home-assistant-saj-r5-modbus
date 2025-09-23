@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 from homeassistant.components.number import NumberEntityDescription
+from homeassistant.components.switch import SwitchEntityDescription
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorStateClass,
@@ -41,6 +42,21 @@ NUMBER_TYPES: dict[str, list[SajModbusNumberEntityDescription]] = {
         key="limitpower",
         icon="mdi:solar-power",
         native_unit_of_measurement="%",
+    )
+}
+
+
+@dataclass
+class SajModbusSwitchEntityDescription(SwitchEntityDescription):
+    """A class that describes SAJ switch entities."""
+
+
+SWITCH_TYPES: dict[str, list[SajModbusSwitchEntityDescription]] = {
+    "PowerOnOff": SajModbusSwitchEntityDescription(
+        name="Power On Off",
+        key="poweronoff",
+        icon="mdi:power",
+        entity_registry_enabled_default=False,
     )
 }
 
@@ -494,11 +510,16 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
 }
 
 DEVICE_STATUSSES = {
-    0: "Not Connected",
+    0: "Initialize",
     1: "Waiting",
     2: "Normal",
-    3: "Error",
-    4: "Upgrading",
+    3: "Off-Grid",
+    4: "Grid with Load",
+    5: "Fault",
+    6: "Upgrading",
+    7: "Debug",
+    8: "Auto-Check",
+    9: "Reset",
 }
 
 FAULT_MESSAGES = {

@@ -1,0 +1,47 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Definieren Sie Ihre SAJ Inverter Modbus-Verbindung",
+        "data": {
+          "host": "Die IP-Adresse Ihres SAJ Inverter Modbus-Geräts",
+          "name": "Das Präfix, das für Ihre SAJ Inverter-Sensoren verwendet werden soll",
+          "port": "Der TCP-Port, über den eine Verbindung zum SAJ-Wechselrichter hergestellt werden soll",
+          "scan_interval": "Die Abfragehäufigkeit der Modbus-Register in Sekunden"
+        }
+      }
+    },
+    "error": {
+      "already_configured": "Gerät ist bereits konfiguriert"
+    },
+    "abort": {
+      "already_configured": "Gerät ist bereits konfiguriert",
+      "reconfigure_successful": "Konfiguration erfolgreich aktualisiert!"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Die Abfragehäufigkeit der Modbus-Register in Sekunden"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_datetime": {
+      "name": "Datum und Uhrzeit einstellen",
+      "description": "Stellt Datum und Uhrzeit am Wechselrichter ein.",
+      "fields": {
+        "device_id": {
+          "name": "Gerät",
+          "description": "Der Wechselrichter, an dem Datum und Uhrzeit eingestellt werden."
+        },
+        "datetime": {
+          "name": "Datum und Uhrzeit",
+          "description": "Das Datum und die Uhrzeit, die am Wechselrichter eingestellt werden sollen."
+        }
+      }
+    }
+  }
+}

@@ -15,7 +15,17 @@
       "already_configured": "Device is already configured"
     },
     "abort": {
-      "already_configured": "Device is already configured"
+      "already_configured": "Device is already configured",
+      "reconfigure_successful": "Configuration updated successfully!"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "The polling frequency of the modbus registers in seconds"
+        }
+      }
     }
   },
   "services": {
