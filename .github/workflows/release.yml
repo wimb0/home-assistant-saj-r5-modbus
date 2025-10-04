@@ -1,48 +1,35 @@
-name: Release
+name: "Release"
+
 on:
   release:
-    types: [published]
+    types:
+      - "published"
+
+permissions: {}
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    name: "Release"
+    runs-on: "ubuntu-latest"
     permissions:
       contents: write
     steps:
-      - name: Checkout release tag
-        uses: actions/checkout@v4
+      - name: "Checkout the repository"
+        uses: "actions/checkout@v5.0.0"
+
+      - name: "Adjust version number"
+        shell: "bash"
+        run: |
+          yq -i -o json '.version="${{ github.event.release.tag_name }}"' \
+            "${{ github.workspace }}/custom_components/saj_modbus/manifest.json"
+
+      - name: "ZIP the integration directory"
+        shell: "bash"
+        run: |
+          cd "${{ github.workspace }}/custom_components/saj_modbus"
+          zip home-assistant-saj-r6-modbus.zip -r ./
+
+      - name: "Upload the ZIP file to the release"
+        uses: softprops/action-gh-release@v2.3.3
         with:
-          ref: ${{ github.event.release.tag_name }}
-
-      - name: Compute VERSION (strip leading v)
-        shell: bash
-        run: |
-          VERSION="${{ github.event.release.tag_name }}"
-          VERSION="${VERSION#v}"
-          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
-
-      - name: Set manifest.json version from tag
-        shell: bash
-        run: |
-          FILE="custom_components/saj_modbus/manifest.json"
-          tmp="$(mktemp)"
-          jq --arg v "$VERSION" '.version=$v' "$FILE" > "$tmp" && mv "$tmp" "$FILE"
-          jq -r '.version' "$FILE"
-
-      - name: Build zips (static + versioned)
-        shell: bash
-        run: |
-          cd "${{ github.workspace }}"
-          ASSET_STATIC="home-assistant-saj-r6-modbus.zip"
-          ASSET_VERSIONED="home-assistant-saj-r6-modbus-${VERSION}.zip"
-          zip -r "$ASSET_STATIC" custom_components/saj_modbus -x "**/__pycache__/*" "**/*.pyc" ".DS_Store"
-          cp "$ASSET_STATIC" "$ASSET_VERSIONED"
-          echo "ASSET_STATIC=$ASSET_STATIC" >> "$GITHUB_ENV"
-          echo "ASSET_VERSIONED=$ASSET_VERSIONED" >> "$GITHUB_ENV"
-
-      - name: Upload assets to the Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            ${{ env.ASSET_STATIC }}
-            ${{ env.ASSET_VERSIONED }}
+          files: ${{ github.workspace }}/custom_components/saj_modbus/home-assistant-saj-r6-modbus.zip
