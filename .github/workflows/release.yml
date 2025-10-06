@@ -30,6 +30,6 @@ jobs:
           zip home-assistant-saj-r5-modbus.zip -r ./
 
       - name: "Upload the ZIP file to the release"
-        uses: softprops/action-gh-release@v2.3.3
+        uses: softprops/action-gh-release@v2.3.4
         with:
           files: ${{ github.workspace }}/custom_components/saj_modbus/home-assistant-saj-r5-modbus.zip
