@@ -26,6 +26,9 @@
           "scan_interval": "Frekvence dotazování registrů modbus v sekundách"
         }
       }
+    },
+    "abort": {
+      "reconfigure_successful": "Konfigurace byla úspěšně aktualizována!"
     }
   },
   "services": {
