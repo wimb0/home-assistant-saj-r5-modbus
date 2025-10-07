@@ -26,6 +26,9 @@
           "scan_interval": "Frequencia de atualização em segundos"
         }
       }
+    },
+    "abort": {
+      "reconfigure_successful": "Configuração atualizada com sucesso!"
     }
   },
   "services": {
