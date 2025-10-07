@@ -54,6 +54,7 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
             ):
                 errors[CONF_HOST] = "already_configured"
             else:
+                # Scheid 'data' en 'options' bij het aanmaken
                 data = {
                     CONF_NAME: user_input[CONF_NAME],
                     CONF_HOST: user_input[CONF_HOST],
@@ -96,15 +97,17 @@ class SAJModbusOptionsFlowHandler(OptionsFlow):
     ) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
-            new_data = self.config_entry.data.copy()
-            new_data[CONF_HOST] = user_input[CONF_HOST]
-            new_data[CONF_PORT] = user_input[CONF_PORT]
-
-            new_options = self.config_entry.options.copy()
-            new_options[CONF_SCAN_INTERVAL] = user_input[CONF_SCAN_INTERVAL]
-
             self.hass.config_entries.async_update_entry(
-                self.config_entry, data=new_data, options=new_options
+                self.config_entry,
+                data={
+                    **self.config_entry.data,
+                    CONF_HOST: user_input[CONF_HOST],
+                    CONF_PORT: user_input[CONF_PORT],
+                },
+                options={
+                    **self.config_entry.options,
+                    CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL],
+                },
             )
             return self.async_create_entry(title="", data={})
 
