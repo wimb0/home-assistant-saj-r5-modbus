@@ -26,6 +26,9 @@
           "scan_interval": "Частота опитування регістрів modbus в секундах"
         }
       }
+    },
+    "abort": {
+      "reconfigure_successful": "Конфігурацію успішно оновлено!"
     }
   },
   "services": {
