@@ -26,6 +26,9 @@
           "scan_interval": "Frecvența de interogare a registrelor modbus în secunde"
         }
       }
+    },
+    "abort": {
+      "reconfigure_successful": "Configurația a fost actualizată cu succes!"
     }
   },
   "services": {
