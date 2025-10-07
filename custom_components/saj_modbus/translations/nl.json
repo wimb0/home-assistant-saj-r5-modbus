@@ -26,6 +26,9 @@
           "scan_interval": "De polling-frequentie van de modbus registratie in seconden"
         }
       }
+    },
+    "abort": {
+      "reconfigure_successful": "Configuratie succesvol bijgewerkt!"
     }
   },
   "services": {
