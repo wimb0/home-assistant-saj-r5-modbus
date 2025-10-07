@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import ipaddress
-import re
 from typing import Any
 
 import voluptuous as vol
@@ -22,8 +21,8 @@ from .const import DEFAULT_NAME, DEFAULT_PORT, DEFAULT_SCAN_INTERVAL, DOMAIN
 def host_valid(host: str) -> bool:
     """Return True if hostname or IP address is valid."""
     try:
-        if ipaddress.ip_address(host).version in (4, 6):
-            return True
+        ipaddress.ip_address(host)
+        return True
     except ValueError:
         return False
 
@@ -97,23 +96,19 @@ class SAJModbusOptionsFlowHandler(OptionsFlow):
     ) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
-            self.hass.config_entries.async_update_entry(
-                self.config_entry,
-                data={
-                    **self.config_entry.data,
-                    CONF_HOST: user_input[CONF_HOST],
-                    CONF_PORT: user_input[CONF_PORT],
-                },
-                options={
-                    **self.config_entry.options,
-                    CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL],
-                },
-            )
-            await self.hass.config_entries.async_reload(self.config_entry.entry_id)
+            new_data = self.config_entry.data.copy()
+            new_data[CONF_HOST] = user_input[CONF_HOST]
+            new_data[CONF_PORT] = user_input[CONF_PORT]
 
+            new_options = self.config_entry.options.copy()
+            new_options[CONF_SCAN_INTERVAL] = user_input[CONF_SCAN_INTERVAL]
+
+            self.hass.config_entries.async_update_entry(
+                self.config_entry, data=new_data, options=new_options
+            )
             return self.async_create_entry(title="", data={})
 
-        schema = vol.Schema(
+        options_schema = vol.Schema(
             {
                 vol.Required(
                     CONF_HOST, default=self.config_entry.data.get(CONF_HOST)
@@ -129,4 +124,5 @@ class SAJModbusOptionsFlowHandler(OptionsFlow):
                 ): int,
             }
         )
-        return self.async_show_form(step_id="init", data_schema=schema)
+
+        return self.async_show_form(step_id="init", data_schema=options_schema)
