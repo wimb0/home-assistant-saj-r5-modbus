@@ -26,6 +26,9 @@
           "scan_interval": "A frequência de polling dos registradores modbus em segundos"
         }
       }
+    },
+    "abort": {
+      "reconfigure_successful": "Configuração atualizada com sucesso!"
     }
   },
   "services": {
