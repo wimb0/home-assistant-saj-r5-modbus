@@ -26,6 +26,9 @@
           "scan_interval": "La frecuencia de sondeo de los registros modbus en segundos"
         }
       }
+    },
+    "abort": {
+      "reconfigure_successful": "¡Configuración actualizada con éxito!"
     }
   },
   "services": {
