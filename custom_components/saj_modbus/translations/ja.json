@@ -26,6 +26,9 @@
           "scan_interval": "MODBUSレジスタのポーリング頻度（秒）"
         }
       }
+    },
+    "abort": {
+      "reconfigure_successful": "設定が正常に更新されました！"
     }
   },
   "services": {
