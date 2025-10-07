@@ -26,6 +26,9 @@
           "scan_interval": "The polling frequency of the modbus registers in seconds"
         }
       }
+    },
+    "abort": {
+      "reconfigure_successful": "Configuration updated successfully!"
     }
   },
   "services": {

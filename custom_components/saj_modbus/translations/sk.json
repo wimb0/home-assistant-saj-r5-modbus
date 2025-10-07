@@ -16,7 +16,7 @@
     },
     "abort": {
       "already_configured": "Zariadenie je už nakonfigurované",
-    "reconfigure_successful": "Konfigurácia bola úspešne aktualizovaná!"
+      "reconfigure_successful": "Konfigurácia bola úspešne aktualizovaná!"
     }
   },
   "options": {
@@ -26,6 +26,9 @@
           "scan_interval": "Frekvencia dopytovania modbus registrov v sekundách"
         }
       }
+    },
+    "abort": {
+      "reconfigure_successful": "Konfigurácia bola úspešne aktualizovaná!"
     }
   },
   "services": {

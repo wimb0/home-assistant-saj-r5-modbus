@@ -26,6 +26,9 @@
           "scan_interval": "Pollingfrekvensen for modbus-registrene i sekunder"
         }
       }
+    },
+    "abort": {
+      "reconfigure_successful": "Konfigurationen er opdateret!"
     }
   },
   "services": {

@@ -26,6 +26,9 @@
           "scan_interval": "Avfrågningsfrekvensen för modbus-registren i sekunder"
         }
       }
+    },
+    "abort": {
+      "reconfigure_successful": "Konfigurationen har uppdaterats!"
     }
   },
   "services": {

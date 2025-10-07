@@ -2,20 +2,18 @@
 from __future__ import annotations
 
 import ipaddress
-import re
 from typing import Any
 
 import voluptuous as vol
 
 from homeassistant.config_entries import (
-    ConfigFlow,
-    OptionsFlow,
     ConfigEntry,
+    ConfigFlow,
     FlowResult,
+    OptionsFlow,
 )
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL
 from homeassistant.core import callback
-from homeassistant.helpers import selector
 
 from .const import DEFAULT_NAME, DEFAULT_PORT, DEFAULT_SCAN_INTERVAL, DOMAIN
 
@@ -23,11 +21,10 @@ from .const import DEFAULT_NAME, DEFAULT_PORT, DEFAULT_SCAN_INTERVAL, DOMAIN
 def host_valid(host: str) -> bool:
     """Return True if hostname or IP address is valid."""
     try:
-        if ipaddress.ip_address(host).version in (4, 6):
-            return True
+        ipaddress.ip_address(host)
+        return True
     except ValueError:
-        disallowed = re.compile(r"[^a-zA-Z\d\-.]")
-        return all(x and not disallowed.search(x) for x in host.split("."))
+        return False
 
 
 class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -39,7 +36,7 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
         """Get the options flow for this handler."""
-        return SAJModbusOptionsFlowHandler(config_entry)
+        return SAJModbusOptionsFlowHandler()
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -57,45 +54,57 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
             ):
                 errors[CONF_HOST] = "already_configured"
             else:
+                data = {
+                    CONF_NAME: user_input[CONF_NAME],
+                    CONF_HOST: user_input[CONF_HOST],
+                    CONF_PORT: user_input[CONF_PORT],
+                }
+                options = {
+                    CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL],
+                }
+                await self.async_set_unique_id(host)
+                self._abort_if_unique_id_configured()
                 return self.async_create_entry(
-                    title=user_input[CONF_NAME], data=user_input
+                    title=data[CONF_NAME], data=data, options=options
                 )
 
-        data_schema = vol.Schema(
+        setup_schema = vol.Schema(
             {
                 vol.Optional(CONF_NAME, default=DEFAULT_NAME): str,
                 vol.Required(CONF_HOST): str,
                 vol.Required(CONF_PORT, default=DEFAULT_PORT): int,
                 vol.Optional(
                     CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL
-                ): selector.NumberSelector(
-                    selector.NumberSelectorConfig(min=1, max=600, step=1)
-                ),
+                ): int,
             }
         )
 
         return self.async_show_form(
-            step_id="user", data_schema=data_schema, errors=errors
+            step_id="user", data_schema=setup_schema, errors=errors
         )
 
 
 class SAJModbusOptionsFlowHandler(OptionsFlow):
-    """SAJ Modbus options flow handler."""
-
-    def __init__(self, config_entry: ConfigEntry) -> None:
-        """Initialize options flow."""
-        self.config_entry = config_entry
+    """SAJ Modbus config flow options handler."""
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Manage the options."""
-        errors: dict[str, str] = {}
         if user_input is not None:
-            if not host_valid(user_input[CONF_HOST]):
-                errors[CONF_HOST] = "invalid_host"
-            else:
-                return self.async_create_entry(title="", data=user_input)
+            self.hass.config_entries.async_update_entry(
+                self.config_entry,
+                data={
+                    **self.config_entry.data,
+                    CONF_HOST: user_input[CONF_HOST],
+                    CONF_PORT: user_input[CONF_PORT],
+                },
+                options={
+                    **self.config_entry.options,
+                    CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL],
+                },
+            )
+            return self.async_abort(reason="reconfigure_successful")
 
         options_schema = vol.Schema(
             {
@@ -103,20 +112,15 @@ class SAJModbusOptionsFlowHandler(OptionsFlow):
                     CONF_HOST, default=self.config_entry.data.get(CONF_HOST)
                 ): str,
                 vol.Required(
-                    CONF_PORT,
-                    default=self.config_entry.data.get(CONF_PORT, DEFAULT_PORT),
+                    CONF_PORT, default=self.config_entry.data.get(CONF_PORT)
                 ): int,
                 vol.Optional(
                     CONF_SCAN_INTERVAL,
                     default=self.config_entry.options.get(
                         CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
                     ),
-                ): selector.NumberSelector(
-                    selector.NumberSelectorConfig(min=1, max=600, step=1)
-                ),
+                ): int,
             }
         )
 
-        return self.async_show_form(
-            step_id="init", data_schema=options_schema, errors=errors
-        )
+        return self.async_show_form(step_id="init", data_schema=options_schema)

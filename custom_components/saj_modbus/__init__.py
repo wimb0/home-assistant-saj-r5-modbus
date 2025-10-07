@@ -24,30 +24,30 @@ PLATFORMS = ["sensor", "number", "switch"]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up a SAJ modbus entry from a config entry."""
-    host = entry.data.get(CONF_HOST)
+    host = entry.data[CONF_HOST]
     name = entry.data.get(CONF_NAME, DEFAULT_NAME)
-    port = entry.data.get(CONF_PORT)
+    port = entry.data[CONF_PORT]
     scan_interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
 
     hub = SAJModbusHub(hass, name, host, port, scan_interval)
 
-    device_info = {
-        "identifiers": {(DOMAIN, name)},
-        "name": name,
-        "manufacturer": ATTR_MANUFACTURER,
+    entry.runtime_data = {
+        "hub": hub,
+        "device_info": {
+            "identifiers": {(DOMAIN, name)},
+            "name": name,
+            "manufacturer": ATTR_MANUFACTURER,
+        },
     }
 
-    entry.runtime_data = {"hub": hub, "device_info": device_info}
-
     try:
-        # Await the initial setup of the inverter data.
         await hub.async_setup()
         await hub.async_refresh()
     except (UpdateFailed, ConfigEntryNotReady) as err:
         raise ConfigEntryNotReady from err
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+    entry.add_update_listener(options_update_listener)
 
     async_setup_services(hass)
 
@@ -56,17 +56,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    if hub := entry.runtime_data.get("hub"):
-        hub.close()
-
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
+        if hub := entry.runtime_data.pop("hub", None):
+            hub.close()
         async_unload_services(hass)
-
     return unload_ok
 
 
-async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Reload config entry."""
-    await async_unload_entry(hass, entry)
-    await async_setup_entry(hass, entry)
+async def options_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Handle options update."""
+    await hass.config_entries.async_reload(entry.entry_id)
