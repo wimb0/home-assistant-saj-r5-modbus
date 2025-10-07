@@ -97,6 +97,7 @@ class SAJModbusOptionsFlowHandler(OptionsFlow):
     ) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
+            # **DE FIX:** Update de 'data' (IP/poort) en 'options' (scan_interval) apart.
             self.hass.config_entries.async_update_entry(
                 self.config_entry,
                 data={
@@ -109,8 +110,11 @@ class SAJModbusOptionsFlowHandler(OptionsFlow):
                     CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL],
                 },
             )
+            # **DE FIX:** Sluit de flow af ZONDER de opgeslagen opties te overschrijven.
+            # Een lege `data` dictionary hier is correct.
             return self.async_create_entry(title="", data={})
 
+        # Het schema leest de huidige waarden correct in als standaardwaarden
         options_schema = vol.Schema(
             {
                 vol.Required(
