@@ -26,6 +26,9 @@
           "scan_interval": "La fréquence d'interrogation des registres modbus en secondes"
         }
       }
+    },
+    "abort": {
+      "reconfigure_successful": "Configuration mise à jour avec succès!"
     }
   },
   "services": {
