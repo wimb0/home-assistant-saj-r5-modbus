@@ -36,7 +36,7 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
         """Get the options flow for this handler."""
-        return SAJModbusOptionsFlowHandler(config_entry)
+        return SAJModbusOptionsFlowHandler()
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -54,7 +54,6 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
             ):
                 errors[CONF_HOST] = "already_configured"
             else:
-                # Scheid 'data' en 'options' bij het aanmaken
                 data = {
                     CONF_NAME: user_input[CONF_NAME],
                     CONF_HOST: user_input[CONF_HOST],
@@ -88,16 +87,11 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
 class SAJModbusOptionsFlowHandler(OptionsFlow):
     """SAJ Modbus config flow options handler."""
 
-    def __init__(self, config_entry: ConfigEntry) -> None:
-        """Initialize options flow."""
-        self.config_entry = config_entry
-
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
-            # **DE FIX:** Update de 'data' (IP/poort) en 'options' (scan_interval) apart.
             self.hass.config_entries.async_update_entry(
                 self.config_entry,
                 data={
@@ -110,11 +104,8 @@ class SAJModbusOptionsFlowHandler(OptionsFlow):
                     CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL],
                 },
             )
-            # **DE FIX:** Sluit de flow af ZONDER de opgeslagen opties te overschrijven.
-            # Een lege `data` dictionary hier is correct.
-            return self.async_create_entry(title="", data={})
+            return self.async_abort(reason="reconfigure_successful")
 
-        # Het schema leest de huidige waarden correct in als standaardwaarden
         options_schema = vol.Schema(
             {
                 vol.Required(
