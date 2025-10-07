@@ -26,6 +26,9 @@
           "scan_interval": "modbus 寄存器的轮询频率（秒）"
         }
       }
+    },
+    "abort": {
+      "reconfigure_successful": "配置已成功更新！"
     }
   },
   "services": {
