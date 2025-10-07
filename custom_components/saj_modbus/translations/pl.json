@@ -26,6 +26,9 @@
           "scan_interval": "Częstotliwość odpytywania rejestrów modbus w sekundach"
         }
       }
+    },
+    "abort": {
+      "reconfigure_successful": "Konfiguracja została pomyślnie zaktualizowana!"
     }
   },
   "services": {
