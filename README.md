@@ -1,9 +1,10 @@
 [![release][release-badge]][release-url]
 ![active][active-badge]
 ![downloads][downloads-badge]
+
 [![hacs][hacs-badge]][hacs-url]
 ![license][lic-badge]
-[![BuyMeCoffee][buymecoffeebadge]][buymecoffeeurl]
+[![buymecoffeebadge]][buymecoffeeurl]
 
 # Home Assistant SAJ R5 Series Inverter Modbus Integration
 
