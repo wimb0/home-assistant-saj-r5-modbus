@@ -3,8 +3,7 @@
 ![downloads][downloads-badge]
 [![hacs][hacs-badge]][hacs-url]
 ![license][lic-badge]
-
-<a href="https://buymeacoffee.com/wimbo" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
+[![BuyMeCoffee][buymecoffeebadge]][buymecoffeeurl]
 
 # Home Assistant SAJ R5 Series Inverter Modbus Integration
 
@@ -193,7 +192,8 @@ _This is a third-party integration and is not officially supported by SAJ Electr
 [downloads-badge]: https://img.shields.io/github/downloads/wimb0/home-assistant-saj-r5-modbus/total?style=for-the-badge
 [active-badge]: https://badge.t-haber.de/badge/saj_modbus?kill_cache=1
 [lic-badge]: https://img.shields.io/github/license/wimb0/home-assistant-saj-r5-modbus?style=for-the-badge
-
+[buymecoffeeurl]: https://www.buymeacoffee.com/wimbo
+[buymecoffeebadge]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-yellow.svg?style=for-the-badge
 <!-- References -->
 
 [home-assistant]: https://www.home-assistant.io/
