@@ -170,7 +170,7 @@ After adding this, restart Home Assistant. The logs can be found in **Settings >
 You can download diagnostic data directly from Home Assistant. This data provides information about the inverter and the integration's status.
 
 1.  Navigate to **Settings > Devices & Services**.
-2.  Find the SAJ R5 Inverter Modbus integration and click on the device.
+2.  Find the **SAJ R5 Inverter Modbus** integration and click on the device.
 3.  Click the three-dot menu on the device card and select **Download diagnostics**.
 
 This will download a text file with diagnostic information that you can share when creating a bug report.
