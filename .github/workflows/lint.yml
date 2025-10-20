@@ -1,6 +1,9 @@
 name: "Lint Check"
-
+permissions:
+  contents: read
+  
 on:
+  workflow_dispatch:
   push:
     branches:
       - "main"
