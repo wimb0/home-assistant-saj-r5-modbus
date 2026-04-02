@@ -28,6 +28,9 @@ DEFAULT_PORT = 502
 CONF_SAJ_HUB = "saj_hub"
 ATTR_MANUFACTURER = "SAJ Electric"
 
+CONF_DEVICE_TYPE = "device_type"
+DEVICE_TYPE_ELFIN = "Elfin"
+DEVICE_TYPE_AIO3 = "AIO3"
 
 @dataclass
 class SajModbusNumberEntityDescription(NumberEntityDescription):
