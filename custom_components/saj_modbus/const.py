@@ -32,6 +32,12 @@ CONF_DEVICE_TYPE = "device_type"
 DEVICE_TYPE_ELFIN = "Elfin"
 DEVICE_TYPE_AIO3 = "AIO3"
 
+LIMIT_POWER_REGISTER = {
+    DEVICE_TYPE_ELFIN: 0x801F,
+    DEVICE_TYPE_AIO3: 0x101C,
+}
+
+
 @dataclass
 class SajModbusNumberEntityDescription(NumberEntityDescription):
     """A class that describes SAJ number entities."""
