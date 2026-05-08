@@ -6,9 +6,6 @@ on:
       - main
       - master
 
-  pull_request:
-    types: [opened, reopened, synchronize]
-
 permissions:
   contents: read
 
