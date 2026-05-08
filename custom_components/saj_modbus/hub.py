@@ -150,7 +150,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
 
     def read_modbus_r5_realtime_data(self) -> dict[str, int | float | str]:
         """Read realtime data from inverter."""
-        realtime_data = self._read_holding_registers(unit=1, address=0x100, count=60)
+        realtime_data = self._read_holding_registers(unit=1, address=0x100, count=59)
         if realtime_data.isError():
             _LOGGER.debug("Error reading realtime data")
             return {}
@@ -222,7 +222,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         data["todayhour"] = round(registers[51] * 0.1, 1)
         data["totalhour"] = round(((registers[52] << 16) | registers[53]) * 0.1, 1)
         data["errorcount"] = registers[54]
-        data["datetime"] = self.parse_datetime(registers[55:60])
+        data["datetime"] = self.parse_datetime(registers[55:59])
         return data
 
     def read_modbus_inverter_power_state(self) -> dict[str, bool]:
