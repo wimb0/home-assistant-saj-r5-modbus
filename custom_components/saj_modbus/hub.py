@@ -96,16 +96,55 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
     def _read_holding_registers(self, unit, address, count):
         """Read holding registers."""
         with self._lock:
-            return self._client.read_holding_registers(
+            _LOGGER.debug(
+                "Reading holding registers from address 0x%04X (unit %d, count %d)",
+                address,
+                unit,
+                count,
+            )
+            result = self._client.read_holding_registers(
                 address=address, count=count, device_id=unit
             )
+            if result.isError():
+                _LOGGER.debug(
+                    "Error reading holding registers from address 0x%04X: %s",
+                    address,
+                    result,
+                )
+            else:
+                _LOGGER.debug(
+                    "Successfully read %d registers from address 0x%04X",
+                    len(result.registers),
+                    address,
+                )
+            return result
 
     def _write_registers(self, unit: int, address: int, values: list[int]) -> ModbusPDU:
         """Write registers."""
         with self._lock:
-            return self._client.write_registers(
+            _LOGGER.debug(
+                "Writing %d registers to address 0x%04X (unit %d): %s",
+                len(values),
+                address,
+                unit,
+                values,
+            )
+            result = self._client.write_registers(
                 address=address, values=values, device_id=unit
             )
+            if result.isError():
+                _LOGGER.debug(
+                    "Error writing registers to address 0x%04X: %s",
+                    address,
+                    result,
+                )
+            else:
+                _LOGGER.debug(
+                    "Successfully wrote %d registers to address 0x%04X",
+                    len(values),
+                    address,
+                )
+            return result
 
     def convert_to_signed(self, value: int) -> int:
         """Convert unsigned integers to signed integers."""
@@ -133,6 +172,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
             _LOGGER.debug("Error reading inverter data")
             return {}
         registers = inverter_data.registers
+        _LOGGER.debug("Inverter data registers: %s", registers)
         data: dict[str, int | float | str] = {
             "devtype": registers[0],
             "subtype": registers[1],
@@ -150,6 +190,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
             "ctrlhwversion": round(registers[27] * 0.001, 3),
             "powerhwversion": round(registers[28] * 0.001, 3),
         }
+        _LOGGER.debug("Parsed inverter data: %s", data)
         return data
 
 
@@ -160,6 +201,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
             _LOGGER.debug("Error reading realtime data")
             return {}
         registers = realtime_data.registers
+        _LOGGER.debug("Realtime data registers: %s", registers)
         data: dict[str, int | float | str] = {}
         mpvmode = registers[0]
         data["mpvmode"] = mpvmode
@@ -228,6 +270,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         data["totalhour"] = round(((registers[52] << 16) | registers[53]) * 0.1, 1)
         data["errorcount"] = registers[54]
         data["datetime"] = self.parse_datetime(registers[55:59])
+        _LOGGER.debug("Parsed realtime data: %s", data)
         return data
 
     def read_modbus_inverter_power_state(self) -> dict[str, bool]:
@@ -237,6 +280,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
             _LOGGER.debug("Error reading power state data")
             return {}
         self._power_on_off = power_state_data.registers[0] == 1
+        _LOGGER.debug("Power state (0x1037): %s", self._power_on_off)
         return {"poweronoff": self._power_on_off}
 
     def read_modbus_inverter_power_limit(self) -> float | None:
@@ -246,7 +290,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
             _LOGGER.debug("Error reading power limit data")
             return None
         power_limit = round(power_limit_data.registers[0] * 0.1, 1)
-        _LOGGER.debug("Read power limit from inverter: %s", power_limit)
+        _LOGGER.debug("Read power limit from inverter (0x801F): %s", power_limit)
         return power_limit
 
     def translate_fault_code_to_messages(
