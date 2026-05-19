@@ -67,11 +67,6 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
             power_state = await self.hass.async_add_executor_job(
                 self.read_modbus_inverter_power_state
             )
-            power_limit = await self.hass.async_add_executor_job(
-                self.read_modbus_inverter_power_limit
-            )
-            if power_limit is not None:
-                self._power_limit = power_limit
             combined_data = {**self.inverter_data, **realtime_data, **power_state}
             combined_data["limitpower"] = self._power_limit
             combined_data["poweronoff"] = self._power_on_off
@@ -282,16 +277,6 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         self._power_on_off = power_state_data.registers[0] == 1
         _LOGGER.debug("Power state (0x1037): %s", self._power_on_off)
         return {"poweronoff": self._power_on_off}
-
-    def read_modbus_inverter_power_limit(self) -> float | None:
-        """Read the power limit from the inverter."""
-        power_limit_data = self._read_holding_registers(unit=1, address=0x801F, count=1)
-        if power_limit_data.isError():
-            _LOGGER.debug("Error reading power limit data")
-            return None
-        power_limit = round(power_limit_data.registers[0] * 0.1, 1)
-        _LOGGER.debug("Read power limit from inverter (0x801F): %s", power_limit)
-        return power_limit
 
     def translate_fault_code_to_messages(
         self, fault_code: int, fault_messages: list[tuple[int, str]]
