@@ -51,11 +51,6 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
             self.inverter_data = await self.hass.async_add_executor_job(
                 self.read_modbus_inverter_data
             )
-            power_limit = await self.hass.async_add_executor_job(
-                self.read_modbus_inverter_power_limit
-            )
-            if power_limit is not None:
-                self._power_limit = power_limit
         except (ConnectionException, ModbusException) as ex:
             raise UpdateFailed(f"Failed to fetch inverter data: {ex}") from ex
 
@@ -72,6 +67,11 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
             power_state = await self.hass.async_add_executor_job(
                 self.read_modbus_inverter_power_state
             )
+            power_limit = await self.hass.async_add_executor_job(
+                self.read_modbus_inverter_power_limit
+            )
+            if power_limit is not None:
+                self._power_limit = power_limit
             combined_data = {**self.inverter_data, **realtime_data, **power_state}
             combined_data["limitpower"] = self._power_limit
             combined_data["poweronoff"] = self._power_on_off
