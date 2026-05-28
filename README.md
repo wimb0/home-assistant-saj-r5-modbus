@@ -63,7 +63,7 @@ _or_
 
 ## Connecting to the Inverter 🔌
 You will need a Modbus to Wi-Fi or Ethernet adapter to connect your SAJ inverter to your network.
-The following instructions are for the Hi-Flying Elfin-EW11/EW10, but other similar devices should work as well.
+The following instructions are for the Hi-Flying Elfin-EW11/EW10 and PUSR DR132, but other similar devices should work as well.
 
 <details>
 <summary>Connection via RS485 Port (EW11A)</summary>
@@ -120,6 +120,54 @@ Connect the EW10 to the USB port on your SAJ R5 inverter. You will need to creat
     * **Parity:** None
     * **Flow Control:** Disable
     * **Protocol:** Modbus
+</details>
+
+<details>
+<summary>Connection via USB Port (DR132)</summary>
+
+Connect the PUSR DR132 to the USB port on your SAJ R5 inverter. You will need to create a custom cable from an old USB-A cable.
+
+**Cable Layout (USB-A to DR132):**
+
+| USB Pin | Function   | DR132 Pin |
+| :---:   | :---:      | :---:     |
+| 1 red   | +7V        | 1 DC+     |
+| 2 white | RS-232 RXD | 3 RX A    |
+| 3 green | RS-232 TXD | 4 TX B    |
+| 4 black | GND        | 5 GND     |
+
+**DR132 Settings**
+
+Factory reset the device on the side, hold for 10 seconds. Connect your computer directly to the ethernet port with these LAN settings:
+
+* **IP:** 192.168.0.2
+* **Netmask:** 255.255.255.0
+* **Gateway:** 192.168.0.1
+
+Now open your browser to <http://192.168.0.7> and login with user `admin` and password `admin`.
+
+* **Network parameters**
+    * Choose DHCP or Static IP and fill in
+    * **For DHCP:** make sure to assign a static IP in the router and reboot the DR132 after.
+* **Port Parameter**
+    * **Baud Rate:** 115200
+    * **Data Size:** 8 bit
+    * **Parity:** NONE
+    * **Stop Bits:** 1 bit
+    * **Local Port Number:** 502 (or custom)
+    * **Work Mode:** TCP Server
+* **EDGE Gateway**
+    * **Working Mode:** Modbus Simple Protocol Conversion    
+* **System Parameters** (for security, not for HA)
+    * **Webserver Enable:** Open
+    * **Username:** Your name
+    * **Password:** Unique password
+    * Up to 5 chars for now. For better security you have to use some EthernetTool.
+* **Module Management**
+    * **Restart Module** 
+
+Plug the ethernet cable into your LAN and add the device to HA by its static IP and port.
+It can easily handle a 1-2 sec refresh interval.
 </details>
 
 ## Entities 🧩
