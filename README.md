@@ -167,7 +167,6 @@ Now open your browser to <http://192.168.0.7> and login with user `admin` and pa
     * **Restart Module** 
 
 Plug the ethernet cable into your LAN and add the device to HA by its static IP and port.
-It can easily handle a 1-2 sec refresh interval.
 </details>
 
 ## Entities 🧩
