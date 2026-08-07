@@ -25,7 +25,8 @@
     },
     "abort": {
       "already_configured": "设备已配置",
-      "reconfigure_successful": "配置已成功更新！"
+      "reconfigure_successful": "配置已成功更新！",
+      "wrong_inverter": "该地址属于另一台逆变器"
     }
   },
   "options": {

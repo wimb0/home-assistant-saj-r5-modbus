@@ -25,7 +25,8 @@
     },
     "abort": {
       "already_configured": "Il dispositivo è già configurato",
-      "reconfigure_successful": "Configurazione aggiornata con successo!"
+      "reconfigure_successful": "Configurazione aggiornata con successo!",
+      "wrong_inverter": "Quell'indirizzo appartiene a un altro inverter"
     }
   },
   "options": {

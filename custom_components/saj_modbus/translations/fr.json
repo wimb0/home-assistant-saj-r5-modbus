@@ -25,7 +25,8 @@
     },
     "abort": {
       "already_configured": "L'appareil est déjà configuré",
-      "reconfigure_successful": "Configuration mise à jour avec succès!"
+      "reconfigure_successful": "Configuration mise à jour avec succès!",
+      "wrong_inverter": "Cette adresse correspond à un autre onduleur"
     }
   },
   "options": {

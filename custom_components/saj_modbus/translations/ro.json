@@ -25,7 +25,8 @@
     },
     "abort": {
       "already_configured": "Dispozitivul este deja configurat",
-      "reconfigure_successful": "Configurația a fost actualizată cu succes!"
+      "reconfigure_successful": "Configurația a fost actualizată cu succes!",
+      "wrong_inverter": "Acea adresă aparține altui invertor"
     }
   },
   "options": {

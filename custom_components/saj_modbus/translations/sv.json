@@ -25,7 +25,8 @@
     },
     "abort": {
       "already_configured": "Enheten är redan konfigurerad",
-      "reconfigure_successful": "Konfigurationen har uppdaterats!"
+      "reconfigure_successful": "Konfigurationen har uppdaterats!",
+      "wrong_inverter": "Den adressen tillhör en annan växelriktare"
     }
   },
   "options": {

@@ -25,7 +25,8 @@
     },
     "abort": {
       "already_configured": "Устройство уже настроено",
-      "reconfigure_successful": "Конфигурация успешно обновлена!"
+      "reconfigure_successful": "Конфигурация успешно обновлена!",
+      "wrong_inverter": "Этот адрес принадлежит другому инвертору"
     }
   },
   "options": {

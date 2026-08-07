@@ -25,7 +25,8 @@
     },
     "abort": {
       "already_configured": "デバイスはすでに設定されています",
-      "reconfigure_successful": "設定が正常に更新されました！"
+      "reconfigure_successful": "設定が正常に更新されました！",
+      "wrong_inverter": "そのアドレスは別のインバーターのものです"
     }
   },
   "options": {

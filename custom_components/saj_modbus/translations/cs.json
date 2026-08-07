@@ -25,7 +25,8 @@
     },
     "abort": {
       "already_configured": "Zařízení je již nakonfigurováno",
-      "reconfigure_successful": "Konfigurace byla úspěšně aktualizována!"
+      "reconfigure_successful": "Konfigurace byla úspěšně aktualizována!",
+      "wrong_inverter": "Na této adrese je jiný měnič"
     }
   },
   "options": {

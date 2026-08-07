@@ -2,10 +2,9 @@
 
 import logging
 
-from typing import Any
-
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
@@ -43,7 +42,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SajConfigEntry) -> bool:
     entry.runtime_data = hub
 
     await hub.async_config_entry_first_refresh()
-    await _async_migrate_to_serial_identity(hass, entry, hub)
+    _async_migrate_to_serial_identity(hass, entry, hub)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(options_update_listener))
@@ -56,7 +55,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: SajConfigEntry) -> bool
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
-async def _async_migrate_to_serial_identity(
+def _async_migrate_to_serial_identity(
     hass: HomeAssistant, entry: SajConfigEntry, hub: SAJModbusHub
 ) -> None:
     """Rebuild this entry's identity around the inverter's serial number.
@@ -65,31 +64,59 @@ async def _async_migrate_to_serial_identity(
     user-chosen name (device and entities), so renaming the integration or
     moving the inverter to a new address orphaned everything. Runs before the
     platforms are set up so entities register under their new unique ids.
+
+    The migration is best-effort: a registry collision leaves the affected
+    entity or device on its old identity rather than failing setup.
     """
     serial = hub.serial_number
     if serial is None:
-        # The info block was not readable; identity stays name-based, and this
-        # runs again on the next reload that manages to read it.
+        # The info block was not readable, so identity stays name-based for
+        # this session; a later reload that reads it migrates then.
         return
 
     name = entry.data.get(CONF_NAME, DEFAULT_NAME)
     if name != serial:
+        registry = er.async_get(hass)
         old_prefix = f"{name}_"
-
-        @callback
-        def _migrate_entity(registry_entry: er.RegistryEntry) -> dict[str, Any] | None:
+        for registry_entry in er.async_entries_for_config_entry(
+            registry, entry.entry_id
+        ):
             if not registry_entry.unique_id.startswith(old_prefix):
-                return None
-            suffix = registry_entry.unique_id.removeprefix(old_prefix)
-            return {"new_unique_id": f"{serial}_{suffix}"}
-
-        await er.async_migrate_entries(hass, entry.entry_id, _migrate_entity)
+                continue
+            new_unique_id = (
+                f"{serial}_{registry_entry.unique_id.removeprefix(old_prefix)}"
+            )
+            # A second entry pointing at the same inverter would collide here,
+            # and async_update_entity raises on a duplicate — which inside
+            # setup would put the entry into a permanent error state.
+            if registry.async_get_entity_id(
+                registry_entry.domain, DOMAIN, new_unique_id
+            ):
+                _LOGGER.warning(
+                    "Not migrating %s to unique id %s: already in use",
+                    registry_entry.entity_id,
+                    new_unique_id,
+                )
+                continue
+            registry.async_update_entity(
+                registry_entry.entity_id, new_unique_id=new_unique_id
+            )
 
         device_registry = dr.async_get(hass)
-        if device := device_registry.async_get_device(identifiers={(DOMAIN, name)}):
-            device_registry.async_update_device(
-                device.id, new_identifiers={(DOMAIN, serial)}
-            )
+        for device in dr.async_entries_for_config_entry(
+            device_registry, entry.entry_id
+        ):
+            if (DOMAIN, name) not in device.identifiers:
+                continue
+            try:
+                device_registry.async_update_device(
+                    device.id, new_identifiers={(DOMAIN, serial)}
+                )
+            except HomeAssistantError as err:
+                _LOGGER.warning("Not migrating device %s: %s", device.id, err)
+            break
+
+    hub.freeze_identity()
 
     if entry.unique_id != serial:
         hass.config_entries.async_update_entry(entry, unique_id=serial)

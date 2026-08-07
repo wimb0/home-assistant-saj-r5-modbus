@@ -25,7 +25,8 @@
     },
     "abort": {
       "already_configured": "Enheden er allerede konfigureret",
-      "reconfigure_successful": "Konfigurationen er opdateret!"
+      "reconfigure_successful": "Konfigurationen er opdateret!",
+      "wrong_inverter": "Adressen tilhører en anden inverter"
     }
   },
   "options": {

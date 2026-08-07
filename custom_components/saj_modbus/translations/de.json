@@ -25,7 +25,8 @@
     },
     "abort": {
       "already_configured": "Gerät ist bereits konfiguriert",
-      "reconfigure_successful": "Konfiguration erfolgreich aktualisiert!"
+      "reconfigure_successful": "Konfiguration erfolgreich aktualisiert!",
+      "wrong_inverter": "Diese Adresse gehört zu einem anderen Wechselrichter"
     }
   },
   "options": {

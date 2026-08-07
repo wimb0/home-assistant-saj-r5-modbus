@@ -85,7 +85,7 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors[CONF_HOST] = "already_configured"
             else:
                 try:
-                    await async_probe(host, user_input[CONF_PORT])
+                    serial = await async_probe(host, user_input[CONF_PORT])
                 except ModbusError:
                     errors["base"] = "cannot_connect"
             if not errors:
@@ -97,7 +97,10 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                 options = {
                     CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL],
                 }
-                await self.async_set_unique_id(host)
+                # Key the entry on the serial where the inverter reports one,
+                # so the same device is recognised across addresses. Firmware
+                # that does not serve the info block falls back to the host.
+                await self.async_set_unique_id(serial or host)
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(
                     title=data[CONF_NAME], data=data, options=options
@@ -129,10 +132,15 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors[CONF_HOST] = "invalid_host"
             else:
                 try:
-                    await async_probe(host, user_input[CONF_PORT])
+                    serial = await async_probe(host, user_input[CONF_PORT])
                 except ModbusError:
                     errors["base"] = "cannot_connect"
             if not errors:
+                if serial:
+                    # Refuse to repoint this entry at a different inverter,
+                    # which would orphan its entities and duplicate its device.
+                    await self.async_set_unique_id(serial)
+                    self._abort_if_unique_id_mismatch(reason="wrong_inverter")
                 return self.async_update_reload_and_abort(
                     entry, data_updates=user_input
                 )

@@ -25,7 +25,8 @@
     },
     "abort": {
       "already_configured": "Urządzenie jest już skonfigurowane",
-      "reconfigure_successful": "Konfiguracja została pomyślnie zaktualizowana!"
+      "reconfigure_successful": "Konfiguracja została pomyślnie zaktualizowana!",
+      "wrong_inverter": "Ten adres należy do innego falownika"
     }
   },
   "options": {

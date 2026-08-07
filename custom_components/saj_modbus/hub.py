@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 from homeassistant.components.number import DOMAIN as NUMBER_DOMAIN
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -60,6 +60,10 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         self.device = SajR5Inverter(self._connection.for_unit(UNIT_ID))
         self.inverter_data: dict[str, int | float | str] = {}
         self._power_limit: float = 110.0
+        # Resolved once by freeze_identity() after the first refresh and never
+        # again: entities bake it into their unique ids at construction, so it
+        # must not change under them if a later poll finally reads the serial.
+        self._identifier = name
 
     @property
     def serial_number(self) -> str | None:
@@ -69,12 +73,18 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
 
     @property
     def identifier(self) -> str:
-        """The stable key entity unique ids and the device are built from.
+        """The stable key entity unique ids and the device are built from."""
+        return self._identifier
 
-        The serial number once known, else the user-chosen name — which is
-        what installs predating the serial-based identity used.
+    @callback
+    def freeze_identity(self) -> str:
+        """Pin this hub's identity, preferring the serial over the name.
+
+        Installs predating the serial-based identity, and firmware that does
+        not serve the info block, keep the user-chosen name.
         """
-        return self.serial_number or self.name
+        self._identifier = self.serial_number or self.name
+        return self._identifier
 
     @property
     def device_info(self) -> DeviceInfo:

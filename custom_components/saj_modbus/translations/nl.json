@@ -25,7 +25,8 @@
     },
     "abort": {
       "already_configured": "Apparaat is al geconfigureerd",
-      "reconfigure_successful": "Configuratie succesvol bijgewerkt!"
+      "reconfigure_successful": "Configuratie succesvol bijgewerkt!",
+      "wrong_inverter": "Dat adres hoort bij een andere omvormer"
     }
   },
   "options": {
