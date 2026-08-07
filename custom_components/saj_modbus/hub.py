@@ -8,14 +8,14 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from modbus_connection import ModbusError
+from modbus_connection import BlockReadError, ModbusError, ModbusTimeoutError
 
 from .const import (
     DEVICE_STATUSSES,
     DOMAIN,
     FAULT_MESSAGES,
 )
-from .inverter import SajR5Inverter, component_values
+from .inverter import UNIT_ID, SajR5Inverter, component_values, create_connection
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -37,7 +37,8 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         hass: HomeAssistant,
         entry: ConfigEntry,
         name: str,
-        device: SajR5Inverter,
+        host: str,
+        port: int,
         scan_interval: int,
     ) -> None:
         """Initialize the Modbus hub."""
@@ -49,37 +50,74 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
             update_interval=timedelta(seconds=scan_interval),
         )
 
-        self.device = device
+        self._host = host
+        self._port = port
+        self._connection = create_connection(host, port)
+        self.device = SajR5Inverter(self._connection.for_unit(UNIT_ID))
         self.inverter_data: dict[str, int | float | str] = {}
         self._power_limit: float = 110.0
+
+    async def async_close(self) -> None:
+        """Close the Modbus connection."""
+        await self._connection.close()
+
+    async def _async_recycle_connection(self) -> None:
+        """Replace the connection after a timeout.
+
+        A wedged serial-WiFi bridge can keep its TCP session alive while Modbus
+        stops answering, and a timeout does not drop the transport — so a fresh
+        connection is the only way to recover the next poll.
+        """
+        old = self._connection
+        self._connection = create_connection(self._host, self._port)
+        self.device = SajR5Inverter(self._connection.for_unit(UNIT_ID))
+        await old.close()
 
     async def _async_update_data(self) -> dict[str, int | float | str]:
         """Fetch realtime data from the inverter."""
         try:
-            # Static inverter info is fetched once and cached.
+            # Static inverter info is fetched once and cached. Some firmware
+            # variants reject blocks the R5 serves; tolerate that for the info
+            # and power-state blocks, as the previous pymodbus code did.
             if not self.inverter_data:
-                await self.device.info.async_update()
-                self.inverter_data = component_values(self.device.info)
+                try:
+                    await self.device.info.async_update()
+                except BlockReadError as ex:
+                    _LOGGER.debug("Inverter info request rejected: %s", ex)
+                else:
+                    self.inverter_data = component_values(self.device.info)
             await self.device.realtime.async_update()
+            try:
+                await self.device.power.async_update()
+            except BlockReadError as ex:
+                _LOGGER.debug("Power state request rejected: %s", ex)
+        except ModbusTimeoutError as ex:
+            await self._async_recycle_connection()
+            raise UpdateFailed(f"Failed to fetch realtime data: {ex}") from ex
         except ModbusError as ex:
             raise UpdateFailed(f"Failed to fetch realtime data: {ex}") from ex
 
         data = {**self.inverter_data, **self._realtime_values()}
+        data["poweronoff"] = self.device.power.poweronoff
         data["limitpower"] = self._power_limit
         return data
 
     def _realtime_values(self) -> dict[str, int | float | str]:
         """Return the realtime component's values with derived fields."""
-        data = component_values(self.device.realtime)
-        mpvmode = data["mpvmode"]
-        data["mpvstatus"] = DEVICE_STATUSSES.get(mpvmode, "Unknown")
+        realtime = self.device.realtime
+        data = component_values(realtime)
+        data["mpvstatus"] = DEVICE_STATUSSES.get(realtime.mpvmode, "Unknown")
         fault_messages_list = [
             message
-            for index in range(3)
-            for message in translate_fault_code_to_messages(
-                data.pop(f"faultmsg{index}") or 0, FAULT_MESSAGES[index]
+            for fault_code, messages in (
+                (realtime.faultmsg0, FAULT_MESSAGES[0]),
+                (realtime.faultmsg1, FAULT_MESSAGES[1]),
+                (realtime.faultmsg2, FAULT_MESSAGES[2]),
             )
+            for message in translate_fault_code_to_messages(fault_code or 0, messages)
         ]
+        for name in ("faultmsg0", "faultmsg1", "faultmsg2"):
+            data.pop(name)
         data["faultmsg"] = ", ".join(fault_messages_list).strip()[:254]
         if fault_messages_list:
             _LOGGER.error("Fault message: %s", ", ".join(fault_messages_list).strip())
@@ -88,7 +126,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
     async def async_set_power_on_off(self, value: bool) -> bool:
         """Set the power on/off on the inverter."""
         try:
-            await self.device.realtime.write("poweronoff", value)
+            await self.device.power.write("poweronoff", value)
         except ModbusError as ex:
             _LOGGER.error("Failed to set power on/off: %s", ex)
             return False

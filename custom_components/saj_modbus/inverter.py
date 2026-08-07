@@ -5,9 +5,10 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from modbus_connection import ModbusUnit
+from modbus_connection import ModbusTcpParams, ModbusUnit
 from modbus_connection.model import (
     Component,
+    ComponentGroup,
     RegisterField,
     boolean,
     gauge,
@@ -15,9 +16,18 @@ from modbus_connection.model import (
     string,
     uint32,
 )
+from modbus_connection.tmodbus import ModbusConnection
 
 # The R5 responds on a fixed station address; it is not user-configurable.
 UNIT_ID = 1
+MODBUS_TIMEOUT = 5
+
+
+def create_connection(host: str, port: int) -> ModbusConnection:
+    """Create an inverter connection, shared by entry setup and the config flow."""
+    return ModbusConnection(
+        ModbusTcpParams(host=host, port=port), timeout=MODBUS_TIMEOUT
+    )
 
 
 class DateTimeField(RegisterField[datetime]):
@@ -119,8 +129,14 @@ class RealtimeData(Component):
     errorcount = integer(0x136, signed=False)
     datetime = DateTimeField(0x137, count=4)
 
-    # Remote power on/off; far from the 0x100 block, so it plans as its own read.
-    # The R5 only accepts FC16 writes, hence force_fc16.
+
+class PowerState(Component):
+    """Remote power on/off, read and written at 0x1037.
+
+    Its own component so a firmware that rejects this register only loses the
+    switch, not the whole poll. The R5 only accepts FC16 writes, hence force_fc16.
+    """
+
     poweronoff = boolean(0x1037, writable=True, force_fc16=True)
 
 
@@ -143,7 +159,9 @@ class SajR5Inverter:
         """Initialize the device's components on ``unit``."""
         self.info = InverterInfo(unit)
         self.realtime = RealtimeData(unit)
+        self.power = PowerState(unit)
         self.settings = Settings(unit)
+        self._readable = ComponentGroup(unit, [self.info, self.realtime, self.power])
 
     @classmethod
     async def async_probe(cls, unit: ModbusUnit) -> str:
@@ -153,8 +171,5 @@ class SajR5Inverter:
         return info.sn or ""
 
     async def async_read_raw(self) -> dict[str, dict[int, int | bool]]:
-        """Read the raw registers backing the info and realtime components."""
-        raw = await self.info.async_read_raw()
-        for space, values in (await self.realtime.async_read_raw()).items():
-            raw.setdefault(space, {}).update(values)
-        return raw
+        """Read the raw registers backing every readable component."""
+        return await self._readable.async_read_raw()

@@ -15,17 +15,15 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL
 from homeassistant.core import callback
-from modbus_connection import ModbusError, ModbusTcpParams
-from modbus_connection.tmodbus import ModbusConnection
+from modbus_connection import ModbusError
 
 from .const import (
     DEFAULT_NAME,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
-    MODBUS_TIMEOUT,
 )
-from .inverter import UNIT_ID, SajR5Inverter
+from .inverter import UNIT_ID, SajR5Inverter, create_connection
 
 
 def host_valid(host: str) -> bool:
@@ -39,9 +37,7 @@ def host_valid(host: str) -> bool:
 
 async def async_probe(host: str, port: int) -> str:
     """Probe the inverter, returning its serial; raises ModbusError on failure."""
-    connection = ModbusConnection(
-        ModbusTcpParams(host=host, port=port), timeout=MODBUS_TIMEOUT
-    )
+    connection = create_connection(host, port)
     try:
         return await SajR5Inverter.async_probe(connection.for_unit(UNIT_ID))
     finally:

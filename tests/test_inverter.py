@@ -3,10 +3,11 @@
 from datetime import datetime
 
 import pytest
-from modbus_connection.mock import MockModbusUnit, WriteEvent
+from modbus_connection.mock import MockModbusUnit, ReadEvent, WriteEvent
 
 from custom_components.saj_modbus.inverter import (
     InverterInfo,
+    PowerState,
     RealtimeData,
     SajR5Inverter,
     Settings,
@@ -150,20 +151,28 @@ async def test_realtime_data(mock_modbus_unit: MockModbusUnit) -> None:
     assert realtime.totalhour == 12345.6
     assert realtime.errorcount == 7
     assert realtime.datetime == datetime(2026, 8, 7, 3, 21, 42).astimezone()
-    assert realtime.poweronoff is True
 
 
 async def test_realtime_read_plan(mock_modbus_unit: MockModbusUnit) -> None:
-    """A poll issues exactly two block reads: the 0x100 block and 0x1037."""
+    """A realtime poll is a single block read of the 0x100 block."""
     mock_modbus_unit.holding.update(REALTIME_REGISTERS)
     realtime = RealtimeData(mock_modbus_unit)
 
     await realtime.async_update()
 
-    blocks = sorted(
-        (event.address, event.count) for event in mock_modbus_unit.read_events
-    )
-    assert blocks == [(0x100, 59), (0x1037, 1)]
+    blocks = [(event.address, event.count) for event in mock_modbus_unit.read_events]
+    assert blocks == [(0x100, 59)]
+
+
+async def test_power_state(mock_modbus_unit: MockModbusUnit) -> None:
+    """The power state component reads 0x1037."""
+    mock_modbus_unit.holding.update(REALTIME_REGISTERS)
+    power = PowerState(mock_modbus_unit)
+
+    await power.async_update()
+
+    assert power.poweronoff is True
+    assert mock_modbus_unit.read_events == [ReadEvent("holding", 0x1037, 1)]
 
 
 async def test_unset_clock_decodes_to_none(mock_modbus_unit: MockModbusUnit) -> None:
@@ -179,9 +188,9 @@ async def test_write_power_on_off(mock_modbus_unit: MockModbusUnit) -> None:
     """Power on/off writes register 0x1037 with FC16."""
     events: list[WriteEvent] = []
     mock_modbus_unit.on_write(events.append)
-    realtime = RealtimeData(mock_modbus_unit)
+    power = PowerState(mock_modbus_unit)
 
-    await realtime.write("poweronoff", False)
+    await power.write("poweronoff", False)
 
     assert events == [WriteEvent("holding", 0x1037, [0])]
 
