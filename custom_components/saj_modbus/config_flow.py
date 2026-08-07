@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ipaddress
+import re
 from typing import Any
 
 import voluptuous as vol
@@ -26,13 +27,25 @@ from .const import (
 from .inverter import UNIT_ID, SajR5Inverter, create_connection
 
 
+# A DNS label: alphanumeric, inner hyphens allowed, 1-63 characters.
+_HOSTNAME = re.compile(
+    r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*\.?$"
+)
+
+
 def host_valid(host: str) -> bool:
     """Return True if hostname or IP address is valid."""
     try:
         ipaddress.ip_address(host)
-        return True
     except ValueError:
+        pass
+    else:
+        return True
+    if len(host) > 253 or not _HOSTNAME.match(host):
         return False
+    # RFC 1123: the top-level label may not be all-numeric, which is what
+    # separates a hostname from a malformed IP address such as 192.168.1.999.
+    return not host.rstrip(".").rsplit(".", 1)[-1].isdigit()
 
 
 async def async_probe(host: str, port: int) -> str:
