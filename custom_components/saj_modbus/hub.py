@@ -66,8 +66,8 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         self.device = SajR5Inverter(self._connection.for_unit(UNIT_ID))
         self.inverter_data: dict[str, int | float | str] = {}
         self._power_limit: float = 110.0
-        # Optional blocks this inverter answered "not in my map" for; asking
-        # again every poll would be pure waste.
+        # Optional components this inverter answered "not in my map" for;
+        # asking again every poll would be pure waste.
         self._absent: set[str] = set()
         # Resolved once by freeze_identity() after the first refresh and never
         # again: entities bake it into their unique ids at construction, so it
@@ -76,7 +76,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
 
     @property
     def serial_number(self) -> str | None:
-        """The inverter's serial number, once the info block has been read."""
+        """The inverter's serial number, once the info registers have been read."""
         serial = self.inverter_data.get("sn")
         return serial if isinstance(serial, str) and serial else None
 
@@ -90,7 +90,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         """Pin this hub's identity, preferring the serial over the name.
 
         Installs predating the serial-based identity, and firmware that does
-        not serve the info block, keep the user-chosen name.
+        not serve the info registers, keep the user-chosen name.
         """
         self._identifier = self.serial_number or self.name
         return self._identifier
@@ -109,8 +109,8 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         """Close the Modbus connection."""
         await self._connection.close()
 
-    def _note_absent(self, block: str, err: BlockReadError) -> None:
-        """Record a block the inverter does not serve, or re-raise.
+    def _note_absent(self, component: str, err: BlockReadError) -> None:
+        """Record a component the inverter does not serve, or re-raise.
 
         Only a structural rejection means the registers are not there. Every
         other exception code is transient (a device fault, or a busy or
@@ -121,11 +121,11 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         """
         if err.exception_code not in _ABSENT_CODES:
             raise err
-        self._absent.add(block)
+        self._absent.add(component)
         _LOGGER.info(
             "This inverter does not serve its %s registers, so they stay "
             "unavailable and are not read again: %s",
-            block,
+            component,
             err,
         )
 
@@ -145,7 +145,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         """Fetch realtime data from the inverter."""
         try:
             # Static inverter info is fetched once and cached. Some firmware
-            # variants do not serve the info and power-state blocks at all;
+            # variants do not serve the info and power-state registers at all;
             # tolerate that, as the previous pymodbus code did.
             if not self.inverter_data and "info" not in self._absent:
                 try:
