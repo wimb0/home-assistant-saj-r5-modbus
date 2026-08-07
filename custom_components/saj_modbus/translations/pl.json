@@ -9,11 +9,19 @@
           "port": "Port TCP, na którym należy połączyć się z falownikiem SAJ",
           "scan_interval": "Częstotliwość odpytywania rejestrów modbus w sekundach"
         }
+      },
+      "reconfigure": {
+        "title": "Ponowna konfiguracja połączenia z falownikiem SAJ",
+        "data": {
+          "host": "Adres IP Twojego urządzenia modbus z falownikiem SAJ",
+          "port": "Port TCP, na którym należy połączyć się z falownikiem SAJ"
+        }
       }
     },
     "error": {
       "already_configured": "Urządzenie jest już skonfigurowane",
-      "cannot_connect": "Nie można nawiązać połączenia"
+      "cannot_connect": "Nie można nawiązać połączenia",
+      "invalid_host": "Nieprawidłowa nazwa hosta lub adres IP"
     },
     "abort": {
       "already_configured": "Urządzenie jest już skonfigurowane",
@@ -27,9 +35,6 @@
           "scan_interval": "Częstotliwość odpytywania rejestrów modbus w sekundach"
         }
       }
-    },
-    "abort": {
-      "reconfigure_successful": "Konfiguracja została pomyślnie zaktualizowana!"
     }
   },
   "services": {

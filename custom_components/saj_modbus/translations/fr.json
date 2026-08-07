@@ -9,11 +9,19 @@
           "port": "Le port TCP sur lequel se connecter à l'onduleur SAJ",
           "scan_interval": "La fréquence d'interrogation des registres modbus en secondes"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigurer la connexion à votre onduleur SAJ",
+        "data": {
+          "host": "L'adresse IP de votre appareil modbus SAJ Inverter",
+          "port": "Le port TCP sur lequel se connecter à l'onduleur SAJ"
+        }
       }
     },
     "error": {
       "already_configured": "L'appareil est déjà configuré",
-      "cannot_connect": "Échec de connexion"
+      "cannot_connect": "Échec de connexion",
+      "invalid_host": "Nom d'hôte ou adresse IP non valide"
     },
     "abort": {
       "already_configured": "L'appareil est déjà configuré",
@@ -27,9 +35,6 @@
           "scan_interval": "La fréquence d'interrogation des registres modbus en secondes"
         }
       }
-    },
-    "abort": {
-      "reconfigure_successful": "Configuration mise à jour avec succès!"
     }
   },
   "services": {

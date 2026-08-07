@@ -9,11 +9,19 @@
           "port": "连接到 SAJ 逆变器的 TCP 端口",
           "scan_interval": "modbus 寄存器的轮询频率（秒）"
         }
+      },
+      "reconfigure": {
+        "title": "重新配置 SAJ 逆变器连接",
+        "data": {
+          "host": "您的 SAJ 逆变器 modbus 设备的 IP 地址",
+          "port": "连接到 SAJ 逆变器的 TCP 端口"
+        }
       }
     },
     "error": {
       "already_configured": "设备已配置",
-      "cannot_connect": "连接失败"
+      "cannot_connect": "连接失败",
+      "invalid_host": "主机名或 IP 地址无效"
     },
     "abort": {
       "already_configured": "设备已配置",
@@ -27,9 +35,6 @@
           "scan_interval": "modbus 寄存器的轮询频率（秒）"
         }
       }
-    },
-    "abort": {
-      "reconfigure_successful": "配置已成功更新！"
     }
   },
   "services": {

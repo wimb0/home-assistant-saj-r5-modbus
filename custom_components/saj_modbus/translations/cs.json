@@ -9,11 +9,19 @@
           "port": "TCP port, na kterém se má připojit k měniči SAJ",
           "scan_interval": "Frekvence dotazování registrů modbus v sekundách"
         }
+      },
+      "reconfigure": {
+        "title": "Změna připojení k měniči SAJ",
+        "data": {
+          "host": "IP adresa vašeho zařízení modbus k měniči SAJ",
+          "port": "TCP port, na kterém se má připojit k měniči SAJ"
+        }
       }
     },
     "error": {
       "already_configured": "Zařízení je již nakonfigurováno",
-      "cannot_connect": "Nepodařilo se připojit"
+      "cannot_connect": "Nepodařilo se připojit",
+      "invalid_host": "Neplatný název hostitele nebo IP adresa"
     },
     "abort": {
       "already_configured": "Zařízení je již nakonfigurováno",
@@ -27,9 +35,6 @@
           "scan_interval": "Frekvence dotazování registrů modbus v sekundách"
         }
       }
-    },
-    "abort": {
-      "reconfigure_successful": "Konfigurace byla úspěšně aktualizována!"
     }
   },
   "services": {

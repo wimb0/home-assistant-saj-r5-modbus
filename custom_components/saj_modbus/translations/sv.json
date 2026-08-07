@@ -9,11 +9,19 @@
           "port": "TCP-porten som du ska ansluta till SAJ-växelriktaren på",
           "scan_interval": "Avfrågningsfrekvensen för modbus-registren i sekunder"
         }
+      },
+      "reconfigure": {
+        "title": "Konfigurera om anslutningen till din SAJ-växelriktare",
+        "data": {
+          "host": "IP-adressen till din SAJ Inverter modbus-enhet",
+          "port": "TCP-porten som du ska ansluta till SAJ-växelriktaren på"
+        }
       }
     },
     "error": {
       "already_configured": "Enheten är redan konfigurerad",
-      "cannot_connect": "Det gick inte att ansluta"
+      "cannot_connect": "Det gick inte att ansluta",
+      "invalid_host": "Ogiltigt värdnamn eller IP-adress"
     },
     "abort": {
       "already_configured": "Enheten är redan konfigurerad",
@@ -27,9 +35,6 @@
           "scan_interval": "Avfrågningsfrekvensen för modbus-registren i sekunder"
         }
       }
-    },
-    "abort": {
-      "reconfigure_successful": "Konfigurationen har uppdaterats!"
     }
   },
   "services": {

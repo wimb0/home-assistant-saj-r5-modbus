@@ -9,11 +9,19 @@
           "port": "TCP-porten, som der skal oprettes forbindelse til SAJ-inverteren på",
           "scan_interval": "Pollingfrekvensen for modbus-registrene i sekunder"
         }
+      },
+      "reconfigure": {
+        "title": "Omkonfigurer forbindelsen til din SAJ-inverter",
+        "data": {
+          "host": "IP-adressen på din SAJ Inverter modbus-enhed",
+          "port": "TCP-porten, som der skal oprettes forbindelse til SAJ-inverteren på"
+        }
       }
     },
     "error": {
       "already_configured": "Enheden er allerede konfigureret",
-      "cannot_connect": "Kunne ikke oprette forbindelse"
+      "cannot_connect": "Kunne ikke oprette forbindelse",
+      "invalid_host": "Ugyldigt værtsnavn eller IP-adresse"
     },
     "abort": {
       "already_configured": "Enheden er allerede konfigureret",
@@ -27,9 +35,6 @@
           "scan_interval": "Pollingfrekvensen for modbus-registrene i sekunder"
         }
       }
-    },
-    "abort": {
-      "reconfigure_successful": "Konfigurationen er opdateret!"
     }
   },
   "services": {

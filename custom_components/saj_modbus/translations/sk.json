@@ -9,11 +9,19 @@
           "port": "TCP port, na ktorý sa má pripojiť k meniču SAJ",
           "scan_interval": "Frekvencia dopytovania modbus registrov v sekundách"
         }
+      },
+      "reconfigure": {
+        "title": "Zmena pripojenia k meniču SAJ",
+        "data": {
+          "host": "IP adresa vášho zariadenia SAJ Inverter modbus",
+          "port": "TCP port, na ktorý sa má pripojiť k meniču SAJ"
+        }
       }
     },
     "error": {
       "already_configured": "Zariadenie je už nakonfigurované",
-      "cannot_connect": "Nepodarilo sa pripojiť"
+      "cannot_connect": "Nepodarilo sa pripojiť",
+      "invalid_host": "Neplatný názov hostiteľa alebo IP adresa"
     },
     "abort": {
       "already_configured": "Zariadenie je už nakonfigurované",
@@ -27,9 +35,6 @@
           "scan_interval": "Frekvencia dopytovania modbus registrov v sekundách"
         }
       }
-    },
-    "abort": {
-      "reconfigure_successful": "Konfigurácia bola úspešne aktualizovaná!"
     }
   },
   "services": {

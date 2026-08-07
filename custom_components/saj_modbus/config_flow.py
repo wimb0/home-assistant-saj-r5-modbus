@@ -116,6 +116,38 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
             step_id="user", data_schema=setup_schema, errors=errors
         )
 
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Change where the inverter lives."""
+        entry = self._get_reconfigure_entry()
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            host = user_input[CONF_HOST]
+            if not host_valid(host):
+                errors[CONF_HOST] = "invalid_host"
+            else:
+                try:
+                    await async_probe(host, user_input[CONF_PORT])
+                except ModbusError:
+                    errors["base"] = "cannot_connect"
+            if not errors:
+                return self.async_update_reload_and_abort(
+                    entry, data_updates=user_input
+                )
+
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_HOST, default=entry.data.get(CONF_HOST)): str,
+                    vol.Required(CONF_PORT, default=entry.data.get(CONF_PORT)): int,
+                }
+            ),
+            errors=errors,
+        )
+
 
 class SAJModbusOptionsFlowHandler(OptionsFlow):
     """SAJ Modbus config flow options handler."""
@@ -123,30 +155,12 @@ class SAJModbusOptionsFlowHandler(OptionsFlow):
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Manage the options."""
+        """Manage the polling interval."""
         if user_input is not None:
-            self.hass.config_entries.async_update_entry(
-                self.config_entry,
-                data={
-                    **self.config_entry.data,
-                    CONF_HOST: user_input[CONF_HOST],
-                    CONF_PORT: user_input[CONF_PORT],
-                },
-                options={
-                    **self.config_entry.options,
-                    CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL],
-                },
-            )
-            return self.async_abort(reason="reconfigure_successful")
+            return self.async_create_entry(data=user_input)
 
         options_schema = vol.Schema(
             {
-                vol.Required(
-                    CONF_HOST, default=self.config_entry.data.get(CONF_HOST)
-                ): str,
-                vol.Required(
-                    CONF_PORT, default=self.config_entry.data.get(CONF_PORT)
-                ): int,
                 vol.Optional(
                     CONF_SCAN_INTERVAL,
                     default=self.config_entry.options.get(
