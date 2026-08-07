@@ -23,6 +23,12 @@ _LOGGER = logging.getLogger(__name__)
 
 type SajConfigEntry = ConfigEntry[SAJModbusHub]
 
+# Modbus exception codes meaning the registers are not in the device's map:
+# illegal function (the device has no such function code) and illegal data
+# address. Every other code describes a request that failed, not one that
+# can never succeed.
+_ABSENT_CODES = frozenset({1, 2})
+
 
 def translate_fault_code_to_messages(
     fault_code: int, fault_messages: dict[int, str]
@@ -60,6 +66,9 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         self.device = SajR5Inverter(self._connection.for_unit(UNIT_ID))
         self.inverter_data: dict[str, int | float | str] = {}
         self._power_limit: float = 110.0
+        # Optional blocks this inverter answered "not in my map" for; asking
+        # again every poll would be pure waste.
+        self._absent: set[str] = set()
         # Resolved once by freeze_identity() after the first refresh and never
         # again: entities bake it into their unique ids at construction, so it
         # must not change under them if a later poll finally reads the serial.
@@ -100,6 +109,26 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         """Close the Modbus connection."""
         await self._connection.close()
 
+    def _note_absent(self, block: str, err: BlockReadError) -> None:
+        """Record a block the inverter does not serve, or re-raise.
+
+        Only a structural rejection means the registers are not there. Every
+        other exception code is transient (a device fault, or a busy or
+        rejected request), so swallowing it would hide a real failure as a
+        permanently missing sensor.
+
+        Raises the original error if the rejection was not structural.
+        """
+        if err.exception_code not in _ABSENT_CODES:
+            raise err
+        self._absent.add(block)
+        _LOGGER.info(
+            "This inverter does not serve its %s registers, so they stay "
+            "unavailable and are not read again: %s",
+            block,
+            err,
+        )
+
     async def _async_recycle_connection(self) -> None:
         """Replace the connection after a timeout.
 
@@ -116,20 +145,21 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         """Fetch realtime data from the inverter."""
         try:
             # Static inverter info is fetched once and cached. Some firmware
-            # variants reject blocks the R5 serves; tolerate that for the info
-            # and power-state blocks, as the previous pymodbus code did.
-            if not self.inverter_data:
+            # variants do not serve the info and power-state blocks at all;
+            # tolerate that, as the previous pymodbus code did.
+            if not self.inverter_data and "info" not in self._absent:
                 try:
                     await self.device.info.async_update()
                 except BlockReadError as ex:
-                    _LOGGER.debug("Inverter info request rejected: %s", ex)
+                    self._note_absent("info", ex)
                 else:
                     self.inverter_data = component_values(self.device.info)
             await self.device.realtime.async_update()
-            try:
-                await self.device.power.async_update()
-            except BlockReadError as ex:
-                _LOGGER.debug("Power state request rejected: %s", ex)
+            if "power" not in self._absent:
+                try:
+                    await self.device.power.async_update()
+                except BlockReadError as ex:
+                    self._note_absent("power", ex)
         except ModbusTimeoutError as ex:
             await self._async_recycle_connection()
             raise UpdateFailed(f"Failed to fetch realtime data: {ex}") from ex
