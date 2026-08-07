@@ -55,6 +55,6 @@ class SajCounterSensor(SajSensor):
     @property
     def native_value(self):
         """Return the value of the sensor."""
-        if self.coordinator.data and self.coordinator.data.get("mpvmode") in (1, 2):
+        if self.coordinator.device.realtime.mpvmode in (1, 2):
             return self._value
         return None

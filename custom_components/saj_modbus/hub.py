@@ -17,7 +17,7 @@ from .const import (
     DOMAIN,
     FAULT_MESSAGES,
 )
-from .inverter import UNIT_ID, SajR5Inverter, component_values, create_connection
+from .inverter import UNIT_ID, SajR5Inverter, create_connection
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ def translate_fault_code_to_messages(
     return [mesg for code, mesg in fault_messages.items() if fault_code & code]
 
 
-class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
+class SAJModbusHub(DataUpdateCoordinator[None]):
     """Coordinator polling a SAJ R5 inverter over modbus-connection."""
 
     def __init__(
@@ -64,8 +64,11 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         self._port = port
         self._connection = create_connection(host, port)
         self.device = SajR5Inverter(self._connection.for_unit(UNIT_ID))
-        self.inverter_data: dict[str, int | float | str] = {}
+        self._info_read = False
         self._power_limit: float = 110.0
+        # Set optimistically by a write and cleared by the next reading poll,
+        # so the switch reflects the command before the device confirms it.
+        self._power_on_off: bool | None = None
         # Optional components this inverter answered "not in my map" for;
         # asking again every poll would be pure waste.
         self._absent: set[str] = set()
@@ -77,8 +80,8 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
     @property
     def serial_number(self) -> str | None:
         """The inverter's serial number, once the info registers have been read."""
-        serial = self.inverter_data.get("sn")
-        return serial if isinstance(serial, str) and serial else None
+        serial = self.device.info.sn
+        return serial or None
 
     @property
     def identifier(self) -> str:
@@ -141,42 +144,53 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         self.device = SajR5Inverter(self._connection.for_unit(UNIT_ID))
         await old.close()
 
-    async def _async_update_data(self) -> dict[str, int | float | str]:
-        """Fetch realtime data from the inverter."""
+    async def _async_update_data(self) -> None:
+        """Refresh the inverter's components; entities read them directly."""
         try:
-            # Static inverter info is fetched once and cached. Some firmware
-            # variants do not serve the info and power-state registers at all;
-            # tolerate that, as the previous pymodbus code did.
-            if not self.inverter_data and "info" not in self._absent:
+            # Static inverter info is read once. Some firmware variants do not
+            # serve the info and power-state registers at all; tolerate that,
+            # as the previous pymodbus code did.
+            if not self._info_read and "info" not in self._absent:
                 try:
                     await self.device.info.async_update()
                 except BlockReadError as ex:
                     self._note_absent("info", ex)
                 else:
-                    self.inverter_data = component_values(self.device.info)
+                    self._info_read = True
             await self.device.realtime.async_update()
             if "power" not in self._absent:
                 try:
                     await self.device.power.async_update()
                 except BlockReadError as ex:
                     self._note_absent("power", ex)
+                else:
+                    # The device has spoken; drop the optimistic value a write
+                    # left behind.
+                    self._power_on_off = None
         except ModbusTimeoutError as ex:
             await self._async_recycle_connection()
             raise UpdateFailed(f"Failed to fetch realtime data: {ex}") from ex
         except ModbusError as ex:
             raise UpdateFailed(f"Failed to fetch realtime data: {ex}") from ex
 
-        data = {**self.inverter_data, **self._realtime_values()}
-        data["poweronoff"] = self.device.power.poweronoff
-        data["limitpower"] = self._power_limit
-        return data
+        if messages := self.fault_messages:
+            _LOGGER.error("Fault message: %s", ", ".join(messages))
 
-    def _realtime_values(self) -> dict[str, int | float | str]:
-        """Return the realtime component's values with derived fields."""
+    @property
+    def absent_components(self) -> set[str]:
+        """Components this inverter does not serve."""
+        return set(self._absent)
+
+    @property
+    def mpvstatus(self) -> str:
+        """The inverter's working mode as a readable status."""
+        return DEVICE_STATUSSES.get(self.device.realtime.mpvmode, "Unknown")
+
+    @property
+    def fault_messages(self) -> list[str]:
+        """Every fault the inverter is currently reporting."""
         realtime = self.device.realtime
-        data = component_values(realtime)
-        data["mpvstatus"] = DEVICE_STATUSSES.get(realtime.mpvmode, "Unknown")
-        fault_messages_list = [
+        return [
             message
             for fault_code, messages in (
                 (realtime.faultmsg0, FAULT_MESSAGES[0]),
@@ -185,12 +199,27 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
             )
             for message in translate_fault_code_to_messages(fault_code or 0, messages)
         ]
-        for name in ("faultmsg0", "faultmsg1", "faultmsg2"):
-            data.pop(name)
-        data["faultmsg"] = ", ".join(fault_messages_list).strip()[:254]
-        if fault_messages_list:
-            _LOGGER.error("Fault message: %s", ", ".join(fault_messages_list).strip())
-        return data
+
+    @property
+    def faultmsg(self) -> str:
+        """The reported faults as one string, capped to fit a state value."""
+        return ", ".join(self.fault_messages).strip()[:254]
+
+    @property
+    def poweronoff(self) -> bool | None:
+        """Whether the inverter is switched on."""
+        if self._power_on_off is not None:
+            return self._power_on_off
+        return self.device.power.poweronoff
+
+    @property
+    def limitpower(self) -> float:
+        """The active power limit.
+
+        Write-only on this inverter, so this is the last value written rather
+        than anything read back from the device.
+        """
+        return self._power_limit
 
     async def async_set_power_on_off(self, value: bool) -> bool:
         """Set the power on/off on the inverter."""
@@ -199,10 +228,8 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         except ModbusError as ex:
             _LOGGER.error("Failed to set power on/off: %s", ex)
             return False
-        if self.data:
-            new_data = self.data.copy()
-            new_data["poweronoff"] = value
-            self.async_set_updated_data(new_data)
+        self._power_on_off = value
+        self.async_update_listeners()
         return True
 
     async def async_set_limit_power(self, value: float) -> bool:
@@ -216,10 +243,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
             _LOGGER.error("Failed to set limitpower: %s", ex)
             return False
         self._power_limit = value
-        if self.data:
-            new_data = self.data.copy()
-            new_data["limitpower"] = value
-            self.async_set_updated_data(new_data)
+        self.async_update_listeners()
         return True
 
     async def async_set_date_and_time(self, date_time: datetime | None = None) -> None:

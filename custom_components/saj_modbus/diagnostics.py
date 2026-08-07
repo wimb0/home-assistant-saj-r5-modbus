@@ -9,13 +9,32 @@ from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT
 from homeassistant.core import HomeAssistant
 from modbus_connection import ModbusError
 
-from .hub import SajConfigEntry
+from .const import COUNTER_SENSOR_TYPES, NUMBER_TYPES, SENSOR_TYPES, SWITCH_TYPES
+from .hub import SAJModbusHub, SajConfigEntry
 
 TO_REDACT = {
     CONF_HOST,
     CONF_NAME,
     CONF_PORT,
 }
+
+
+def _decoded_values(hub: SAJModbusHub) -> dict[str, Any]:
+    """Every value this integration exposes, keyed by entity key.
+
+    Built from the entity descriptions rather than from the device model, so a
+    diagnostics download reports exactly what the entities report.
+    """
+    return {
+        description.key: description.value_fn(hub)
+        for descriptions in (
+            SENSOR_TYPES,
+            COUNTER_SENSOR_TYPES,
+            NUMBER_TYPES,
+            SWITCH_TYPES,
+        )
+        for description in descriptions.values()
+    }
 
 
 async def async_get_config_entry_diagnostics(
@@ -32,12 +51,10 @@ async def async_get_config_entry_diagnostics(
     except ModbusError as ex:
         raw_registers = {"error": str(ex)}
 
-    diagnostics_data = {
+    return {
         "config_entry_data": async_redact_data(entry.data, TO_REDACT),
         "config_entry_options": async_redact_data(entry.options, TO_REDACT),
-        "inverter_data": async_redact_data(hub.inverter_data, TO_REDACT),
-        "last_fetched_data": hub.data,
+        "decoded_values": _decoded_values(hub),
+        "unserved_components": sorted(hub.absent_components),
         "raw_registers": raw_registers,
     }
-
-    return diagnostics_data

@@ -147,11 +147,6 @@ class Settings(Component):
     datetime = DateTimeField(0x8020, count=4, writable=True)
 
 
-def component_values(component: Component) -> dict[str, Any]:
-    """Return a component's decoded values keyed by field name."""
-    return {name: getattr(component, name) for name in component.declared_fields}
-
-
 class SajR5Inverter:
     """A SAJ R5 inverter on a Modbus unit."""
 

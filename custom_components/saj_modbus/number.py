@@ -32,15 +32,6 @@ class SajNumber(SajEntity, NumberEntity):
     entity_description: SajModbusNumberEntityDescription
 
     @property
-    def available(self) -> bool:
-        """Return entity availability."""
-        return (
-            super().available
-            and self.coordinator.data is not None
-            and self.entity_description.key in self.coordinator.data
-        )
-
-    @property
     def native_value(self) -> float | None:
         """Return the state of the number entity."""
         return self._value
