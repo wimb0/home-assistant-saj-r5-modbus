@@ -12,7 +12,8 @@
       }
     },
     "error": {
-      "already_configured": "Пристрій вже налаштовано"
+      "already_configured": "Пристрій вже налаштовано",
+      "cannot_connect": "Не вдалося з'єднатися"
     },
     "abort": {
       "already_configured": "Пристрій вже налаштовано",

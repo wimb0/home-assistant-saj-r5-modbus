@@ -12,7 +12,8 @@
       }
     },
     "error": {
-      "already_configured": "Устройство уже настроено"
+      "already_configured": "Устройство уже настроено",
+      "cannot_connect": "Не удалось подключиться"
     },
     "abort": {
       "already_configured": "Устройство уже настроено",

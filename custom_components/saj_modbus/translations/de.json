@@ -12,7 +12,8 @@
       }
     },
     "error": {
-      "already_configured": "Gerät ist bereits konfiguriert"
+      "already_configured": "Gerät ist bereits konfiguriert",
+      "cannot_connect": "Verbindung fehlgeschlagen"
     },
     "abort": {
       "already_configured": "Gerät ist bereits konfiguriert",

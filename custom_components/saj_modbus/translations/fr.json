@@ -12,7 +12,8 @@
       }
     },
     "error": {
-      "already_configured": "L'appareil est déjà configuré"
+      "already_configured": "L'appareil est déjà configuré",
+      "cannot_connect": "Échec de connexion"
     },
     "abort": {
       "already_configured": "L'appareil est déjà configuré",

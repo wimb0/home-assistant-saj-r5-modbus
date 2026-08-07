@@ -5,16 +5,18 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers.update_coordinator import UpdateFailed
+from modbus_connection import ModbusTcpParams
+from modbus_connection.tmodbus import ModbusConnection
 
 from .const import (
     ATTR_MANUFACTURER,
     DEFAULT_NAME,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
+    MODBUS_TIMEOUT,
 )
 from .hub import SAJModbusHub
+from .inverter import UNIT_ID, SajR5Inverter
 from .services import async_setup_services, async_unload_services
 
 _LOGGER = logging.getLogger(__name__)
@@ -29,7 +31,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     port = entry.data[CONF_PORT]
     scan_interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
 
-    hub = SAJModbusHub(hass, name, host, port, scan_interval)
+    connection = ModbusConnection(
+        ModbusTcpParams(host=host, port=port), timeout=MODBUS_TIMEOUT
+    )
+    entry.async_on_unload(connection.close)
+
+    device = SajR5Inverter(connection.for_unit(UNIT_ID))
+    hub = SAJModbusHub(hass, entry, name, device, scan_interval)
 
     entry.runtime_data = {
         "hub": hub,
@@ -40,11 +48,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         },
     }
 
-    try:
-        await hub.async_setup()
-        await hub.async_refresh()
-    except (UpdateFailed, ConfigEntryNotReady) as err:
-        raise ConfigEntryNotReady from err
+    await hub.async_config_entry_first_refresh()
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.add_update_listener(options_update_listener)
@@ -58,8 +62,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
-        if hub := entry.runtime_data.pop("hub", None):
-            hub.close()
         async_unload_services(hass)
     return unload_ok
 

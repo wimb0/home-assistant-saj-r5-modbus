@@ -12,7 +12,8 @@
       }
     },
     "error": {
-      "already_configured": "Dispozitivul este deja configurat"
+      "already_configured": "Dispozitivul este deja configurat",
+      "cannot_connect": "Conectarea a eșuat"
     },
     "abort": {
       "already_configured": "Dispozitivul este deja configurat",

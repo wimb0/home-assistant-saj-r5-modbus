@@ -25,6 +25,7 @@ DOMAIN = "saj_modbus"
 DEFAULT_NAME = "SAJ"
 DEFAULT_SCAN_INTERVAL = 60
 DEFAULT_PORT = 502
+MODBUS_TIMEOUT = 5
 CONF_SAJ_HUB = "saj_hub"
 ATTR_MANUFACTURER = "SAJ Electric"
 
@@ -45,9 +46,11 @@ NUMBER_TYPES: dict[str, list[SajModbusNumberEntityDescription]] = {
     )
 }
 
+
 @dataclass
 class SajModbusSwitchEntityDescription(SwitchEntityDescription):
     """A class that describes SAJ switch entities."""
+
 
 SWITCH_TYPES: dict[str, list[SajModbusSwitchEntityDescription]] = {
     "PowerOnOff": SajModbusSwitchEntityDescription(
@@ -57,6 +60,7 @@ SWITCH_TYPES: dict[str, list[SajModbusSwitchEntityDescription]] = {
         entity_registry_enabled_default=False,
     )
 }
+
 
 @dataclass
 class SajModbusSensorEntityDescription(SensorEntityDescription):

@@ -1,4 +1,5 @@
 """SAJ Modbus services."""
+
 import logging
 
 import voluptuous as vol
@@ -8,6 +9,7 @@ from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
+from modbus_connection import ModbusError
 
 from .const import DOMAIN as SAJ_DOMAIN
 from .hub import SAJModbusHub
@@ -53,8 +55,8 @@ def async_setup_services(hass: HomeAssistant) -> None:
             raise HomeAssistantError(f"Hub not found for device: {device_id}")
 
         try:
-            await hass.async_add_executor_job(hub.set_date_and_time, date_time)
-        except Exception as ex:
+            await hub.async_set_date_and_time(date_time)
+        except ModbusError as ex:
             _LOGGER.error("Error setting date and time on inverter: %s", ex)
             raise HomeAssistantError(
                 f"Error setting date and time on inverter: {ex}"

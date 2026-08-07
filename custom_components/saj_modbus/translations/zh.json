@@ -12,7 +12,8 @@
       }
     },
     "error": {
-      "already_configured": "设备已配置"
+      "already_configured": "设备已配置",
+      "cannot_connect": "连接失败"
     },
     "abort": {
       "already_configured": "设备已配置",

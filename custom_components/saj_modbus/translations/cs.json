@@ -12,7 +12,8 @@
       }
     },
     "error": {
-      "already_configured": "Zařízení je již nakonfigurováno"
+      "already_configured": "Zařízení je již nakonfigurováno",
+      "cannot_connect": "Nepodařilo se připojit"
     },
     "abort": {
       "already_configured": "Zařízení je již nakonfigurováno",

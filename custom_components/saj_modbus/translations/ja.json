@@ -12,7 +12,8 @@
       }
     },
     "error": {
-      "already_configured": "デバイスはすでに設定されています"
+      "already_configured": "デバイスはすでに設定されています",
+      "cannot_connect": "接続に失敗しました"
     },
     "abort": {
       "already_configured": "デバイスはすでに設定されています",

@@ -12,7 +12,8 @@
       }
     },
     "error": {
-      "already_configured": "Urządzenie jest już skonfigurowane"
+      "already_configured": "Urządzenie jest już skonfigurowane",
+      "cannot_connect": "Nie można nawiązać połączenia"
     },
     "abort": {
       "already_configured": "Urządzenie jest już skonfigurowane",

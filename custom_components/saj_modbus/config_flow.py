@@ -1,4 +1,5 @@
 """Config flow for SAJ R5 Inverter Modbus."""
+
 from __future__ import annotations
 
 import ipaddress
@@ -14,8 +15,17 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL
 from homeassistant.core import callback
+from modbus_connection import ModbusError, ModbusTcpParams
+from modbus_connection.tmodbus import ModbusConnection
 
-from .const import DEFAULT_NAME, DEFAULT_PORT, DEFAULT_SCAN_INTERVAL, DOMAIN
+from .const import (
+    DEFAULT_NAME,
+    DEFAULT_PORT,
+    DEFAULT_SCAN_INTERVAL,
+    DOMAIN,
+    MODBUS_TIMEOUT,
+)
+from .inverter import UNIT_ID, SajR5Inverter
 
 
 def host_valid(host: str) -> bool:
@@ -25,6 +35,17 @@ def host_valid(host: str) -> bool:
         return True
     except ValueError:
         return False
+
+
+async def async_probe(host: str, port: int) -> str:
+    """Probe the inverter, returning its serial; raises ModbusError on failure."""
+    connection = ModbusConnection(
+        ModbusTcpParams(host=host, port=port), timeout=MODBUS_TIMEOUT
+    )
+    try:
+        return await SajR5Inverter.async_probe(connection.for_unit(UNIT_ID))
+    finally:
+        await connection.close()
 
 
 class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -54,6 +75,11 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
             ):
                 errors[CONF_HOST] = "already_configured"
             else:
+                try:
+                    await async_probe(host, user_input[CONF_PORT])
+                except ModbusError:
+                    errors["base"] = "cannot_connect"
+            if not errors:
                 data = {
                     CONF_NAME: user_input[CONF_NAME],
                     CONF_HOST: user_input[CONF_HOST],
@@ -73,9 +99,7 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                 vol.Optional(CONF_NAME, default=DEFAULT_NAME): str,
                 vol.Required(CONF_HOST): str,
                 vol.Required(CONF_PORT, default=DEFAULT_PORT): int,
-                vol.Optional(
-                    CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL
-                ): int,
+                vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): int,
             }
         )
 

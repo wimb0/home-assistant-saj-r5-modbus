@@ -33,3 +33,22 @@ jobs:
 
         - name: "Format"
           run: python3 -m ruff format .
+
+  pytest:
+    name: "Tests"
+    runs-on: "ubuntu-latest"
+    steps:
+        - name: "Checkout the repository"
+          uses: "actions/checkout@v7.0.1"
+
+        - name: "Set up Python"
+          uses: actions/setup-python@v7.0.0
+          with:
+            python-version: "3.13"
+            cache: "pip"
+
+        - name: "Install requirements"
+          run: python3 -m pip install -r requirements.txt
+
+        - name: "Run tests"
+          run: python3 -m pytest
