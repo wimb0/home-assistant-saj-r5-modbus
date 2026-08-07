@@ -58,13 +58,33 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         self._port = port
         self._connection = create_connection(host, port)
         self.device = SajR5Inverter(self._connection.for_unit(UNIT_ID))
-        self.device_info = DeviceInfo(
-            identifiers={(DOMAIN, name)},
-            name=name,
-            manufacturer=ATTR_MANUFACTURER,
-        )
         self.inverter_data: dict[str, int | float | str] = {}
         self._power_limit: float = 110.0
+
+    @property
+    def serial_number(self) -> str | None:
+        """The inverter's serial number, once the info block has been read."""
+        serial = self.inverter_data.get("sn")
+        return serial if isinstance(serial, str) and serial else None
+
+    @property
+    def identifier(self) -> str:
+        """The stable key entity unique ids and the device are built from.
+
+        The serial number once known, else the user-chosen name — which is
+        what installs predating the serial-based identity used.
+        """
+        return self.serial_number or self.name
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Device registry entry for this inverter."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.identifier)},
+            name=self.name,
+            manufacturer=ATTR_MANUFACTURER,
+            serial_number=self.serial_number,
+        )
 
     async def async_close(self) -> None:
         """Close the Modbus connection."""
@@ -172,7 +192,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         """Return True if the limiter entity is disabled, False otherwise."""
         ent_reg = entity_registry.async_get(self.hass)
         limiter_entity_id = ent_reg.async_get_entity_id(
-            NUMBER_DOMAIN, DOMAIN, f"{self.name}_limitpower"
+            NUMBER_DOMAIN, DOMAIN, f"{self.identifier}_limitpower"
         )
         if (
             limiter_entity_id is None

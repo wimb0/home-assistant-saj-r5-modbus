@@ -18,7 +18,7 @@ class SajEntity(CoordinatorEntity[SAJModbusHub]):
         super().__init__(coordinator=hub)
         self.entity_description = description
         self._attr_device_info = hub.device_info
-        self._attr_unique_id = f"{hub.name}_{description.key}"
+        self._attr_unique_id = f"{hub.identifier}_{description.key}"
 
     @property
     def _value(self):
