@@ -5,13 +5,13 @@ from __future__ import annotations
 from homeassistant.components.number import NumberEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     NUMBER_TYPES,
     SajModbusNumberEntityDescription,
 )
-from .hub import SAJModbusHub, SajConfigEntry
+from .entity import SajEntity
+from .hub import SajConfigEntry
 
 
 async def async_setup_entry(
@@ -26,26 +26,10 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class SajNumber(CoordinatorEntity[SAJModbusHub], NumberEntity):
+class SajNumber(SajEntity, NumberEntity):
     """Representation of an SAJ Modbus number."""
 
     entity_description: SajModbusNumberEntityDescription
-
-    def __init__(
-        self,
-        hub: SAJModbusHub,
-        description: SajModbusNumberEntityDescription,
-    ) -> None:
-        """Initialize the number entity."""
-        super().__init__(coordinator=hub)
-        self._attr_device_info = hub.device_info
-        self.entity_description = description
-        self._attr_unique_id = f"{hub.name}_{description.key}"
-
-    @property
-    def name(self) -> str:
-        """Return the name."""
-        return f"{self.coordinator.name} {self.entity_description.name}"
 
     @property
     def available(self) -> bool:
@@ -59,9 +43,7 @@ class SajNumber(CoordinatorEntity[SAJModbusHub], NumberEntity):
     @property
     def native_value(self) -> float | None:
         """Return the state of the number entity."""
-        if self.coordinator.data:
-            return self.coordinator.data.get(self.entity_description.key)
-        return None
+        return self._value
 
     async def async_set_native_value(self, value: float) -> None:
         """Update the current value by calling the hub."""

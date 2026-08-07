@@ -5,13 +5,13 @@ from __future__ import annotations
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     SWITCH_TYPES,
     SajModbusSwitchEntityDescription,
 )
-from .hub import SAJModbusHub, SajConfigEntry
+from .entity import SajEntity
+from .hub import SajConfigEntry
 
 
 async def async_setup_entry(
@@ -26,33 +26,15 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class SajSwitch(CoordinatorEntity[SAJModbusHub], SwitchEntity):
+class SajSwitch(SajEntity, SwitchEntity):
     """Representation of an SAJ Modbus switch."""
 
     entity_description: SajModbusSwitchEntityDescription
 
-    def __init__(
-        self,
-        hub: SAJModbusHub,
-        description: SajModbusSwitchEntityDescription,
-    ) -> None:
-        """Initialize the switch entity."""
-        super().__init__(coordinator=hub)
-        self._attr_device_info = hub.device_info
-        self.entity_description = description
-        self._attr_unique_id = f"{hub.name}_{description.key}"
-
-    @property
-    def name(self) -> str:
-        """Return the name."""
-        return f"{self.coordinator.name} {self.entity_description.name}"
-
     @property
     def is_on(self) -> bool | None:
         """Return the state of the switch."""
-        if self.coordinator.data:
-            return self.coordinator.data.get(self.entity_description.key)
-        return None
+        return self._value
 
     async def async_turn_on(self, **kwargs) -> None:
         """Turn the switch on."""

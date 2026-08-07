@@ -7,14 +7,14 @@ import logging
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     COUNTER_SENSOR_TYPES,
     SENSOR_TYPES,
     SajModbusSensorEntityDescription,
 )
-from .hub import SAJModbusHub, SajConfigEntry
+from .entity import SajEntity
+from .hub import SajConfigEntry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,40 +27,26 @@ async def async_setup_entry(
     """Set up sensor entities from a config entry."""
     hub = entry.runtime_data
 
-    entities = []
-    for sensor_description in SENSOR_TYPES.values():
-        entities.append(SajSensor(hub, sensor_description))
-    for sensor_description in COUNTER_SENSOR_TYPES.values():
-        entities.append(SajCounterSensor(hub, sensor_description))
+    entities: list[SajSensor] = [
+        SajSensor(hub, description) for description in SENSOR_TYPES.values()
+    ]
+    entities.extend(
+        SajCounterSensor(hub, description)
+        for description in COUNTER_SENSOR_TYPES.values()
+    )
 
     async_add_entities(entities)
 
 
-class SajSensor(CoordinatorEntity[SAJModbusHub], SensorEntity):
+class SajSensor(SajEntity, SensorEntity):
     """Representation of an SAJ Modbus sensor."""
 
     entity_description: SajModbusSensorEntityDescription
 
-    def __init__(
-        self,
-        hub: SAJModbusHub,
-        description: SajModbusSensorEntityDescription,
-    ) -> None:
-        """Initialize the sensor."""
-        super().__init__(coordinator=hub)
-        self._attr_device_info = hub.device_info
-        self.entity_description = description
-        self._attr_unique_id = f"{hub.name}_{self.entity_description.key}"
-
-    @property
-    def name(self) -> str:
-        """Return the name."""
-        return f"{self.coordinator.name} {self.entity_description.name}"
-
     @property
     def native_value(self):
         """Return the native value of the sensor."""
-        return self.coordinator.data.get(self.entity_description.key, None)
+        return self._value
 
 
 class SajCounterSensor(SajSensor):
@@ -70,5 +56,5 @@ class SajCounterSensor(SajSensor):
     def native_value(self):
         """Return the value of the sensor."""
         if self.coordinator.data and self.coordinator.data.get("mpvmode") in (1, 2):
-            return self.coordinator.data.get(self.entity_description.key)
+            return self._value
         return None
