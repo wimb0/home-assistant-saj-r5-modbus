@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from homeassistant.components.switch import SwitchEntity
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -12,26 +11,18 @@ from .const import (
     SWITCH_TYPES,
     SajModbusSwitchEntityDescription,
 )
-from .hub import SAJModbusHub
+from .hub import SAJModbusHub, SajConfigEntry
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: SajConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up switch entities from a config entry."""
-    hub: SAJModbusHub = entry.runtime_data["hub"]
-    device_info = entry.runtime_data["device_info"]
+    hub = entry.runtime_data
 
-    entities = [
-        SajSwitch(
-            hub,
-            device_info,
-            description,
-        )
-        for description in SWITCH_TYPES.values()
-    ]
+    entities = [SajSwitch(hub, description) for description in SWITCH_TYPES.values()]
     async_add_entities(entities)
 
 
@@ -43,12 +34,11 @@ class SajSwitch(CoordinatorEntity[SAJModbusHub], SwitchEntity):
     def __init__(
         self,
         hub: SAJModbusHub,
-        device_info,
         description: SajModbusSwitchEntityDescription,
     ) -> None:
         """Initialize the switch entity."""
         super().__init__(coordinator=hub)
-        self._attr_device_info = device_info
+        self._attr_device_info = hub.device_info
         self.entity_description = description
         self._attr_unique_id = f"{hub.name}_{description.key}"
 

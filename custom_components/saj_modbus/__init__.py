@@ -2,17 +2,14 @@
 
 import logging
 
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
 
 from .const import (
-    ATTR_MANUFACTURER,
     DEFAULT_NAME,
     DEFAULT_SCAN_INTERVAL,
-    DOMAIN,
 )
-from .hub import SAJModbusHub
+from .hub import SAJModbusHub, SajConfigEntry
 from .services import async_setup_services, async_unload_services
 
 _LOGGER = logging.getLogger(__name__)
@@ -20,7 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS = ["sensor", "number", "switch"]
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: SajConfigEntry) -> bool:
     """Set up a SAJ modbus entry from a config entry."""
     host = entry.data[CONF_HOST]
     name = entry.data.get(CONF_NAME, DEFAULT_NAME)
@@ -29,15 +26,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hub = SAJModbusHub(hass, entry, name, host, port, scan_interval)
     entry.async_on_unload(hub.async_close)
-
-    entry.runtime_data = {
-        "hub": hub,
-        "device_info": {
-            "identifiers": {(DOMAIN, name)},
-            "name": name,
-            "manufacturer": ATTR_MANUFACTURER,
-        },
-    }
+    entry.runtime_data = hub
 
     await hub.async_config_entry_first_refresh()
 
@@ -49,7 +38,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: SajConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
@@ -57,6 +46,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 
-async def options_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+async def options_update_listener(hass: HomeAssistant, entry: SajConfigEntry) -> None:
     """Handle options update."""
     await hass.config_entries.async_reload(entry.entry_id)

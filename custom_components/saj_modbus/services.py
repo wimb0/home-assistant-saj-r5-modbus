@@ -50,7 +50,7 @@ def async_setup_services(hass: HomeAssistant) -> None:
         if not config_entry or not hasattr(config_entry, "runtime_data"):
             raise HomeAssistantError(f"Config entry not found for device: {device_id}")
 
-        hub: SAJModbusHub | None = config_entry.runtime_data.get("hub")
+        hub: SAJModbusHub | None = getattr(config_entry, "runtime_data", None)
         if not hub:
             raise HomeAssistantError(f"Hub not found for device: {device_id}")
 

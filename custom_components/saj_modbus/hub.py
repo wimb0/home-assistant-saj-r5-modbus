@@ -7,10 +7,12 @@ from homeassistant.components.number import DOMAIN as NUMBER_DOMAIN
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from modbus_connection import BlockReadError, ModbusError, ModbusTimeoutError
 
 from .const import (
+    ATTR_MANUFACTURER,
     DEVICE_STATUSSES,
     DOMAIN,
     FAULT_MESSAGES,
@@ -18,6 +20,8 @@ from .const import (
 from .inverter import UNIT_ID, SajR5Inverter, component_values, create_connection
 
 _LOGGER = logging.getLogger(__name__)
+
+type SajConfigEntry = ConfigEntry[SAJModbusHub]
 
 
 def translate_fault_code_to_messages(
@@ -35,7 +39,7 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
     def __init__(
         self,
         hass: HomeAssistant,
-        entry: ConfigEntry,
+        entry: SajConfigEntry,
         name: str,
         host: str,
         port: int,
@@ -54,6 +58,11 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         self._port = port
         self._connection = create_connection(host, port)
         self.device = SajR5Inverter(self._connection.for_unit(UNIT_ID))
+        self.device_info = DeviceInfo(
+            identifiers={(DOMAIN, name)},
+            name=name,
+            manufacturer=ATTR_MANUFACTURER,
+        )
         self.inverter_data: dict[str, int | float | str] = {}
         self._power_limit: float = 110.0
 
