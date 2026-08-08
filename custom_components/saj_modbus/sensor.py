@@ -13,7 +13,7 @@ from .const import (
     SENSOR_TYPES,
     SajModbusSensorEntityDescription,
 )
-from .entity import SajEntity
+from .entity import SajEntity, served
 from .hub import SajConfigEntry
 
 _LOGGER = logging.getLogger(__name__)
@@ -28,11 +28,12 @@ async def async_setup_entry(
     hub = entry.runtime_data
 
     entities: list[SajSensor] = [
-        SajSensor(hub, description) for description in SENSOR_TYPES.values()
+        SajSensor(hub, description)
+        for description in served(hub, SENSOR_TYPES.values())
     ]
     entities.extend(
         SajCounterSensor(hub, description)
-        for description in COUNTER_SENSOR_TYPES.values()
+        for description in served(hub, COUNTER_SENSOR_TYPES.values())
     )
 
     async_add_entities(entities)

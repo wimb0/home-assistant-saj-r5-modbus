@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
+
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
@@ -16,6 +18,17 @@ type SajEntityDescription = (
     | SajModbusNumberEntityDescription
     | SajModbusSwitchEntityDescription
 )
+
+
+def served(
+    hub: SAJModbusHub, descriptions: Iterable[SajEntityDescription]
+) -> list[SajEntityDescription]:
+    """Drop the descriptions that read a component this inverter does not serve."""
+    return [
+        description
+        for description in descriptions
+        if description.component not in hub.absent_components
+    ]
 
 
 class SajEntity(CoordinatorEntity[SAJModbusHub]):

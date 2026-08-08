@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 from typing import Any
 
-from modbus_connection import ModbusTcpParams, ModbusUnit
+from modbus_connection import (
+    IllegalDataAddressError,
+    IllegalFunctionError,
+    ModbusTcpParams,
+    ModbusUnit,
+)
 from modbus_connection.model import (
     Component,
     ComponentGroup,
@@ -18,9 +24,16 @@ from modbus_connection.model import (
 )
 from modbus_connection.tmodbus import ModbusConnection
 
+_LOGGER = logging.getLogger(__name__)
+
 # The R5 responds on a fixed station address; it is not user-configurable.
 UNIT_ID = 1
 MODBUS_TIMEOUT = 5
+
+# The refusals that mean the registers are not in this inverter's map. Every
+# other exception response says the registers are there and the read failed,
+# so those propagate.
+_NOT_SERVED = (IllegalFunctionError, IllegalDataAddressError)
 
 
 def create_connection(host: str, port: int) -> ModbusConnection:
@@ -148,14 +161,23 @@ class Settings(Component):
 
 
 class SajR5Inverter:
-    """A SAJ R5 inverter on a Modbus unit."""
+    """A SAJ R5 inverter on a Modbus unit.
+
+    Reading it has two phases. ``async_setup`` runs once: it reads the static
+    information and finds out which optional components this firmware serves.
+    ``async_update`` then runs every interval over a fixed group, with no
+    checks — what the inverter serves cannot change between two polls.
+    """
 
     def __init__(self, unit: ModbusUnit) -> None:
         """Initialize the device's components on ``unit``."""
+        self._unit = unit
         self.info = InverterInfo(unit)
         self.realtime = RealtimeData(unit)
         self.power = PowerState(unit)
         self.settings = Settings(unit)
+        self.absent: frozenset[str] = frozenset()
+        self._polled = ComponentGroup(unit, [self.realtime, self.power])
         self._readable = ComponentGroup(unit, [self.info, self.realtime, self.power])
 
     @classmethod
@@ -164,6 +186,38 @@ class SajR5Inverter:
         info = InverterInfo(unit)
         await info.async_update()
         return info.sn or ""
+
+    async def async_setup(self) -> None:
+        """Read the static data and learn which optional components exist.
+
+        Some firmware revisions do not serve the information or power-state
+        registers. A refusal of those is not a failure of setup; anything else
+        is, and propagates.
+        """
+        absent = set()
+        for name, component in (("info", self.info), ("power", self.power)):
+            try:
+                await component.async_update()
+            except _NOT_SERVED as ex:
+                absent.add(name)
+                _LOGGER.info(
+                    "This inverter does not serve the %s registers at %s, so "
+                    "they stay unavailable and are not read again",
+                    name,
+                    ex.block,
+                )
+        self.absent = frozenset(absent)
+        # The information is static, so setup reads it and polling never does.
+        polled = [self.realtime]
+        if "power" not in absent:
+            polled.append(self.power)
+        self._polled = ComponentGroup(self._unit, polled)
+        readable = polled if "info" in absent else [self.info, *polled]
+        self._readable = ComponentGroup(self._unit, readable)
+
+    async def async_update(self) -> None:
+        """Read every polled component."""
+        await self._polled.async_update()
 
     async def async_read_raw(self) -> dict[str, dict[int, int | bool]]:
         """Read the raw registers backing every readable component."""

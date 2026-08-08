@@ -41,6 +41,9 @@ class SajModbusNumberEntityDescription(NumberEntityDescription):
     """A class that describes SAJ number entities."""
 
     value_fn: Callable[[SAJModbusHub], Any]
+    # The optional component this entity reads, if any. An entity naming a
+    # component the inverter does not serve is never created.
+    component: str | None = None
 
 
 NUMBER_TYPES: dict[str, list[SajModbusNumberEntityDescription]] = {
@@ -61,6 +64,9 @@ class SajModbusSwitchEntityDescription(SwitchEntityDescription):
     """A class that describes SAJ switch entities."""
 
     value_fn: Callable[[SAJModbusHub], Any]
+    # The optional component this entity reads, if any. An entity naming a
+    # component the inverter does not serve is never created.
+    component: str | None = None
 
 
 SWITCH_TYPES: dict[str, list[SajModbusSwitchEntityDescription]] = {
@@ -68,6 +74,7 @@ SWITCH_TYPES: dict[str, list[SajModbusSwitchEntityDescription]] = {
         name="Power On Off",
         key="poweronoff",
         value_fn=lambda hub: hub.poweronoff,
+        component="power",
         icon="mdi:power",
         entity_registry_enabled_default=False,
     )
@@ -79,6 +86,9 @@ class SajModbusSensorEntityDescription(SensorEntityDescription):
     """A class that describes SAJ sensor entities."""
 
     value_fn: Callable[[SAJModbusHub], Any]
+    # The optional component this entity reads, if any. An entity naming a
+    # component the inverter does not serve is never created.
+    component: str | None = None
 
 
 COUNTER_SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
@@ -143,6 +153,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         name="Device Type",
         key="devtype",
         value_fn=lambda hub: hub.device.info.devtype,
+        component="info",
         icon="mdi:information-outline",
         entity_registry_enabled_default=False,
     ),
@@ -150,6 +161,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         name="Sub Type",
         key="subtype",
         value_fn=lambda hub: hub.device.info.subtype,
+        component="info",
         icon="mdi:information-outline",
         entity_registry_enabled_default=False,
     ),
@@ -157,6 +169,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         name="Comms Protocol Version",
         key="commver",
         value_fn=lambda hub: hub.device.info.commver,
+        component="info",
         icon="mdi:information-outline",
         entity_registry_enabled_default=False,
     ),
@@ -164,6 +177,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         name="Serial Number",
         key="sn",
         value_fn=lambda hub: hub.device.info.sn,
+        component="info",
         icon="mdi:information-outline",
         entity_registry_enabled_default=False,
     ),
@@ -171,6 +185,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         name="Product Code",
         key="pc",
         value_fn=lambda hub: hub.device.info.pc,
+        component="info",
         icon="mdi:information-outline",
         entity_registry_enabled_default=False,
     ),
@@ -178,6 +193,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         name="Display Software Version",
         key="dv",
         value_fn=lambda hub: hub.device.info.dv,
+        component="info",
         icon="mdi:information-outline",
         entity_registry_enabled_default=False,
     ),
@@ -185,6 +201,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         name="Master Ctrl Software Version",
         key="mcv",
         value_fn=lambda hub: hub.device.info.mcv,
+        component="info",
         icon="mdi:information-outline",
         entity_registry_enabled_default=False,
     ),
@@ -192,6 +209,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         name="Slave Ctrl Software Version",
         key="scv",
         value_fn=lambda hub: hub.device.info.scv,
+        component="info",
         icon="mdi:information-outline",
         entity_registry_enabled_default=False,
     ),
@@ -199,6 +217,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         name="Display Board Hardware Version",
         key="disphwversion",
         value_fn=lambda hub: hub.device.info.disphwversion,
+        component="info",
         icon="mdi:information-outline",
         entity_registry_enabled_default=False,
     ),
@@ -206,6 +225,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         name="Control Board Hardware Version",
         key="ctrlhwversion",
         value_fn=lambda hub: hub.device.info.ctrlhwversion,
+        component="info",
         icon="mdi:information-outline",
         entity_registry_enabled_default=False,
     ),
@@ -213,6 +233,7 @@ SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
         name="Power Board Hardware Version",
         key="powerhwversion",
         value_fn=lambda hub: hub.device.info.powerhwversion,
+        component="info",
         icon="mdi:information-outline",
         entity_registry_enabled_default=False,
     ),

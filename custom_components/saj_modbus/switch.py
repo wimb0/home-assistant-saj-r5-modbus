@@ -10,7 +10,7 @@ from .const import (
     SWITCH_TYPES,
     SajModbusSwitchEntityDescription,
 )
-from .entity import SajEntity
+from .entity import SajEntity, served
 from .hub import SajConfigEntry
 
 
@@ -22,7 +22,10 @@ async def async_setup_entry(
     """Set up switch entities from a config entry."""
     hub = entry.runtime_data
 
-    entities = [SajSwitch(hub, description) for description in SWITCH_TYPES.values()]
+    entities = [
+        SajSwitch(hub, description)
+        for description in served(hub, SWITCH_TYPES.values())
+    ]
     async_add_entities(entities)
 
 

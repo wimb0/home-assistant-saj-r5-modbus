@@ -10,7 +10,7 @@ from .const import (
     NUMBER_TYPES,
     SajModbusNumberEntityDescription,
 )
-from .entity import SajEntity
+from .entity import SajEntity, served
 from .hub import SajConfigEntry
 
 
@@ -22,7 +22,10 @@ async def async_setup_entry(
     """Set up number entities from a config entry."""
     hub = entry.runtime_data
 
-    entities = [SajNumber(hub, description) for description in NUMBER_TYPES.values()]
+    entities = [
+        SajNumber(hub, description)
+        for description in served(hub, NUMBER_TYPES.values())
+    ]
     async_add_entities(entities)
 
 

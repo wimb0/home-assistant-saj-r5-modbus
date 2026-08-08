@@ -4,11 +4,12 @@ import logging
 
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.typing import ConfigType
+from modbus_connection import ModbusError
 
 from .const import (
     DEFAULT_NAME,
@@ -40,6 +41,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: SajConfigEntry) -> bool:
     hub = SAJModbusHub(hass, entry, name, host, port, scan_interval)
     entry.async_on_unload(hub.async_close)
     entry.runtime_data = hub
+
+    try:
+        await hub.async_setup()
+    except ModbusError as err:
+        raise ConfigEntryNotReady(f"Could not reach the inverter: {err}") from err
 
     await hub.async_config_entry_first_refresh()
     _async_migrate_to_serial_identity(hass, entry, hub)

@@ -9,13 +9,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from modbus_connection import (
-    IllegalDataAddressError,
-    IllegalFunctionError,
-    ModbusError,
-    ModbusExceptionError,
-    ModbusTimeoutError,
-)
+from modbus_connection import ModbusError, ModbusTimeoutError
 
 from .const import (
     ATTR_MANUFACTURER,
@@ -28,11 +22,6 @@ from .inverter import UNIT_ID, SajR5Inverter, create_connection
 _LOGGER = logging.getLogger(__name__)
 
 type SajConfigEntry = ConfigEntry[SAJModbusHub]
-
-# The refusals that mean the registers are not in the device's map. Every
-# other exception response describes a request that failed, not one that can
-# never succeed, so those propagate and fail the poll.
-_ABSENT = (IllegalFunctionError, IllegalDataAddressError)
 
 # Consecutive timeouts before the link is treated as stuck rather than slow.
 _STUCK_AFTER_TIMEOUTS = 3
@@ -70,13 +59,9 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
 
         self._connection = create_connection(host, port)
         self.device = SajR5Inverter(self._connection.for_unit(UNIT_ID))
-        self._info_read = False
         self._power_limit: float = 110.0
         # Consecutive poll timeouts; reset by any poll that reaches the device.
         self._timeouts = 0
-        # Optional components this inverter answered "not in my map" for;
-        # asking again every poll would be pure waste.
-        self._absent: set[str] = set()
         # Resolved once by freeze_identity() after the first refresh and never
         # again: entities bake it into their unique ids at construction, so it
         # must not change under them if a later poll finally reads the serial.
@@ -117,15 +102,12 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
         """Close the Modbus connection."""
         await self._connection.close()
 
-    def _note_absent(self, component: str, err: ModbusExceptionError) -> None:
-        """Record a component the inverter does not serve."""
-        self._absent.add(component)
-        _LOGGER.info(
-            "This inverter does not serve the %s registers at %s, so they stay "
-            "unavailable and are not read again",
-            component,
-            err.block,
-        )
+    async def async_setup(self) -> None:
+        """Read the static data and discover what this inverter serves.
+
+        Raises ModbusError if the inverter cannot be reached.
+        """
+        await self.device.async_setup()
 
     async def _async_note_timeout(self) -> None:
         """Count a timeout, and drop the link once it looks stuck.
@@ -143,24 +125,13 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
         await self._connection.disconnect()
 
     async def _async_update_data(self) -> None:
-        """Refresh the inverter's components; entities read them directly."""
+        """Refresh the inverter's components; entities read them directly.
+
+        Which components exist was settled by async_setup, so this reads one
+        fixed group.
+        """
         try:
-            # Static inverter info is read once. Some firmware variants do not
-            # serve the info and power-state registers at all; tolerate that,
-            # as the previous pymodbus code did.
-            if not self._info_read and "info" not in self._absent:
-                try:
-                    await self.device.info.async_update()
-                except _ABSENT as ex:
-                    self._note_absent("info", ex)
-                else:
-                    self._info_read = True
-            await self.device.realtime.async_update()
-            if "power" not in self._absent:
-                try:
-                    await self.device.power.async_update()
-                except _ABSENT as ex:
-                    self._note_absent("power", ex)
+            await self.device.async_update()
         except ModbusTimeoutError as ex:
             await self._async_note_timeout()
             raise UpdateFailed(f"Failed to fetch realtime data: {ex}") from ex
@@ -173,9 +144,9 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
             _LOGGER.error("Fault message: %s", ", ".join(messages))
 
     @property
-    def absent_components(self) -> set[str]:
+    def absent_components(self) -> frozenset[str]:
         """Components this inverter does not serve."""
-        return set(self._absent)
+        return self.device.absent
 
     @property
     def mpvstatus(self) -> str:
