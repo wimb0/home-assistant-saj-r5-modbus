@@ -1,7 +1,15 @@
 """Tests for tolerating components the inverter does not serve."""
 
 import pytest
-from modbus_connection import BlockReadError
+from modbus_connection import (
+    AcknowledgeError,
+    IllegalDataAddressError,
+    IllegalDataValueError,
+    IllegalFunctionError,
+    ModbusExceptionError,
+    ServerDeviceBusyError,
+    ServerDeviceFailureError,
+)
 
 from custom_components.saj_modbus.hub import SAJModbusHub
 
@@ -13,33 +21,42 @@ def make_hub() -> SAJModbusHub:
     return hub
 
 
-def rejection(code: int) -> BlockReadError:
-    """Build a rejection carrying ``code``."""
-    return BlockReadError("holding", 0x1037, 1, code)
-
-
-@pytest.mark.parametrize("code", [1, 2])
-def test_structural_rejection_marks_block_absent(code: int) -> None:
+@pytest.mark.parametrize(
+    "error",
+    [IllegalFunctionError(), IllegalDataAddressError()],
+    ids=lambda e: type(e).__name__,
+)
+def test_structural_rejection_marks_component_absent(
+    error: ModbusExceptionError,
+) -> None:
     """Illegal function and illegal data address mean the registers are not there."""
     hub = make_hub()
 
-    hub._note_absent("power", rejection(code))
+    hub._note_absent("power", error)
 
     assert hub._absent == {"power"}
 
 
-@pytest.mark.parametrize("code", [3, 4, 5, 6])
-def test_transient_rejection_propagates(code: int) -> None:
+@pytest.mark.parametrize(
+    "error",
+    [
+        IllegalDataValueError(),
+        ServerDeviceFailureError(),
+        AcknowledgeError(),
+        ServerDeviceBusyError(),
+    ],
+    ids=lambda e: type(e).__name__,
+)
+def test_transient_rejection_propagates(error: ModbusExceptionError) -> None:
     """Any other code is a failed read, not missing registers, and must not be hidden.
 
     Swallowing these would report a faulting or busy inverter as one that
     permanently lacks the registers.
     """
     hub = make_hub()
-    err = rejection(code)
 
-    with pytest.raises(BlockReadError) as raised:
-        hub._note_absent("power", err)
+    with pytest.raises(ModbusExceptionError) as raised:
+        hub._note_absent("power", error)
 
-    assert raised.value is err
+    assert raised.value is error
     assert hub._absent == set()
