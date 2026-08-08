@@ -66,9 +66,6 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
         self.device = SajR5Inverter(self._connection.for_unit(UNIT_ID))
         self._info_read = False
         self._power_limit: float = 110.0
-        # Set optimistically by a write and cleared by the next reading poll,
-        # so the switch reflects the command before the device confirms it.
-        self._power_on_off: bool | None = None
         # Optional components this inverter answered "not in my map" for;
         # asking again every poll would be pure waste.
         self._absent: set[str] = set()
@@ -163,10 +160,6 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
                     await self.device.power.async_update()
                 except BlockReadError as ex:
                     self._note_absent("power", ex)
-                else:
-                    # The device has spoken; drop the optimistic value a write
-                    # left behind.
-                    self._power_on_off = None
         except ModbusTimeoutError as ex:
             await self._async_recycle_connection()
             raise UpdateFailed(f"Failed to fetch realtime data: {ex}") from ex
@@ -207,9 +200,7 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
 
     @property
     def poweronoff(self) -> bool | None:
-        """Whether the inverter is switched on."""
-        if self._power_on_off is not None:
-            return self._power_on_off
+        """Whether the inverter is switched on, as last read from the device."""
         return self.device.power.poweronoff
 
     @property
@@ -228,8 +219,6 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
         except ModbusError as ex:
             _LOGGER.error("Failed to set power on/off: %s", ex)
             return False
-        self._power_on_off = value
-        self.async_update_listeners()
         return True
 
     async def async_set_limit_power(self, value: float) -> bool:

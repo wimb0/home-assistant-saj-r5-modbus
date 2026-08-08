@@ -38,10 +38,18 @@ class SajSwitch(SajEntity, SwitchEntity):
 
     async def async_turn_on(self, **kwargs) -> None:
         """Turn the switch on."""
-        if not await self.coordinator.async_set_power_on_off(True):
-            await self.coordinator.async_request_refresh()
+        await self._async_switch(True)
 
     async def async_turn_off(self, **kwargs) -> None:
         """Turn the switch off."""
-        if not await self.coordinator.async_set_power_on_off(False):
-            await self.coordinator.async_request_refresh()
+        await self._async_switch(False)
+
+    async def _async_switch(self, value: bool) -> None:
+        """Write the new power state, then read back what the inverter did.
+
+        A write that raises nothing is not proof the inverter took it: a
+        discarded write sends no exception response. Only a read tells us the
+        real state, so always refresh.
+        """
+        await self.coordinator.async_set_power_on_off(value)
+        await self.coordinator.async_request_refresh()

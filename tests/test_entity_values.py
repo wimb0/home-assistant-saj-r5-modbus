@@ -25,7 +25,6 @@ def make_hub(device: SajR5Inverter) -> SAJModbusHub:
     hub.name = "SAJ"
     hub._identifier = "SAJ"
     hub._power_limit = 110.0
-    hub._power_on_off = None
     return hub
 
 
@@ -67,14 +66,3 @@ def test_values_match_the_device_model(hub: SAJModbusHub) -> None:
     assert values["faultmsg"] == "Code 01: Master Relay Error"
     assert values["poweronoff"] is True
     assert values["limitpower"] == 110.0
-
-
-def test_optimistic_power_state_wins_until_the_next_poll(hub: SAJModbusHub) -> None:
-    """A write shows immediately, and the device's own reading takes over after."""
-    assert hub.poweronoff is True
-
-    hub._power_on_off = False
-    assert hub.poweronoff is False
-
-    hub._power_on_off = None
-    assert hub.poweronoff is True
