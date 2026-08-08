@@ -10,9 +10,10 @@ from homeassistant.helpers import entity_registry
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from modbus_connection import (
-    BlockReadError,
-    ExceptionCode,
+    IllegalDataAddressError,
+    IllegalFunctionError,
     ModbusError,
+    ModbusExceptionError,
     ModbusTimeoutError,
 )
 
@@ -28,13 +29,10 @@ _LOGGER = logging.getLogger(__name__)
 
 type SajConfigEntry = ConfigEntry[SAJModbusHub]
 
-# The exception codes that mean the registers are not in the device's map.
-# Every other code describes a request that failed, not one that can never
-# succeed. A block read reports its code rather than raising the matching
-# typed error, so this compares codes.
-_ABSENT_CODES = frozenset(
-    {ExceptionCode.ILLEGAL_FUNCTION, ExceptionCode.ILLEGAL_DATA_ADDRESS}
-)
+# The refusals that mean the registers are not in the device's map. Every
+# other exception response describes a request that failed, not one that can
+# never succeed, so those propagate and fail the poll.
+_ABSENT = (IllegalFunctionError, IllegalDataAddressError)
 
 # Consecutive timeouts before the link is treated as stuck rather than slow.
 _STUCK_AFTER_TIMEOUTS = 3
@@ -119,24 +117,14 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
         """Close the Modbus connection."""
         await self._connection.close()
 
-    def _note_absent(self, component: str, err: BlockReadError) -> None:
-        """Record a component the inverter does not serve, or re-raise.
-
-        Only a structural rejection means the registers are not there. Every
-        other exception code is transient (a device fault, or a busy or
-        rejected request), so swallowing it would hide a real failure as a
-        permanently missing sensor.
-
-        Raises the original error if the rejection was not structural.
-        """
-        if err.exception_code not in _ABSENT_CODES:
-            raise err
+    def _note_absent(self, component: str, err: ModbusExceptionError) -> None:
+        """Record a component the inverter does not serve."""
         self._absent.add(component)
         _LOGGER.info(
-            "This inverter does not serve its %s registers, so they stay "
-            "unavailable and are not read again: %s",
+            "This inverter does not serve the %s registers at %s, so they stay "
+            "unavailable and are not read again",
             component,
-            err,
+            err.block,
         )
 
     async def _async_note_timeout(self) -> None:
@@ -163,7 +151,7 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
             if not self._info_read and "info" not in self._absent:
                 try:
                     await self.device.info.async_update()
-                except BlockReadError as ex:
+                except _ABSENT as ex:
                     self._note_absent("info", ex)
                 else:
                     self._info_read = True
@@ -171,7 +159,7 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
             if "power" not in self._absent:
                 try:
                     await self.device.power.async_update()
-                except BlockReadError as ex:
+                except _ABSENT as ex:
                     self._note_absent("power", ex)
         except ModbusTimeoutError as ex:
             await self._async_note_timeout()
