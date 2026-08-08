@@ -13,6 +13,9 @@ from custom_components.saj_modbus.inverter import (
     Settings,
 )
 
+# Modbus function code 0x10, write-multiple-registers.
+WRITE_MULTIPLE_REGISTERS = 0x10
+
 
 async def test_inverter_info(
     mock_modbus_unit: MockModbusUnit, info_registers: dict
@@ -114,23 +117,30 @@ async def test_unset_clock_decodes_to_none(mock_modbus_unit: MockModbusUnit) -> 
 
 
 async def test_write_power_on_off(mock_modbus_unit: MockModbusUnit) -> None:
-    """Power on/off writes register 0x1037 with FC16."""
+    """Power on/off writes register 0x1037, and must use FC16.
+
+    The R5 rejects FC06, so force_fc16 on the field is load-bearing: a single
+    register would otherwise go out as a write-single-register.
+    """
     events: list[WriteEvent] = []
     mock_modbus_unit.on_write(events.append)
     power = PowerState(mock_modbus_unit)
 
     await power.write("poweronoff", False)
 
-    assert events == [WriteEvent("holding", 0x1037, [0])]
+    assert events == [WriteEvent("holding", 0x1037, [0], WRITE_MULTIPLE_REGISTERS)]
 
 
 async def test_write_limit_power(mock_modbus_unit: MockModbusUnit) -> None:
-    """The power limit is written in tenths of a percent."""
+    """The power limit is written in tenths of a percent, also with FC16."""
+    events: list[WriteEvent] = []
+    mock_modbus_unit.on_write(events.append)
     settings = Settings(mock_modbus_unit)
 
     await settings.write("limitpower", 55.5)
 
     assert mock_modbus_unit.holding[0x801F] == 555
+    assert events == [WriteEvent("holding", 0x801F, [555], WRITE_MULTIPLE_REGISTERS)]
 
 
 async def test_write_datetime(mock_modbus_unit: MockModbusUnit) -> None:

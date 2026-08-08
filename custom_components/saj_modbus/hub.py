@@ -9,7 +9,12 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from modbus_connection import BlockReadError, ModbusError, ModbusTimeoutError
+from modbus_connection import (
+    BlockReadError,
+    ExceptionCode,
+    ModbusError,
+    ModbusTimeoutError,
+)
 
 from .const import (
     ATTR_MANUFACTURER,
@@ -23,11 +28,16 @@ _LOGGER = logging.getLogger(__name__)
 
 type SajConfigEntry = ConfigEntry[SAJModbusHub]
 
-# Modbus exception codes meaning the registers are not in the device's map:
-# illegal function (the device has no such function code) and illegal data
-# address. Every other code describes a request that failed, not one that
-# can never succeed.
-_ABSENT_CODES = frozenset({1, 2})
+# The exception codes that mean the registers are not in the device's map.
+# Every other code describes a request that failed, not one that can never
+# succeed. A block read reports its code rather than raising the matching
+# typed error, so this compares codes.
+_ABSENT_CODES = frozenset(
+    {ExceptionCode.ILLEGAL_FUNCTION, ExceptionCode.ILLEGAL_DATA_ADDRESS}
+)
+
+# Consecutive timeouts before the link is treated as stuck rather than slow.
+_STUCK_AFTER_TIMEOUTS = 3
 
 
 def translate_fault_code_to_messages(
@@ -60,12 +70,12 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
             update_interval=timedelta(seconds=scan_interval),
         )
 
-        self._host = host
-        self._port = port
         self._connection = create_connection(host, port)
         self.device = SajR5Inverter(self._connection.for_unit(UNIT_ID))
         self._info_read = False
         self._power_limit: float = 110.0
+        # Consecutive poll timeouts; reset by any poll that reaches the device.
+        self._timeouts = 0
         # Optional components this inverter answered "not in my map" for;
         # asking again every poll would be pure waste.
         self._absent: set[str] = set()
@@ -129,17 +139,20 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
             err,
         )
 
-    async def _async_recycle_connection(self) -> None:
-        """Replace the connection after a timeout.
+    async def _async_note_timeout(self) -> None:
+        """Count a timeout, and drop the link once it looks stuck.
 
-        A wedged serial-WiFi bridge can keep its TCP session alive while Modbus
-        stops answering, and a timeout does not drop the transport — so a fresh
-        connection is the only way to recover the next poll.
+        A wedged serial-to-network bridge keeps its socket open while Modbus
+        stops answering, and a timeout does not touch the transport. One
+        timeout is only a slow reply, so wait for a few before dropping the
+        link; the next request opens a fresh one over the same components.
         """
-        old = self._connection
-        self._connection = create_connection(self._host, self._port)
-        self.device = SajR5Inverter(self._connection.for_unit(UNIT_ID))
-        await old.close()
+        self._timeouts += 1
+        if self._timeouts < _STUCK_AFTER_TIMEOUTS:
+            return
+        _LOGGER.debug("Dropping a stuck link after %d timeouts", self._timeouts)
+        self._timeouts = 0
+        await self._connection.disconnect()
 
     async def _async_update_data(self) -> None:
         """Refresh the inverter's components; entities read them directly."""
@@ -161,10 +174,12 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
                 except BlockReadError as ex:
                     self._note_absent("power", ex)
         except ModbusTimeoutError as ex:
-            await self._async_recycle_connection()
+            await self._async_note_timeout()
             raise UpdateFailed(f"Failed to fetch realtime data: {ex}") from ex
         except ModbusError as ex:
             raise UpdateFailed(f"Failed to fetch realtime data: {ex}") from ex
+
+        self._timeouts = 0
 
         if messages := self.fault_messages:
             _LOGGER.error("Fault message: %s", ", ".join(messages))
