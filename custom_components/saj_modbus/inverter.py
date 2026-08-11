@@ -180,6 +180,16 @@ class SajR5Inverter:
         self._polled = ComponentGroup(unit, [self.realtime, self.power])
         self._readable = ComponentGroup(unit, [self.info, self.realtime, self.power])
 
+    @property
+    def components(self) -> dict[str, Component]:
+        """Every component of this device, by the name diagnostics reports."""
+        return {
+            "info": self.info,
+            "realtime": self.realtime,
+            "power": self.power,
+            "settings": self.settings,
+        }
+
     @classmethod
     async def async_probe(cls, unit: ModbusUnit) -> str:
         """Read the inverter's serial number, proving it is reachable."""

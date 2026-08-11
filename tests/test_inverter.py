@@ -5,6 +5,7 @@ from datetime import datetime
 import pytest
 from modbus_connection.mock import MockModbusUnit, ReadEvent, WriteEvent
 
+from custom_components.saj_modbus.diagnostics import _register_layout
 from custom_components.saj_modbus.inverter import (
     InverterInfo,
     PowerState,
@@ -181,3 +182,15 @@ async def test_read_raw_covers_all_components(device: SajR5Inverter) -> None:
     assert raw["holding"][0x8F00] == 3
     assert raw["holding"][0x100] == 2
     assert raw["holding"][0x1037] == 1
+
+
+def test_register_layout_locates_every_field(device: SajR5Inverter) -> None:
+    """The layout diagnostics reports comes from the model, not a second table."""
+    layout = _register_layout(device)
+
+    assert set(layout) == {"info", "realtime", "power", "settings"}
+    assert layout["realtime"]["power"] == "holding:0x0113"
+    # A multi-register field reports the whole span it covers.
+    assert layout["realtime"]["datetime"] == "holding:0x0137-0x013A"
+    assert layout["power"]["poweronoff"] == "holding:0x1037"
+    assert layout["settings"]["limitpower"] == "holding:0x801F"

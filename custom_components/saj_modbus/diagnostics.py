@@ -11,6 +11,7 @@ from modbus_connection import ModbusError
 
 from .const import COUNTER_SENSOR_TYPES, NUMBER_TYPES, SENSOR_TYPES, SWITCH_TYPES
 from .hub import SAJModbusHub, SajConfigEntry
+from .inverter import SajR5Inverter
 
 TO_REDACT = {
     CONF_HOST,
@@ -37,6 +38,27 @@ def _decoded_values(hub: SAJModbusHub) -> dict[str, Any]:
     }
 
 
+def _register_layout(device: SajR5Inverter) -> dict[str, dict[str, str]]:
+    """Where every declared field sits on the device, per component.
+
+    Taken from the library's resolved layout rather than a second address
+    table here, so a raw register dump can be read without the protocol
+    document beside it.
+    """
+    return {
+        name: {
+            field: f"{resolved.space}:0x{resolved.address:04X}"
+            + (
+                f"-0x{resolved.address + resolved.count - 1:04X}"
+                if resolved.count > 1
+                else ""
+            )
+            for field, resolved in component.resolved_fields.items()
+        }
+        for name, component in device.components.items()
+    }
+
+
 async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: SajConfigEntry
 ) -> dict[str, Any]:
@@ -56,5 +78,6 @@ async def async_get_config_entry_diagnostics(
         "config_entry_options": async_redact_data(entry.options, TO_REDACT),
         "decoded_values": _decoded_values(hub),
         "unserved_components": sorted(hub.absent_components),
+        "register_layout": _register_layout(hub.device),
         "raw_registers": raw_registers,
     }
