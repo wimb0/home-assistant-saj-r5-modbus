@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
 from modbus_connection import (
     IllegalDataAddressError,
     IllegalFunctionError,
+    ModbusConnectionError,
+    ModbusError,
     ModbusTcpParams,
     ModbusUnit,
 )
@@ -34,6 +37,28 @@ MODBUS_TIMEOUT = 5
 # other exception response says the registers are there and the read failed,
 # so those propagate.
 _NOT_SERVED = (IllegalFunctionError, IllegalDataAddressError)
+
+# Every component attribute a poll may refresh, in read order. The information
+# is static, so setup reads it and polling never does.
+_POLLED = ("realtime", "power")
+
+
+@dataclass(frozen=True)
+class UpdateReport:
+    """What one poll refreshed, by the device's component attribute names.
+
+    A failed component kept its previous values and did not notify; the error
+    that failed it rides along. A dead link is never in here — the update
+    raises ``ModbusConnectionError`` instead of reporting partial silence.
+    """
+
+    updated: set[str]
+    failed: dict[str, ModbusError]
+
+    @property
+    def complete(self) -> bool:
+        """Whether every polled component refreshed."""
+        return not self.failed
 
 
 def create_connection(host: str, port: int) -> ModbusConnection:
@@ -165,8 +190,8 @@ class SajR5Inverter:
 
     Reading it has two phases. ``async_setup`` runs once: it reads the static
     information and finds out which optional components this firmware serves.
-    ``async_update`` then runs every interval over a fixed group, with no
-    checks — what the inverter serves cannot change between two polls.
+    ``async_update`` then runs every interval over the components setup
+    settled on — what the inverter serves cannot change between two polls.
     """
 
     def __init__(self, unit: ModbusUnit) -> None:
@@ -177,7 +202,8 @@ class SajR5Inverter:
         self.power = PowerState(unit)
         self.settings = Settings(unit)
         self.absent: frozenset[str] = frozenset()
-        self._polled = ComponentGroup(unit, [self.realtime, self.power])
+        # None until async_setup has run, so a failed setup is retried.
+        self._polled: list[str] | None = None
         self._readable = ComponentGroup(unit, [self.info, self.realtime, self.power])
 
     @property
@@ -217,17 +243,39 @@ class SajR5Inverter:
                     ex.block,
                 )
         self.absent = frozenset(absent)
-        # The information is static, so setup reads it and polling never does.
-        polled = [self.realtime]
-        if "power" not in absent:
-            polled.append(self.power)
-        self._polled = ComponentGroup(self._unit, polled)
-        readable = polled if "info" in absent else [self.info, *polled]
+        self._polled = [name for name in _POLLED if name not in absent]
+        readable = [getattr(self, name) for name in self._polled]
+        if "info" not in absent:
+            readable.insert(0, self.info)
         self._readable = ComponentGroup(self._unit, readable)
 
-    async def async_update(self) -> None:
-        """Read every polled component."""
-        await self._polled.async_update()
+    async def async_update(self) -> UpdateReport:
+        """Read every polled component, one at a time.
+
+        A component whose read fails keeps its previous values while the rest
+        still refresh, so one slow block cannot blank the whole inverter.
+        Listeners fire only once every component has been tried, and only for
+        the ones that refreshed. A failure of the link itself raises
+        ``ModbusConnectionError`` rather than reporting partial silence.
+        """
+        if self._polled is None:
+            await self.async_setup()
+        updated: set[str] = set()
+        failed: dict[str, ModbusError] = {}
+        for name in self._polled or ():
+            component: Component = getattr(self, name)
+            try:
+                await component.async_update(notify=False)
+            except ModbusConnectionError:
+                raise
+            except ModbusError as err:
+                failed[name] = err
+            else:
+                updated.add(name)
+        for name in updated:
+            fresh: Component = getattr(self, name)
+            fresh.notify()
+        return UpdateReport(updated, failed)
 
     async def async_read_raw(self) -> dict[str, dict[int, int | bool]]:
         """Read the raw registers backing every readable component."""
