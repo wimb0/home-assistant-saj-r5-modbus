@@ -78,7 +78,10 @@ async def async_get_config_entry_diagnostics(
         "config_entry_options": async_redact_data(entry.options, TO_REDACT),
         "decoded_values": _decoded_values(hub),
         "unserved_components": sorted(hub.absent_components),
-        "failing_components": sorted(hub.failed_components),
+        "updated": sorted(hub.last_report.updated),
+        "failed": {
+            name: str(err) for name, err in sorted(hub.last_report.failed.items())
+        },
         "register_layout": _register_layout(hub.device),
         "raw_registers": raw_registers,
     }

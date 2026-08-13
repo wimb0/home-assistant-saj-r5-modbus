@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from functools import cached_property
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.number import NumberEntityDescription
@@ -45,8 +46,6 @@ class SajModbusNumberEntityDescription(NumberEntityDescription):
     # inverter does not serve is never created, and one naming a component a
     # poll failed to read goes unavailable until it reads again.
     component: str = "realtime"
-    # Nothing here feeds statistics, so a failed read means unavailable.
-    always_available: bool = False
 
 
 NUMBER_TYPES: dict[str, list[SajModbusNumberEntityDescription]] = {
@@ -73,8 +72,6 @@ class SajModbusSwitchEntityDescription(SwitchEntityDescription):
     # inverter does not serve is never created, and one naming a component a
     # poll failed to read goes unavailable until it reads again.
     component: str = "realtime"
-    # Nothing here feeds statistics, so a failed read means unavailable.
-    always_available: bool = False
 
 
 SWITCH_TYPES: dict[str, list[SajModbusSwitchEntityDescription]] = {
@@ -105,20 +102,17 @@ class SajModbusSensorEntityDescription(SensorEntityDescription):
     # inverter does not serve is never created, and one naming a component a
     # poll failed to read goes unavailable until it reads again.
     component: str = "realtime"
-    # Whether this entity holds its last value instead of going unavailable
-    # when a poll does not reach it, the whole inverter included. Defaults
-    # from the state class: gaps leave holes in long-term statistics, and an
-    # inverter that powers down overnight is not a reason to record one.
-    always_available: bool | None = None
 
-    def __post_init__(self) -> None:
-        """Let the state class decide, unless the description says otherwise."""
-        if self.always_available is None:
-            object.__setattr__(
-                self,
-                "always_available",
-                self.state_class in STATISTICS_STATE_CLASSES,
-            )
+    @cached_property
+    def is_total(self) -> bool:
+        """Whether this sensor accumulates rather than measures.
+
+        A total holds its last value instead of going unavailable when a poll
+        does not reach it, the whole inverter included: gaps leave holes in
+        long-term statistics, and an inverter that powers down overnight is
+        not a reason to record one.
+        """
+        return self.state_class in STATISTICS_STATE_CLASSES
 
 
 COUNTER_SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {

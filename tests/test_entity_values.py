@@ -81,10 +81,12 @@ async def test_a_counter_holds_its_value_when_generation_stops(
     again until it does -- publishing nothing would gap their statistics.
     """
     sensor = SajCounterSensor(hub, COUNTER_SENSOR_TYPES["TotalEnergy"])
+    sensor._process_data()
     assert sensor.native_value == 78910.11
 
     # Not Connected: the DC side is down for the night.
     mock_modbus_unit.holding[MPVMODE_REGISTER] = 0
     await hub.device.realtime.async_update()
+    sensor._process_data()
 
     assert sensor.native_value == 78910.11

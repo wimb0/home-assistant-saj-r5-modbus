@@ -51,13 +51,6 @@ class SajEntity(CoordinatorEntity[SAJModbusHub]):
         A poll that failed, either wholly or only in this entity's component,
         leaves values that are not worth publishing as if they were current.
         """
-        if self.entity_description.always_available:
-            # So an accumulator never reads unavailable, and holds its last
-            # value even if the device is gone for good. That is the trade:
-            # statistics continuity beats liveness signalling for a counter,
-            # and whether the inverter is reachable belongs on a connectivity
-            # or diagnostic entity, not on its lifetime yield.
-            return True
         return (
             super().available
             and self.entity_description.component

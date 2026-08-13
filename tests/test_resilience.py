@@ -18,10 +18,12 @@ from custom_components.saj_modbus.const import (
     NUMBER_TYPES,
     SENSOR_TYPES,
     SWITCH_TYPES,
+    SajModbusSensorEntityDescription,
 )
 from custom_components.saj_modbus.entity import SajEntity, SajEntityDescription
 from custom_components.saj_modbus.hub import SAJModbusHub
-from custom_components.saj_modbus.inverter import SajR5Inverter
+from custom_components.saj_modbus.inverter import SajR5Inverter, UpdateReport
+from custom_components.saj_modbus.sensor import SajSensor
 
 INFO_REGISTER = 0x8F00
 REALTIME_REGISTER = 0x100
@@ -36,7 +38,7 @@ def make_hub(device: SajR5Inverter, connection: MockModbusConnection) -> SAJModb
     hub._connection = connection
     hub.device = device
     hub._timeouts = 0
-    hub._failed_components = frozenset()
+    hub._report = UpdateReport(set(), {})
     hub._identifier = "R5"
     hub.name = "SAJ"
     hub.last_update_success = True
@@ -44,7 +46,13 @@ def make_hub(device: SajR5Inverter, connection: MockModbusConnection) -> SAJModb
 
 
 def is_available(hub: SAJModbusHub, description: SajEntityDescription) -> bool:
-    """Whether the entity for ``description`` would report itself available."""
+    """Whether the entity for ``description`` would report itself available.
+
+    Sensors get their own class: holding a total is a sensor concern, so the
+    exemption lives there rather than on the shared base entity.
+    """
+    if isinstance(description, SajModbusSensorEntityDescription):
+        return SajSensor(hub, description).available
     return SajEntity(hub, description).available
 
 

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 
-from homeassistant.components.sensor import SensorEntity
-from homeassistant.core import HomeAssistant
+from homeassistant.components.sensor import RestoreSensor
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
@@ -39,32 +39,49 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class SajSensor(SajEntity, SensorEntity):
+class SajSensor(SajEntity, RestoreSensor):
     """Representation of an SAJ Modbus sensor."""
 
     entity_description: SajModbusSensorEntityDescription
 
     @property
-    def native_value(self):
-        """Return the native value of the sensor."""
-        return self._value
+    def available(self) -> bool:
+        """A total stays available even when nothing answered the poll."""
+        return self.entity_description.is_total or super().available
+
+    async def async_added_to_hass(self) -> None:
+        """Seed a total from the state it had before the restart."""
+        await super().async_added_to_hass()
+        if (
+            self.entity_description.is_total
+            and (last_data := await self.async_get_last_sensor_data()) is not None
+        ):
+            self._attr_native_value = last_data.native_value
+        self._process_data()
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Take this poll's value before publishing the state."""
+        self._process_data()
+        super()._handle_coordinator_update()
+
+    def _process_data(self) -> None:
+        """Store what the device now reads, unless a total reads nothing."""
+        value = self._value
+        if value is not None or not self.entity_description.is_total:
+            self._attr_native_value = value
 
 
 class SajCounterSensor(SajSensor):
     """Representation of a SAJ Modbus counter sensor."""
 
-    _last_value = None
+    def _process_data(self) -> None:
+        """Take a new value only while the inverter is generating.
 
-    @property
-    def native_value(self):
-        """Return the value of the sensor.
-
-        These registers only read true while the inverter is generating, and
-        every counter here is a running total: publishing nothing outside
-        those modes would blank each one every night, which leaves the same
-        hole in its long-term statistics that going unavailable would. So the
-        last generated value stands until the inverter generates again.
+        These registers only read true in those modes, and every counter here
+        is a running total: following them outside would blank each one every
+        night, leaving the same hole in its long-term statistics that going
+        unavailable would.
         """
         if self.coordinator.device.realtime.mpvmode in (1, 2):
-            self._last_value = self._value
-        return self._last_value
+            super()._process_data()

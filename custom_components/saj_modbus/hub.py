@@ -17,7 +17,7 @@ from .const import (
     DOMAIN,
     FAULT_MESSAGES,
 )
-from .inverter import UNIT_ID, SajR5Inverter, create_connection
+from .inverter import UNIT_ID, SajR5Inverter, UpdateReport, create_connection
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -62,8 +62,9 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
         self._power_limit: float = 110.0
         # Consecutive poll timeouts; reset by any poll that reaches the device.
         self._timeouts = 0
-        # Components the last poll could not read; their entities go unavailable.
-        self._failed_components: frozenset[str] = frozenset()
+        # What the last poll managed to read; diagnostics reports it, and the
+        # components it missed have their entities go unavailable.
+        self._report = UpdateReport(set(), {})
         # Resolved once by freeze_identity() after the first refresh and never
         # again: entities bake it into their unique ids at construction, so it
         # must not change under them if a later poll finally reads the serial.
@@ -138,27 +139,24 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
             # Only a dead link reaches here; a failing block is in the report.
             raise UpdateFailed(f"Failed to fetch realtime data: {ex}") from ex
 
-        was_failing = self._failed_components
-        self._failed_components = frozenset(report.failed)
-        errors = "; ".join(f"{name}: {err}" for name, err in report.failed.items())
+        was_failing = self.failed_components
+        self._report = report
 
         if not report.updated:
-            if any(
-                isinstance(err, ModbusTimeoutError) for err in report.failed.values()
-            ):
+            errors = list(report.failed.values())
+            if any(isinstance(err, ModbusTimeoutError) for err in errors):
                 await self._async_note_timeout()
-            raise UpdateFailed(f"Failed to fetch realtime data: {errors}")
+            # Home Assistant logs only str(err), so the reason has to be in it;
+            # the group carries the rest for the debug-level traceback.
+            raise UpdateFailed(
+                f"Failed to fetch realtime data: {errors[0]}"
+            ) from ExceptionGroup("no component answered", errors)
 
         self._timeouts = 0
 
         # Only when a failure starts, so a persistent one does not log every poll.
-        if newly_failing := self._failed_components - was_failing:
-            _LOGGER.warning(
-                "Could not read %s, so its entities go unavailable; the rest of "
-                "the poll stands: %s",
-                ", ".join(sorted(newly_failing)),
-                errors,
-            )
+        for name in sorted(report.failed.keys() - was_failing):
+            _LOGGER.warning("Failed to fetch %s: %s", name, report.failed[name])
 
         if messages := self.fault_messages:
             _LOGGER.error("Fault message: %s", ", ".join(messages))
@@ -169,9 +167,14 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
         return self.device.absent
 
     @property
+    def last_report(self) -> UpdateReport:
+        """What the last poll refreshed and what it missed."""
+        return self._report
+
+    @property
     def failed_components(self) -> frozenset[str]:
         """Components the last poll could not read."""
-        return self._failed_components
+        return frozenset(self._report.failed)
 
     @property
     def mpvstatus(self) -> str:
