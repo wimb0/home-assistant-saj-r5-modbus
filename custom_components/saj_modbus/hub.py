@@ -151,9 +151,11 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
 
         self._timeouts = 0
 
+        # Only when a failure starts, so a persistent one does not log every poll.
         if newly_failing := self._failed_components - was_failing:
             _LOGGER.warning(
-                "Kept the rest of the poll; %s did not read: %s",
+                "Could not read %s, so its entities go unavailable; the rest of "
+                "the poll stands: %s",
                 ", ".join(sorted(newly_failing)),
                 errors,
             )

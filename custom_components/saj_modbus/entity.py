@@ -35,6 +35,7 @@ class SajEntity(CoordinatorEntity[SAJModbusHub]):
     """An entity reading one value off the inverter."""
 
     _attr_has_entity_name = True
+    entity_description: SajEntityDescription
 
     def __init__(self, hub: SAJModbusHub, description: SajEntityDescription) -> None:
         """Initialize the entity."""
