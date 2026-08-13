@@ -53,9 +53,18 @@ class SajSensor(SajEntity, SensorEntity):
 class SajCounterSensor(SajSensor):
     """Representation of a SAJ Modbus counter sensor."""
 
+    _last_value = None
+
     @property
     def native_value(self):
-        """Return the value of the sensor."""
+        """Return the value of the sensor.
+
+        These registers only read true while the inverter is generating, and
+        every counter here is a running total: publishing nothing outside
+        those modes would blank each one every night, which leaves the same
+        hole in its long-term statistics that going unavailable would. So the
+        last generated value stands until the inverter generates again.
+        """
         if self.coordinator.device.realtime.mpvmode in (1, 2):
-            return self._value
-        return None
+            self._last_value = self._value
+        return self._last_value

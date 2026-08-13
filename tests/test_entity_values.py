@@ -1,6 +1,7 @@
 """Tests that every entity description resolves against the device model."""
 
 import pytest
+from modbus_connection.mock import MockModbusUnit
 
 from custom_components.saj_modbus.const import (
     COUNTER_SENSOR_TYPES,
@@ -10,6 +11,9 @@ from custom_components.saj_modbus.const import (
 )
 from custom_components.saj_modbus.hub import SAJModbusHub
 from custom_components.saj_modbus.inverter import SajR5Inverter
+from custom_components.saj_modbus.sensor import SajCounterSensor
+
+MPVMODE_REGISTER = 0x100
 
 ALL_DESCRIPTIONS = [
     description
@@ -66,3 +70,21 @@ def test_values_match_the_device_model(hub: SAJModbusHub) -> None:
     assert values["faultmsg"] == "Code 01: Master Relay Error"
     assert values["poweronoff"] is True
     assert values["limitpower"] == 110.0
+
+
+async def test_a_counter_holds_its_value_when_generation_stops(
+    hub: SAJModbusHub, mock_modbus_unit: MockModbusUnit
+) -> None:
+    """Dusk moves the inverter out of its generating modes every day.
+
+    The counters read true only while it generates, so they are not read
+    again until it does -- publishing nothing would gap their statistics.
+    """
+    sensor = SajCounterSensor(hub, COUNTER_SENSOR_TYPES["TotalEnergy"])
+    assert sensor.native_value == 78910.11
+
+    # Not Connected: the DC side is down for the night.
+    mock_modbus_unit.holding[MPVMODE_REGISTER] = 0
+    await hub.device.realtime.async_update()
+
+    assert sensor.native_value == 78910.11
