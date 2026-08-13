@@ -49,8 +49,11 @@ class SajEntity(CoordinatorEntity[SAJModbusHub]):
         """Whether the last poll refreshed the component behind this entity.
 
         A component whose read failed still holds its previous values, which
-        are not worth publishing as if they were current.
+        are not worth publishing as if they were current — except where they
+        feed long-term statistics, which an availability gap damages.
         """
+        if self.entity_description.always_available:
+            return super().available
         return (
             super().available
             and self.entity_description.component

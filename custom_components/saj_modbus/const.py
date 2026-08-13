@@ -45,6 +45,8 @@ class SajModbusNumberEntityDescription(NumberEntityDescription):
     # inverter does not serve is never created, and one naming a component a
     # poll failed to read goes unavailable until it reads again.
     component: str = "realtime"
+    # Nothing here feeds statistics, so a failed read means unavailable.
+    always_available: bool = False
 
 
 NUMBER_TYPES: dict[str, list[SajModbusNumberEntityDescription]] = {
@@ -71,6 +73,8 @@ class SajModbusSwitchEntityDescription(SwitchEntityDescription):
     # inverter does not serve is never created, and one naming a component a
     # poll failed to read goes unavailable until it reads again.
     component: str = "realtime"
+    # Nothing here feeds statistics, so a failed read means unavailable.
+    always_available: bool = False
 
 
 SWITCH_TYPES: dict[str, list[SajModbusSwitchEntityDescription]] = {
@@ -85,6 +89,13 @@ SWITCH_TYPES: dict[str, list[SajModbusSwitchEntityDescription]] = {
 }
 
 
+# The state classes Home Assistant keeps long-term statistics for.
+STATISTICS_STATE_CLASSES = (
+    SensorStateClass.TOTAL,
+    SensorStateClass.TOTAL_INCREASING,
+)
+
+
 @dataclass(frozen=True, kw_only=True)
 class SajModbusSensorEntityDescription(SensorEntityDescription):
     """A class that describes SAJ sensor entities."""
@@ -94,6 +105,20 @@ class SajModbusSensorEntityDescription(SensorEntityDescription):
     # inverter does not serve is never created, and one naming a component a
     # poll failed to read goes unavailable until it reads again.
     component: str = "realtime"
+    # Whether this entity keeps its last value when its component fails to
+    # read, instead of going unavailable. Defaults from the state class:
+    # gaps in a total leave holes in its long-term statistics, and an inverter
+    # that stops answering overnight is not a reason to record one.
+    always_available: bool | None = None
+
+    def __post_init__(self) -> None:
+        """Let the state class decide, unless the description says otherwise."""
+        if self.always_available is None:
+            object.__setattr__(
+                self,
+                "always_available",
+                self.state_class in STATISTICS_STATE_CLASSES,
+            )
 
 
 COUNTER_SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {

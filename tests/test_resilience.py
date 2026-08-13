@@ -14,6 +14,7 @@ from modbus_connection import (
 from modbus_connection.mock import MockModbusConnection, MockModbusUnit
 
 from custom_components.saj_modbus.const import (
+    COUNTER_SENSOR_TYPES,
     NUMBER_TYPES,
     SENSOR_TYPES,
     SWITCH_TYPES,
@@ -232,3 +233,23 @@ async def test_a_failed_realtime_block_drops_only_its_own_sensors(
     assert not is_available(hub, SENSOR_TYPES["MPVMode"])
     assert is_available(hub, SENSOR_TYPES["SN"])
     assert is_available(hub, SWITCH_TYPES["PowerOnOff"])
+
+
+async def test_statistics_sensors_survive_their_component_failing(
+    device: SajR5Inverter,
+    mock_modbus_unit: MockModbusUnit,
+    mock_modbus_connection: MockModbusConnection,
+) -> None:
+    """Totals hold their last value; the instantaneous readings drop out."""
+    hub = make_hub(device, mock_modbus_connection)
+    await device.async_setup()
+    mock_modbus_unit.fail_read(REALTIME_REGISTER, ModbusTimeoutError("slow block"))
+
+    await hub._async_update_data()
+
+    assert hub.failed_components == {"realtime"}
+    for key in ("TodayEnergy", "MonthEnergy", "YearEnergy", "TotalEnergy"):
+        assert is_available(hub, COUNTER_SENSOR_TYPES[key])
+    assert is_available(hub, SENSOR_TYPES["ErrorCount"])
+    assert not is_available(hub, SENSOR_TYPES["Power"])
+    assert not is_available(hub, SENSOR_TYPES["L1Volt"])
