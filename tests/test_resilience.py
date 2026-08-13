@@ -253,3 +253,29 @@ async def test_statistics_sensors_survive_their_component_failing(
     assert is_available(hub, SENSOR_TYPES["ErrorCount"])
     assert not is_available(hub, SENSOR_TYPES["Power"])
     assert not is_available(hub, SENSOR_TYPES["L1Volt"])
+
+
+async def test_statistics_sensors_survive_the_whole_device_going_quiet(
+    device: SajR5Inverter,
+    mock_modbus_unit: MockModbusUnit,
+    mock_modbus_connection: MockModbusConnection,
+) -> None:
+    """An inverter that powers down at dusk must not blank its totals."""
+    hub = make_hub(device, mock_modbus_connection)
+    await device.async_setup()
+    mock_modbus_unit.fail_requests(ModbusTimeoutError("no reply"))
+
+    with pytest.raises(UpdateFailed):
+        await hub._async_update_data()
+    # What the coordinator does to itself once a refresh fails; the hub built
+    # here never runs async_refresh, so the failure is recorded by hand.
+    hub.last_update_success = False
+
+    # Totals are exempt: a nightly gap in an accumulator leaves a hole in its
+    # long-term statistics, which outweighs signalling that the link is down.
+    for key in ("TodayEnergy", "TotalEnergy", "TotalHour"):
+        assert is_available(hub, COUNTER_SENSOR_TYPES[key])
+    assert is_available(hub, SENSOR_TYPES["ErrorCount"])
+    assert not is_available(hub, SENSOR_TYPES["Power"])
+    assert not is_available(hub, SENSOR_TYPES["MPVMode"])
+    assert not is_available(hub, SWITCH_TYPES["PowerOnOff"])
