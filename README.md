@@ -199,6 +199,10 @@ This integration will create the following entities:
 
 If you encounter any issues with the integration, there are two main ways to gather more information to help diagnose the problem.
 
+### Some Entities Unavailable
+
+Each poll reads the inverter's realtime block and its remote power state independently, so one of them being slow or refused does not take the other down with it. Only the entities reading the part that failed go unavailable — they keep their last values internally and come back on the next poll that reads it — and a warning naming the part and the error is written to the log. All entities go unavailable only when the inverter answers nothing at all. A diagnostics download lists what is currently failing under `failing_components`, and registers this firmware does not serve at all under `unserved_components`.
+
 ### Enabling Debug Logging
 
 For detailed logs, you can enable debug logging for this integration by adding the following to your `configuration.yaml` file:
