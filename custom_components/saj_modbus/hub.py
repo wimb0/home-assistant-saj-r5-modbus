@@ -62,6 +62,8 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
         self._power_limit: float = 110.0
         # Consecutive poll timeouts; reset by any poll that reaches the device.
         self._timeouts = 0
+        # Components the last poll could not read; their entities go unavailable.
+        self._failed_components: frozenset[str] = frozenset()
         # Resolved once by freeze_identity() after the first refresh and never
         # again: entities bake it into their unique ids at construction, so it
         # must not change under them if a later poll finally reads the serial.
@@ -127,18 +129,34 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
     async def _async_update_data(self) -> None:
         """Refresh the inverter's components; entities read them directly.
 
-        Which components exist was settled by async_setup, so this reads one
-        fixed group.
+        Each component is read on its own, so one that fails costs only its own
+        entities. The update itself fails only when nothing answered at all.
         """
         try:
-            await self.device.async_update()
-        except ModbusTimeoutError as ex:
-            await self._async_note_timeout()
-            raise UpdateFailed(f"Failed to fetch realtime data: {ex}") from ex
+            report = await self.device.async_update()
         except ModbusError as ex:
+            # Only a dead link reaches here; a failing block is in the report.
             raise UpdateFailed(f"Failed to fetch realtime data: {ex}") from ex
 
+        was_failing = self._failed_components
+        self._failed_components = frozenset(report.failed)
+        errors = "; ".join(f"{name}: {err}" for name, err in report.failed.items())
+
+        if not report.updated:
+            if any(
+                isinstance(err, ModbusTimeoutError) for err in report.failed.values()
+            ):
+                await self._async_note_timeout()
+            raise UpdateFailed(f"Failed to fetch realtime data: {errors}")
+
         self._timeouts = 0
+
+        if newly_failing := self._failed_components - was_failing:
+            _LOGGER.warning(
+                "Kept the rest of the poll; %s did not read: %s",
+                ", ".join(sorted(newly_failing)),
+                errors,
+            )
 
         if messages := self.fault_messages:
             _LOGGER.error("Fault message: %s", ", ".join(messages))
@@ -147,6 +165,11 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
     def absent_components(self) -> frozenset[str]:
         """Components this inverter does not serve."""
         return self.device.absent
+
+    @property
+    def failed_components(self) -> frozenset[str]:
+        """Components the last poll could not read."""
+        return self._failed_components
 
     @property
     def mpvstatus(self) -> str:

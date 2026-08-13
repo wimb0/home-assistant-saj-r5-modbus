@@ -41,9 +41,10 @@ class SajModbusNumberEntityDescription(NumberEntityDescription):
     """A class that describes SAJ number entities."""
 
     value_fn: Callable[[SAJModbusHub], Any]
-    # The optional component this entity reads, if any. An entity naming a
-    # component the inverter does not serve is never created.
-    component: str | None = None
+    # The device component this entity reads. An entity naming a component the
+    # inverter does not serve is never created, and one naming a component a
+    # poll failed to read goes unavailable until it reads again.
+    component: str = "realtime"
 
 
 NUMBER_TYPES: dict[str, list[SajModbusNumberEntityDescription]] = {
@@ -53,6 +54,8 @@ NUMBER_TYPES: dict[str, list[SajModbusNumberEntityDescription]] = {
         native_min_value=0,
         key="limitpower",
         value_fn=lambda hub: hub.limitpower,
+        # Write-only on this inverter: never polled, so never stale.
+        component="settings",
         icon="mdi:solar-power",
         native_unit_of_measurement="%",
     )
@@ -64,9 +67,10 @@ class SajModbusSwitchEntityDescription(SwitchEntityDescription):
     """A class that describes SAJ switch entities."""
 
     value_fn: Callable[[SAJModbusHub], Any]
-    # The optional component this entity reads, if any. An entity naming a
-    # component the inverter does not serve is never created.
-    component: str | None = None
+    # The device component this entity reads. An entity naming a component the
+    # inverter does not serve is never created, and one naming a component a
+    # poll failed to read goes unavailable until it reads again.
+    component: str = "realtime"
 
 
 SWITCH_TYPES: dict[str, list[SajModbusSwitchEntityDescription]] = {
@@ -86,9 +90,10 @@ class SajModbusSensorEntityDescription(SensorEntityDescription):
     """A class that describes SAJ sensor entities."""
 
     value_fn: Callable[[SAJModbusHub], Any]
-    # The optional component this entity reads, if any. An entity naming a
-    # component the inverter does not serve is never created.
-    component: str | None = None
+    # The device component this entity reads. An entity naming a component the
+    # inverter does not serve is never created, and one naming a component a
+    # poll failed to read goes unavailable until it reads again.
+    component: str = "realtime"
 
 
 COUNTER_SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {

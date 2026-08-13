@@ -44,6 +44,19 @@ class SajEntity(CoordinatorEntity[SAJModbusHub]):
         self._attr_unique_id = f"{hub.identifier}_{description.key}"
 
     @property
+    def available(self) -> bool:
+        """Whether the last poll refreshed the component behind this entity.
+
+        A component whose read failed still holds its previous values, which
+        are not worth publishing as if they were current.
+        """
+        return (
+            super().available
+            and self.entity_description.component
+            not in self.coordinator.failed_components
+        )
+
+    @property
     def _value(self):
         """This entity's value, read straight off the device model."""
         return self.entity_description.value_fn(self.coordinator)
