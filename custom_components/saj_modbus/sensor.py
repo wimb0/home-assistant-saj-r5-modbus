@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import logging
 
-from homeassistant.components.sensor import RestoreSensor, SensorEntity
+from homeassistant.components.sensor import (
+    RestoreSensor,
+    SensorEntity,
+    SensorStateClass,
+)
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -86,9 +90,22 @@ class SajTotalSensor(SajEntity, RestoreSensor):
         super()._handle_coordinator_update()
 
     def _process_data(self) -> None:
-        """Store what the device now reads, keeping the last value if it reads nothing."""
-        if (value := self._value) is not None:
-            self._attr_native_value = value
+        """Store what the device now reads, keeping the last value if it reads nothing.
+
+        The 32-bit counters are served over two registers, so a poll landing
+        mid-update occasionally reads a hair below the last value. Home
+        Assistant would take that for a meter reset.
+        """
+        if (value := self._value) is None:
+            return
+        last = self._attr_native_value
+        if (
+            self.entity_description.state_class is SensorStateClass.TOTAL_INCREASING
+            and last is not None
+            and last * 0.99 <= value < last
+        ):
+            return  # ignore firmware issue causing minor decrease
+        self._attr_native_value = value
 
 
 class SajCounterSensor(SajTotalSensor):

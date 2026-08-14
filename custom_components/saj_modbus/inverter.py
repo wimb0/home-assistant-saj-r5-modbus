@@ -13,6 +13,7 @@ from modbus_connection import (
     ModbusConnectionError,
     ModbusError,
     ModbusTcpParams,
+    ModbusTimeoutError,
     ModbusUnit,
 )
 from modbus_connection.model import (
@@ -38,8 +39,9 @@ MODBUS_TIMEOUT = 5
 # so those propagate.
 _NOT_SERVED = (IllegalFunctionError, IllegalDataAddressError)
 
-# Every component attribute a poll may refresh, in read order. The information
-# is static, so setup reads it and polling never does.
+# Every component attribute a poll may refresh, in read order. A timeout on
+# the first one ends the poll, so the block worth waiting for leads. The
+# information is static, so setup reads it and polling never does.
 _POLLED = ("realtime", "power")
 
 
@@ -48,8 +50,8 @@ class UpdateReport:
     """What one poll refreshed, by the device's component attribute names.
 
     A failed component kept its previous values and did not notify; the error
-    that failed it rides along. A dead link is never in here — the update
-    raises ``ModbusConnectionError`` instead of reporting partial silence.
+    that failed it rides along. An inverter that answered nothing at all is
+    never in here — the update raises rather than reporting total silence.
     """
 
     updated: set[str]
@@ -256,7 +258,9 @@ class SajR5Inverter:
         still refresh, so one slow block cannot blank the whole inverter.
         Listeners fire only once every component has been tried, and only for
         the ones that refreshed. A failure of the link itself raises
-        ``ModbusConnectionError`` rather than reporting partial silence.
+        ``ModbusConnectionError`` rather than reporting partial silence, and so
+        does a first component that times out: nothing has answered yet, so
+        reading on would only pay the same timeout again.
         """
         if self._polled is None:
             await self.async_setup()
@@ -268,6 +272,10 @@ class SajR5Inverter:
                 await component.async_update(notify=False)
             except ModbusConnectionError:
                 raise
+            except ModbusTimeoutError as err:
+                if not updated and not failed:
+                    raise  # nothing answered; the rest would only time out too
+                failed[name] = err
             except ModbusError as err:
                 failed[name] = err
             else:

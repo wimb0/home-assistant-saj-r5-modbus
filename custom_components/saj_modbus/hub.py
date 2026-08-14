@@ -135,24 +135,29 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
         """
         try:
             report = await self.device.async_update()
+        except ModbusTimeoutError as ex:
+            # Raised only when nothing answered at all, which is what a wedged
+            # link looks like. A timeout inside the report is not: the inverter
+            # answered the other block, so the link is fine.
+            await self._async_note_timeout()
+            raise UpdateFailed(f"Failed to fetch realtime data: {ex}") from ex
         except ModbusError as ex:
             # Only a dead link reaches here; a failing block is in the report.
             raise UpdateFailed(f"Failed to fetch realtime data: {ex}") from ex
+
+        # Something came back, so whatever else went wrong the link is not stuck.
+        self._timeouts = 0
 
         was_failing = self.failed_components
         self._report = report
 
         if not report.updated:
             errors = list(report.failed.values())
-            if any(isinstance(err, ModbusTimeoutError) for err in errors):
-                await self._async_note_timeout()
             # Home Assistant logs only str(err), so the reason has to be in it;
             # the group carries the rest for the debug-level traceback.
             raise UpdateFailed(
                 f"Failed to fetch realtime data: {errors[0]}"
             ) from ExceptionGroup("no component answered", errors)
-
-        self._timeouts = 0
 
         # Only when a failure starts, so a persistent one does not log every poll.
         for name in sorted(report.failed.keys() - was_failing):

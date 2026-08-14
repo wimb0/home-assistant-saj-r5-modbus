@@ -87,14 +87,18 @@ async def test_a_failed_component_leaves_the_rest_fresh(
 async def test_a_failed_realtime_block_leaves_the_power_state_fresh(
     device: SajR5Inverter, mock_modbus_unit: MockModbusUnit
 ) -> None:
-    """And the other way round: the big block failing is contained too."""
+    """And the other way round: the big block failing is contained too.
+
+    A refusal, not a timeout: the inverter answering proves it is there, which
+    is what lets the poll go on to the next component.
+    """
     await device.async_setup()
     await device.async_update()
     before = device.realtime.power
 
     mock_modbus_unit.holding[POWER_OUTPUT_REGISTER] = 1234
     mock_modbus_unit.holding[POWER_REGISTER] = 0
-    mock_modbus_unit.fail_read(REALTIME_REGISTER, ModbusTimeoutError("slow block"))
+    mock_modbus_unit.fail_read(REALTIME_REGISTER, ServerDeviceBusyError())
     report = await device.async_update()
 
     assert set(report.failed) == {"realtime"}
@@ -133,6 +137,29 @@ async def test_a_dead_link_raises_instead_of_reporting(
 
     with pytest.raises(ModbusConnectionError):
         await device.async_update()
+
+
+async def test_a_silent_inverter_raises_before_walking_the_rest(
+    device: SajR5Inverter, mock_modbus_unit: MockModbusUnit
+) -> None:
+    """One poll costs one timeout, not one per component.
+
+    An inverter asleep at dusk behind a bridge that keeps the socket open
+    answers nothing, and reading on would only pay the same timeout again.
+    """
+    await device.async_setup()
+    await device.async_update()
+    mock_modbus_unit.holding[POWER_REGISTER] = 0
+    mock_modbus_unit.fail_read(REALTIME_REGISTER, ModbusTimeoutError("slow block"))
+    mock_modbus_unit.read_events.clear()
+
+    with pytest.raises(ModbusTimeoutError):
+        await device.async_update()
+
+    assert POWER_REGISTER not in [
+        event.address for event in mock_modbus_unit.read_events
+    ]
+    assert device.power.poweronoff is True  # never reached, so never re-read
 
 
 async def test_every_component_refreshes_on_a_healthy_device(
@@ -198,12 +225,12 @@ async def test_a_partial_poll_does_not_fail_the_update(
     assert hub._timeouts == 0
 
 
-async def test_a_poll_that_reads_nothing_fails_the_update(
+async def test_a_silent_inverter_fails_the_update_and_counts_a_timeout(
     device: SajR5Inverter,
     mock_modbus_unit: MockModbusUnit,
     mock_modbus_connection: MockModbusConnection,
 ) -> None:
-    """An inverter answering none of its blocks is still a failed poll."""
+    """Nothing answered, so the timeout is raised rather than reported."""
     hub = make_hub(device, mock_modbus_connection)
     await device.async_setup()
     mock_modbus_unit.fail_requests(ModbusTimeoutError("no reply"))
@@ -211,8 +238,29 @@ async def test_a_poll_that_reads_nothing_fails_the_update(
     with pytest.raises(UpdateFailed):
         await hub._async_update_data()
 
-    assert hub.failed_components == {"realtime", "power"}
     assert hub._timeouts == 1
+
+
+async def test_a_reported_timeout_does_not_count_toward_a_stuck_link(
+    device: SajR5Inverter,
+    mock_modbus_unit: MockModbusUnit,
+    mock_modbus_connection: MockModbusConnection,
+) -> None:
+    """A poll can read nothing and still prove the link is fine.
+
+    The inverter refused the first block, which is an answer, so the timeout
+    on the second is a slow register rather than a wedged link.
+    """
+    hub = make_hub(device, mock_modbus_connection)
+    await device.async_setup()
+    mock_modbus_unit.fail_read(REALTIME_REGISTER, ServerDeviceBusyError())
+    mock_modbus_unit.fail_read(POWER_REGISTER, ModbusTimeoutError("slow register"))
+
+    with pytest.raises(UpdateFailed):
+        await hub._async_update_data()
+
+    assert hub.failed_components == {"realtime", "power"}
+    assert hub._timeouts == 0
 
 
 async def test_only_the_failed_components_entities_go_unavailable(
@@ -241,7 +289,7 @@ async def test_a_failed_realtime_block_drops_only_its_own_sensors(
     """The static information sensors never depend on a poll."""
     hub = make_hub(device, mock_modbus_connection)
     await device.async_setup()
-    mock_modbus_unit.fail_read(REALTIME_REGISTER, ModbusTimeoutError("slow block"))
+    mock_modbus_unit.fail_read(REALTIME_REGISTER, ServerDeviceBusyError())
 
     await hub._async_update_data()
 
@@ -258,7 +306,7 @@ async def test_statistics_sensors_survive_their_component_failing(
     """Totals hold their last value; the instantaneous readings drop out."""
     hub = make_hub(device, mock_modbus_connection)
     await device.async_setup()
-    mock_modbus_unit.fail_read(REALTIME_REGISTER, ModbusTimeoutError("slow block"))
+    mock_modbus_unit.fail_read(REALTIME_REGISTER, ServerDeviceBusyError())
 
     await hub._async_update_data()
 

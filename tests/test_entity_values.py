@@ -14,6 +14,8 @@ from custom_components.saj_modbus.inverter import SajR5Inverter
 from custom_components.saj_modbus.sensor import SajCounterSensor
 
 MPVMODE_REGISTER = 0x100
+# Total generated energy, a 32-bit counter over two registers.
+TOTALENERGY_REGISTER = 0x131
 
 ALL_DESCRIPTIONS = [
     description
@@ -90,3 +92,32 @@ async def test_a_counter_holds_its_value_when_generation_stops(
     sensor._process_data()
 
     assert sensor.native_value == 78910.11
+
+
+async def test_a_total_ignores_a_torn_read(
+    hub: SAJModbusHub, mock_modbus_unit: MockModbusUnit
+) -> None:
+    """A counter served mid-update reads a hair low; that is not a meter reset."""
+    sensor = SajCounterSensor(hub, COUNTER_SENSOR_TYPES["TotalEnergy"])
+    sensor._process_data()
+    assert sensor.native_value == 78910.11
+
+    mock_modbus_unit.holding[TOTALENERGY_REGISTER] = [120, 25680]  # 78900.00
+    await hub.device.realtime.async_update()
+    sensor._process_data()
+
+    assert sensor.native_value == 78910.11
+
+
+async def test_a_total_follows_a_real_reset(
+    hub: SAJModbusHub, mock_modbus_unit: MockModbusUnit
+) -> None:
+    """A drop of more than a percent is the counter itself starting over."""
+    sensor = SajCounterSensor(hub, COUNTER_SENSOR_TYPES["TotalEnergy"])
+    sensor._process_data()
+
+    mock_modbus_unit.holding[TOTALENERGY_REGISTER] = [0, 10000]  # 100.00
+    await hub.device.realtime.async_update()
+    sensor._process_data()
+
+    assert sensor.native_value == 100.0
