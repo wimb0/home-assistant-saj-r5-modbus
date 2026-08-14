@@ -278,5 +278,9 @@ class SajR5Inverter:
         return UpdateReport(updated, failed)
 
     async def async_read_raw(self) -> dict[str, dict[int, int | bool]]:
-        """Read the raw registers backing every readable component."""
-        return await self._readable.async_read_raw()
+        """Read the raw registers backing every readable component.
+
+        The fields refresh but no listener fires: a diagnostics download is not
+        a poll, and should not write a state for every entity off the cycle.
+        """
+        return await self._readable.async_read_raw(notify=False)

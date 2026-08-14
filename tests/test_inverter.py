@@ -1,6 +1,7 @@
 """Tests for the SAJ R5 device model against the modbus-connection mock."""
 
 from datetime import datetime
+from functools import partial
 
 import pytest
 from modbus_connection.mock import MockModbusUnit, ReadEvent, WriteEvent
@@ -182,6 +183,22 @@ async def test_read_raw_covers_all_components(device: SajR5Inverter) -> None:
     assert raw["holding"][0x8F00] == 3
     assert raw["holding"][0x100] == 2
     assert raw["holding"][0x1037] == 1
+
+
+async def test_read_raw_does_not_notify(device: SajR5Inverter) -> None:
+    """A diagnostics download refreshes the fields but is not a poll.
+
+    Notifying would write a state for every entity off the poll cycle, so a
+    download would look like one in the recorder.
+    """
+    notified: list[str] = []
+    for name, component in device.components.items():
+        component.add_update_listener(partial(notified.append, name))
+
+    await device.async_read_raw()
+
+    assert notified == []
+    assert device.realtime.power == 2790
 
 
 def test_register_layout_locates_every_field(device: SajR5Inverter) -> None:
