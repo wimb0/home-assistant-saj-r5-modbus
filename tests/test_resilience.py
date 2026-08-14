@@ -17,13 +17,14 @@ from custom_components.saj_modbus.const import (
     COUNTER_SENSOR_TYPES,
     NUMBER_TYPES,
     SENSOR_TYPES,
+    STATISTICS_STATE_CLASSES,
     SWITCH_TYPES,
     SajModbusSensorEntityDescription,
 )
 from custom_components.saj_modbus.entity import SajEntity, SajEntityDescription
 from custom_components.saj_modbus.hub import SAJModbusHub
 from custom_components.saj_modbus.inverter import SajR5Inverter, UpdateReport
-from custom_components.saj_modbus.sensor import SajSensor
+from custom_components.saj_modbus.sensor import SajSensor, SajTotalSensor
 
 INFO_REGISTER = 0x8F00
 REALTIME_REGISTER = 0x100
@@ -49,10 +50,16 @@ def is_available(hub: SAJModbusHub, description: SajEntityDescription) -> bool:
     """Whether the entity for ``description`` would report itself available.
 
     Sensors get their own class: holding a total is a sensor concern, so the
-    exemption lives there rather than on the shared base entity.
+    exemption lives there rather than on the shared base entity. Which class
+    is picked from the state class, exactly as the sensor platform does.
     """
     if isinstance(description, SajModbusSensorEntityDescription):
-        return SajSensor(hub, description).available
+        sensor_class = (
+            SajTotalSensor
+            if description.state_class in STATISTICS_STATE_CLASSES
+            else SajSensor
+        )
+        return sensor_class(hub, description).available
     return SajEntity(hub, description).available
 
 

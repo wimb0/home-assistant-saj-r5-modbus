@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from functools import cached_property
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.number import NumberEntityDescription
@@ -102,17 +101,6 @@ class SajModbusSensorEntityDescription(SensorEntityDescription):
     # inverter does not serve is never created, and one naming a component a
     # poll failed to read goes unavailable until it reads again.
     component: str = "realtime"
-
-    @cached_property
-    def is_total(self) -> bool:
-        """Whether this sensor accumulates rather than measures.
-
-        A total holds its last value instead of going unavailable when a poll
-        does not reach it, the whole inverter included: gaps leave holes in
-        long-term statistics, and an inverter that powers down overnight is
-        not a reason to record one.
-        """
-        return self.state_class in STATISTICS_STATE_CLASSES
 
 
 COUNTER_SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {

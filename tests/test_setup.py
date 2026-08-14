@@ -6,14 +6,19 @@ import pytest
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT
 from homeassistant.core import HomeAssistant, State
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import entity_registry as er, restore_state
 from modbus_connection.mock import MockModbusConnection
 from pytest_homeassistant_custom_component.common import (
     MockConfigEntry,
     mock_restore_cache_with_extra_data,
 )
 
-from custom_components.saj_modbus.const import DOMAIN
+from custom_components.saj_modbus.const import (
+    COUNTER_SENSOR_TYPES,
+    DOMAIN,
+    SENSOR_TYPES,
+    STATISTICS_STATE_CLASSES,
+)
 from custom_components.saj_modbus.inverter import UNIT_ID
 
 MPVMODE_REGISTER = 0x100
@@ -60,6 +65,52 @@ async def test_setup_entry(
     state = hass.states.get(entity_id)
     assert state is not None
     assert state.state == "78910.11"
+
+
+async def test_only_totals_register_with_the_restore_store(
+    hass: HomeAssistant,
+    enable_custom_integrations: None,
+    mock_connection: MockModbusConnection,
+    serial: str,
+) -> None:
+    """Restoring is a totals concern, and every registrant costs.
+
+    Home Assistant writes every entity registered here to disk on a timer, so
+    a plain reading, which has nothing worth restoring, stays out of the set.
+    """
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        version=2,
+        data={CONF_HOST: "192.168.1.10", CONF_PORT: 502, CONF_NAME: "SAJ"},
+    )
+    entry.add_to_hass(hass)
+
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    totals = {
+        description.key
+        for descriptions in (SENSOR_TYPES, COUNTER_SENSOR_TYPES)
+        for description in descriptions.values()
+        if description.state_class in STATISTICS_STATE_CLASSES
+    }
+    restoring = restore_state.async_get(hass).entities
+    added = [
+        registry_entry
+        for registry_entry in er.async_entries_for_config_entry(
+            er.async_get(hass), entry.entry_id
+        )
+        if not registry_entry.disabled
+    ]
+    added_keys = {e.unique_id.removeprefix(f"{serial}_") for e in added}
+    restoring_keys = {
+        e.unique_id.removeprefix(f"{serial}_")
+        for e in added
+        if e.entity_id in restoring
+    }
+
+    assert restoring_keys == added_keys & totals
+    assert restoring_keys < added_keys
 
 
 async def test_a_total_restores_its_value_across_a_restart(
