@@ -13,7 +13,7 @@
     "tmodbus"
   ],
   "requirements": [
-    "modbus-connection[tmodbus]>=4.7.0"
+    "modbus-connection[tmodbus]>=4.8.1"
   ],
   "version": "v3.1.5"
 }
