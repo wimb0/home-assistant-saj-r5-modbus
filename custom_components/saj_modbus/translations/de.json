@@ -9,14 +9,24 @@
           "port": "Der TCP-Port, über den eine Verbindung zum SAJ-Wechselrichter hergestellt werden soll",
           "scan_interval": "Die Abfragehäufigkeit der Modbus-Register in Sekunden"
         }
+      },
+      "reconfigure": {
+        "title": "Verbindung zum SAJ-Wechselrichter neu konfigurieren",
+        "data": {
+          "host": "Die IP-Adresse Ihres SAJ Inverter Modbus-Geräts",
+          "port": "Der TCP-Port, über den eine Verbindung zum SAJ-Wechselrichter hergestellt werden soll"
+        }
       }
     },
     "error": {
-      "already_configured": "Gerät ist bereits konfiguriert"
+      "already_configured": "Gerät ist bereits konfiguriert",
+      "cannot_connect": "Verbindung fehlgeschlagen",
+      "invalid_host": "Ungültiger Hostname oder ungültige IP-Adresse"
     },
     "abort": {
       "already_configured": "Gerät ist bereits konfiguriert",
-      "reconfigure_successful": "Konfiguration erfolgreich aktualisiert!"
+      "reconfigure_successful": "Konfiguration erfolgreich aktualisiert!",
+      "wrong_inverter": "Diese Adresse gehört zu einem anderen Wechselrichter"
     }
   },
   "options": {
@@ -26,9 +36,6 @@
           "scan_interval": "Die Abfragehäufigkeit der Modbus-Register in Sekunden"
         }
       }
-    },
-    "abort": {
-      "reconfigure_successful": "Konfiguration erfolgreich aktualisiert!"
     }
   },
   "services": {

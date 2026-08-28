@@ -9,14 +9,24 @@
           "port": "The TCP port on which to connect to the SAJ Inverter",
           "scan_interval": "The polling frequency of the modbus registers in seconds"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigure your SAJ Inverter connection",
+        "data": {
+          "host": "The ip-address of your SAJ Inverter modbus device",
+          "port": "The TCP port on which to connect to the SAJ Inverter"
+        }
       }
     },
     "error": {
-      "already_configured": "Device is already configured"
+      "already_configured": "Device is already configured",
+      "cannot_connect": "Failed to connect",
+      "invalid_host": "Invalid hostname or IP address"
     },
     "abort": {
       "already_configured": "Device is already configured",
-      "reconfigure_successful": "Configuration updated successfully!"
+      "reconfigure_successful": "Configuration updated successfully!",
+      "wrong_inverter": "That address belongs to a different inverter"
     }
   },
   "options": {
@@ -26,9 +36,6 @@
           "scan_interval": "The polling frequency of the modbus registers in seconds"
         }
       }
-    },
-    "abort": {
-      "reconfigure_successful": "Configuration updated successfully!"
     }
   },
   "services": {

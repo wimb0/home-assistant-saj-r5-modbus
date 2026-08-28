@@ -9,14 +9,24 @@
           "port": "TCP-порт, за яким слід підключатися до інвертора SAJ",
           "scan_interval": "Частота опитування регістрів modbus в секундах"
         }
+      },
+      "reconfigure": {
+        "title": "Змінити підключення до інвертора SAJ",
+        "data": {
+          "host": "IP-адреса вашого пристрою modbus з інвертором SAJ",
+          "port": "TCP-порт, за яким слід підключатися до інвертора SAJ"
+        }
       }
     },
     "error": {
-      "already_configured": "Пристрій вже налаштовано"
+      "already_configured": "Пристрій вже налаштовано",
+      "cannot_connect": "Не вдалося з'єднатися",
+      "invalid_host": "Некоректне ім'я хоста або IP-адреса"
     },
     "abort": {
       "already_configured": "Пристрій вже налаштовано",
-      "reconfigure_successful": "Конфігурацію успішно оновлено!"
+      "reconfigure_successful": "Конфігурацію успішно оновлено!",
+      "wrong_inverter": "Ця адреса належить іншому інвертору"
     }
   },
   "options": {
@@ -26,9 +36,6 @@
           "scan_interval": "Частота опитування регістрів modbus в секундах"
         }
       }
-    },
-    "abort": {
-      "reconfigure_successful": "Конфігурацію успішно оновлено!"
     }
   },
   "services": {
