@@ -5,4 +5,4 @@ pip>=26.2.1
 pytest
 pytest-asyncio
 pytest-homeassistant-custom-component==0.13.316
-ruff==0.16.1
+ruff==0.16.5
