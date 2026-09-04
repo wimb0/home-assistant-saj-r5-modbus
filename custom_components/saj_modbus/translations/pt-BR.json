@@ -9,14 +9,24 @@
           "port": "A porta TCP na qual se conectar ao Inversor SAJ",
           "scan_interval": "A frequência de polling dos registradores modbus em segundos"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigurar a conexão do seu inversor SAJ",
+        "data": {
+          "host": "O endereço IP do seu dispositivo modbus do Inversor SAJ",
+          "port": "A porta TCP na qual se conectar ao Inversor SAJ"
+        }
       }
     },
     "error": {
-      "already_configured": "O dispositivo já está configurado"
+      "already_configured": "O dispositivo já está configurado",
+      "cannot_connect": "Falha ao conectar",
+      "invalid_host": "Nome de host ou endereço IP inválido"
     },
     "abort": {
       "already_configured": "O dispositivo já está configurado",
-      "reconfigure_successful": "Configuração atualizada com sucesso!"
+      "reconfigure_successful": "Configuração atualizada com sucesso!",
+      "wrong_inverter": "Esse endereço pertence a outro inversor"
     }
   },
   "options": {
@@ -26,9 +36,6 @@
           "scan_interval": "A frequência de polling dos registradores modbus em segundos"
         }
       }
-    },
-    "abort": {
-      "reconfigure_successful": "Configuração atualizada com sucesso!"
     }
   },
   "services": {

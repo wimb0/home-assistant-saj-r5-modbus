@@ -9,14 +9,24 @@
           "port": "Portul TCP la care să vă conectați la invertorul SAJ",
           "scan_interval": "Frecvența de interogare a registrelor modbus în secunde"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigurați conexiunea la invertorul SAJ",
+        "data": {
+          "host": "Adresa IP a dispozitivului dvs. modbus pentru invertorul SAJ",
+          "port": "Portul TCP la care să vă conectați la invertorul SAJ"
+        }
       }
     },
     "error": {
-      "already_configured": "Dispozitivul este deja configurat"
+      "already_configured": "Dispozitivul este deja configurat",
+      "cannot_connect": "Conectarea a eșuat",
+      "invalid_host": "Nume de gazdă sau adresă IP nevalidă"
     },
     "abort": {
       "already_configured": "Dispozitivul este deja configurat",
-      "reconfigure_successful": "Configurația a fost actualizată cu succes!"
+      "reconfigure_successful": "Configurația a fost actualizată cu succes!",
+      "wrong_inverter": "Acea adresă aparține altui invertor"
     }
   },
   "options": {
@@ -26,9 +36,6 @@
           "scan_interval": "Frecvența de interogare a registrelor modbus în secunde"
         }
       }
-    },
-    "abort": {
-      "reconfigure_successful": "Configurația a fost actualizată cu succes!"
     }
   },
   "services": {

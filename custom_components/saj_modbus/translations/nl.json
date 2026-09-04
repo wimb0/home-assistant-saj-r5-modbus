@@ -9,14 +9,24 @@
           "port": "De TCP-poort waarop verbinding moet worden gemaakt met de SAJ-omvormer",
           "scan_interval": "De polling-frequentie van de modbus registratie in seconden"
         }
+      },
+      "reconfigure": {
+        "title": "Verbinding met uw SAJ-omvormer opnieuw instellen",
+        "data": {
+          "host": "Het ip-adres van uw SAJ-omvormer modbus apparaat",
+          "port": "De TCP-poort waarop verbinding moet worden gemaakt met de SAJ-omvormer"
+        }
       }
     },
     "error": {
-      "already_configured": "Apparaat is al geconfigureerd"
+      "already_configured": "Apparaat is al geconfigureerd",
+      "cannot_connect": "Kan geen verbinding maken",
+      "invalid_host": "Ongeldige hostnaam of IP-adres"
     },
     "abort": {
       "already_configured": "Apparaat is al geconfigureerd",
-      "reconfigure_successful": "Configuratie succesvol bijgewerkt!"
+      "reconfigure_successful": "Configuratie succesvol bijgewerkt!",
+      "wrong_inverter": "Dat adres hoort bij een andere omvormer"
     }
   },
   "options": {
@@ -26,9 +36,6 @@
           "scan_interval": "De polling-frequentie van de modbus registratie in seconden"
         }
       }
-    },
-    "abort": {
-      "reconfigure_successful": "Configuratie succesvol bijgewerkt!"
     }
   },
   "services": {

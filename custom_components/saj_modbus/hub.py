@@ -1,31 +1,48 @@
 """SAJ Modbus Hub."""
+
 import logging
-import threading
 from datetime import datetime, timedelta
 
 from homeassistant.components.number import DOMAIN as NUMBER_DOMAIN
-from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from pymodbus.client import ModbusTcpClient
-from pymodbus.exceptions import ConnectionException, ModbusException
-from pymodbus.pdu import ModbusPDU
+from modbus_connection import ModbusError, ModbusTimeoutError
 
 from .const import (
+    ATTR_MANUFACTURER,
     DEVICE_STATUSSES,
     DOMAIN,
     FAULT_MESSAGES,
 )
+from .inverter import UNIT_ID, SajR5Inverter, UpdateReport, create_connection
 
 _LOGGER = logging.getLogger(__name__)
 
+type SajConfigEntry = ConfigEntry[SAJModbusHub]
 
-class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
-    """Thread safe wrapper class for pymodbus."""
+# Consecutive timeouts before the link is treated as stuck rather than slow.
+_STUCK_AFTER_TIMEOUTS = 3
+
+
+def translate_fault_code_to_messages(
+    fault_code: int, fault_messages: dict[int, str]
+) -> list[str]:
+    """Translate faultcodes to readable messages."""
+    if not fault_code:
+        return []
+    return [mesg for code, mesg in fault_messages.items() if fault_code & code]
+
+
+class SAJModbusHub(DataUpdateCoordinator[None]):
+    """Coordinator polling a SAJ R5 inverter over modbus-connection."""
 
     def __init__(
         self,
         hass: HomeAssistant,
+        entry: SajConfigEntry,
         name: str,
         host: str,
         port: int,
@@ -35,327 +52,211 @@ class SAJModbusHub(DataUpdateCoordinator[dict[str, int | float | str]]):
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=entry,
             name=name,
             update_interval=timedelta(seconds=scan_interval),
         )
 
-        self._client = ModbusTcpClient(host=host, port=port, timeout=5)
-        self._lock = threading.Lock()
-        self.inverter_data: dict[str, int | float | str] = {}
+        self._connection = create_connection(host, port)
+        self.device = SajR5Inverter(self._connection.for_unit(UNIT_ID))
         self._power_limit: float = 110.0
-        self._power_on_off: bool = False
+        # Consecutive poll timeouts; reset by any poll that reaches the device.
+        self._timeouts = 0
+        # What the last poll managed to read; diagnostics reports it, and the
+        # components it missed have their entities go unavailable.
+        self._report = UpdateReport(set(), {})
+        # Resolved once by freeze_identity() after the first refresh and never
+        # again: entities bake it into their unique ids at construction, so it
+        # must not change under them if a later poll finally reads the serial.
+        self._identifier = name
 
-    async def async_setup(self) -> None:
-        """Fetch data that is needed only once."""
-        try:
-            self.inverter_data = await self.hass.async_add_executor_job(
-                self.read_modbus_inverter_data
-            )
-        except (ConnectionException, ModbusException) as ex:
-            raise UpdateFailed(f"Failed to fetch inverter data: {ex}") from ex
+    @property
+    def serial_number(self) -> str | None:
+        """The inverter's serial number, once the info registers have been read."""
+        serial = self.device.info.sn
+        return serial or None
 
-    async def _async_update_data(self) -> dict[str, int | float | str]:
-        """Fetch realtime data from the inverter."""
-        try:
-            # If inverter_data is empty, fetch it.
-            if not self.inverter_data:
-                await self.async_setup()
-
-            realtime_data = await self.hass.async_add_executor_job(
-                self.read_modbus_r5_realtime_data
-            )
-            power_state = await self.hass.async_add_executor_job(
-                self.read_modbus_inverter_power_state
-            )
-            combined_data = {**self.inverter_data, **realtime_data, **power_state}
-            combined_data["limitpower"] = self._power_limit
-            combined_data["poweronoff"] = self._power_on_off
-            return combined_data
-        except (ConnectionException, ModbusException) as ex:
-            raise UpdateFailed(f"Failed to fetch realtime data: {ex}") from ex
-        finally:
-            self.close()
+    @property
+    def identifier(self) -> str:
+        """The stable key entity unique ids and the device are built from."""
+        return self._identifier
 
     @callback
-    def async_remove_listener(self, update_callback: CALLBACK_TYPE) -> None:
-        """Remove data update listener."""
-        super().async_remove_listener(update_callback)
-        if not self._listeners:
-            self.close()
+    def freeze_identity(self) -> str:
+        """Pin this hub's identity, preferring the serial over the name.
 
-    def close(self) -> None:
-        """Disconnect client."""
-        with self._lock:
-            self._client.close()
+        Installs predating the serial-based identity, and firmware that does
+        not serve the info registers, keep the user-chosen name.
+        """
+        self._identifier = self.serial_number or self.name
+        return self._identifier
 
-    def _read_holding_registers(self, unit, address, count):
-        """Read holding registers."""
-        with self._lock:
-            _LOGGER.debug(
-                "Reading holding registers from address 0x%04X (unit %d, count %d)",
-                address,
-                unit,
-                count,
-            )
-            result = self._client.read_holding_registers(
-                address=address, count=count, device_id=unit
-            )
-            if result.isError():
-                _LOGGER.debug(
-                    "Error reading holding registers from address 0x%04X: %s",
-                    address,
-                    result,
-                )
-            else:
-                _LOGGER.debug(
-                    "Successfully read %d registers from address 0x%04X",
-                    len(result.registers),
-                    address,
-                )
-            return result
-
-    def _write_registers(self, unit: int, address: int, values: list[int]) -> ModbusPDU:
-        """Write registers."""
-        with self._lock:
-            _LOGGER.debug(
-                "Writing %d registers to address 0x%04X (unit %d): %s",
-                len(values),
-                address,
-                unit,
-                values,
-            )
-            result = self._client.write_registers(
-                address=address, values=values, device_id=unit
-            )
-            if result.isError():
-                _LOGGER.debug(
-                    "Error writing registers to address 0x%04X: %s",
-                    address,
-                    result,
-                )
-            else:
-                _LOGGER.debug(
-                    "Successfully wrote %d registers to address 0x%04X",
-                    len(values),
-                    address,
-                )
-            return result
-
-    def convert_to_signed(self, value: int) -> int:
-        """Convert unsigned integers to signed integers."""
-        if value >= 0x8000:
-            return value - 0x10000
-        return value
-
-    def parse_datetime(self, registers: list[int]) -> datetime:
-        """Extract date and time values from registers."""
-        year = registers[0]
-        month = registers[1] >> 8
-        day = registers[1] & 0xFF
-        hour = registers[2] >> 8
-        minute = registers[2] & 0xFF
-        second = registers[3] >> 8
-
-        timevalues = f"{year}{month:02}{day:02}{hour:02}{minute:02}{second:02}"
-        date_time_obj = datetime.strptime(timevalues, "%Y%m%d%H%M%S").astimezone()
-        return date_time_obj
-
-    def read_modbus_inverter_data(self) -> dict[str, int | float | str]:
-        """Read data about inverter."""
-        inverter_data = self._read_holding_registers(unit=1, address=0x8F00, count=29)
-        if inverter_data.isError():
-            _LOGGER.debug("Error reading inverter data")
-            return {}
-        registers = inverter_data.registers
-        _LOGGER.debug("Inverter data registers: %s", registers)
-        data: dict[str, int | float | str] = {
-            "devtype": registers[0],
-            "subtype": registers[1],
-            "commver": round(registers[2] * 0.001, 3),
-            "sn": "".join(
-                chr(registers[i] >> 8) + chr(registers[i] & 0xFF) for i in range(3, 13)
-            ).rstrip("\x00"),
-            "pc": "".join(
-                chr(registers[i] >> 8) + chr(registers[i] & 0xFF) for i in range(13, 23)
-            ).rstrip("\x00"),
-            "dv": round(registers[23] * 0.001, 3),
-            "mcv": round(registers[24] * 0.001, 3),
-            "scv": round(registers[25] * 0.001, 3),
-            "disphwversion": round(registers[26] * 0.001, 3),
-            "ctrlhwversion": round(registers[27] * 0.001, 3),
-            "powerhwversion": round(registers[28] * 0.001, 3),
-        }
-        _LOGGER.debug("Parsed inverter data: %s", data)
-        return data
-
-
-    def read_modbus_r5_realtime_data(self) -> dict[str, int | float | str]:
-        """Read realtime data from inverter."""
-        realtime_data = self._read_holding_registers(unit=1, address=0x100, count=59)
-        if realtime_data.isError():
-            _LOGGER.debug("Error reading realtime data")
-            return {}
-        registers = realtime_data.registers
-        _LOGGER.debug("Realtime data registers: %s", registers)
-        data: dict[str, int | float | str] = {}
-        mpvmode = registers[0]
-        data["mpvmode"] = mpvmode
-        data["mpvstatus"] = DEVICE_STATUSSES.get(mpvmode, "Unknown")
-        faultMsg0 = (registers[1] << 16) | registers[2]
-        faultMsg1 = (registers[3] << 16) | registers[4]
-        faultMsg2 = (registers[5] << 16) | registers[6]
-        fault_messages_list = self.translate_fault_code_to_messages(
-            faultMsg0, list(FAULT_MESSAGES[0].items())
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Device registry entry for this inverter."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.identifier)},
+            name=self.name,
+            manufacturer=ATTR_MANUFACTURER,
+            serial_number=self.serial_number,
         )
-        fault_messages_list.extend(
-            self.translate_fault_code_to_messages(
-                faultMsg1, list(FAULT_MESSAGES[1].items())
+
+    async def async_close(self) -> None:
+        """Close the Modbus connection."""
+        await self._connection.close()
+
+    async def async_setup(self) -> None:
+        """Read the static data and discover what this inverter serves.
+
+        Raises ModbusError if the inverter cannot be reached.
+        """
+        await self.device.async_setup()
+
+    async def _async_note_timeout(self) -> None:
+        """Count a timeout, and drop the link once it looks stuck.
+
+        A wedged serial-to-network bridge keeps its socket open while Modbus
+        stops answering, and a timeout does not touch the transport. One
+        timeout is only a slow reply, so wait for a few before dropping the
+        link; the next request opens a fresh one over the same components.
+        """
+        self._timeouts += 1
+        if self._timeouts < _STUCK_AFTER_TIMEOUTS:
+            return
+        _LOGGER.debug("Dropping a stuck link after %d timeouts", self._timeouts)
+        self._timeouts = 0
+        await self._connection.disconnect()
+
+    async def _async_update_data(self) -> None:
+        """Refresh the inverter's components; entities read them directly.
+
+        Each component is read on its own, so one that fails costs only its own
+        entities. The update itself fails only when nothing answered at all.
+        """
+        try:
+            report = await self.device.async_update()
+        except ModbusTimeoutError as ex:
+            # Raised only when nothing answered at all, which is what a wedged
+            # link looks like. A timeout inside the report is not: the inverter
+            # answered the other block, so the link is fine.
+            await self._async_note_timeout()
+            raise UpdateFailed(f"Failed to fetch realtime data: {ex}") from ex
+        except ModbusError as ex:
+            # Only a dead link reaches here; a failing block is in the report.
+            raise UpdateFailed(f"Failed to fetch realtime data: {ex}") from ex
+
+        # Something came back, so whatever else went wrong the link is not stuck.
+        self._timeouts = 0
+
+        was_failing = self.failed_components
+        self._report = report
+
+        if not report.updated:
+            errors = list(report.failed.values())
+            # Home Assistant logs only str(err), so the reason has to be in it;
+            # the group carries the rest for the debug-level traceback.
+            raise UpdateFailed(
+                f"Failed to fetch realtime data: {errors[0]}"
+            ) from ExceptionGroup("no component answered", errors)
+
+        # Only when a failure starts, so a persistent one does not log every poll.
+        for name in sorted(report.failed.keys() - was_failing):
+            _LOGGER.warning("Failed to fetch %s: %s", name, report.failed[name])
+
+        if messages := self.fault_messages:
+            _LOGGER.error("Fault message: %s", ", ".join(messages))
+
+    @property
+    def absent_components(self) -> frozenset[str]:
+        """Components this inverter does not serve."""
+        return self.device.absent
+
+    @property
+    def last_report(self) -> UpdateReport:
+        """What the last poll refreshed and what it missed."""
+        return self._report
+
+    @property
+    def failed_components(self) -> frozenset[str]:
+        """Components the last poll could not read."""
+        return frozenset(self._report.failed)
+
+    @property
+    def mpvstatus(self) -> str:
+        """The inverter's working mode as a readable status."""
+        return DEVICE_STATUSSES.get(self.device.realtime.mpvmode, "Unknown")
+
+    @property
+    def fault_messages(self) -> list[str]:
+        """Every fault the inverter is currently reporting."""
+        realtime = self.device.realtime
+        return [
+            message
+            for fault_code, messages in (
+                (realtime.faultmsg0, FAULT_MESSAGES[0]),
+                (realtime.faultmsg1, FAULT_MESSAGES[1]),
+                (realtime.faultmsg2, FAULT_MESSAGES[2]),
             )
-        )
-        fault_messages_list.extend(
-            self.translate_fault_code_to_messages(
-                faultMsg2, list(FAULT_MESSAGES[2].items())
-            )
-        )
-        data["faultmsg"] = ", ".join(fault_messages_list).strip()[:254]
-        if fault_messages_list:
-            _LOGGER.error("Fault message: %s", ", ".join(fault_messages_list).strip())
-        data["pv1volt"] = round(registers[7] * 0.1, 1)
-        data["pv1curr"] = round(registers[8] * 0.01, 2)
-        data["pv1power"] = registers[9]
-        data["pv2volt"] = round(registers[10] * 0.1, 1)
-        data["pv2curr"] = round(registers[11] * 0.01, 2)
-        data["pv2power"] = registers[12]
-        data["pv3volt"] = round(registers[13] * 0.1, 1)
-        data["pv3curr"] = round(registers[14] * 0.01, 2)
-        data["pv3power"] = registers[15]
-        data["busvolt"] = round(registers[16] * 0.1, 1)
-        data["invtempc"] = round(self.convert_to_signed(registers[17]) * 0.1, 1)
-        data["gfci"] = self.convert_to_signed(registers[18])
-        data["power"] = registers[19]
-        data["qpower"] = self.convert_to_signed(registers[20])
-        data["pf"] = round(self.convert_to_signed(registers[21]) * 0.001, 3)
-        data["l1volt"] = round(registers[22] * 0.1, 1)
-        data["l1curr"] = round(registers[23] * 0.01, 2)
-        data["l1freq"] = round(registers[24] * 0.01, 2)
-        data["l1dci"] = self.convert_to_signed(registers[25])
-        data["l1power"] = registers[26]
-        data["l1pf"] = round(self.convert_to_signed(registers[27]) * 0.001, 3)
-        data["l2volt"] = round(registers[28] * 0.1, 1)
-        data["l2curr"] = round(registers[29] * 0.01, 2)
-        data["l2freq"] = round(registers[30] * 0.01, 2)
-        data["l2dci"] = self.convert_to_signed(registers[31])
-        data["l2power"] = registers[32]
-        data["l2pf"] = round(self.convert_to_signed(registers[33]) * 0.001, 3)
-        data["l3volt"] = round(registers[34] * 0.1, 1)
-        data["l3curr"] = round(registers[35] * 0.01, 2)
-        data["l3freq"] = round(registers[36] * 0.01, 2)
-        data["l3dci"] = self.convert_to_signed(registers[37])
-        data["l3power"] = registers[38]
-        data["l3pf"] = round(self.convert_to_signed(registers[39]) * 0.001, 3)
-        data["iso1"] = registers[40]
-        data["iso2"] = registers[41]
-        data["iso3"] = registers[42]
-        data["iso4"] = registers[43]
-        data["todayenergy"] = round(registers[44] * 0.01, 2)
-        data["monthenergy"] = round(((registers[45] << 16) | registers[46]) * 0.01, 2)
-        data["yearenergy"] = round(((registers[47] << 16) | registers[48]) * 0.01, 2)
-        data["totalenergy"] = round(((registers[49] << 16) | registers[50]) * 0.01, 2)
-        data["todayhour"] = round(registers[51] * 0.1, 1)
-        data["totalhour"] = round(((registers[52] << 16) | registers[53]) * 0.1, 1)
-        data["errorcount"] = registers[54]
-        data["datetime"] = self.parse_datetime(registers[55:59])
-        _LOGGER.debug("Parsed realtime data: %s", data)
-        return data
+            for message in translate_fault_code_to_messages(fault_code or 0, messages)
+        ]
 
-    def read_modbus_inverter_power_state(self) -> dict[str, bool]:
-        """Read the power state from the inverter."""
-        power_state_data = self._read_holding_registers(unit=1, address=0x1037, count=1)
-        if power_state_data.isError():
-            _LOGGER.debug("Error reading power state data")
-            return {}
-        self._power_on_off = power_state_data.registers[0] == 1
-        _LOGGER.debug("Power state (0x1037): %s", self._power_on_off)
-        return {"poweronoff": self._power_on_off}
+    @property
+    def faultmsg(self) -> str:
+        """The reported faults as one string, capped to fit a state value."""
+        return ", ".join(self.fault_messages).strip()[:254]
 
-    def translate_fault_code_to_messages(
-        self, fault_code: int, fault_messages: list[tuple[int, str]]
-    ) -> list[str]:
-        """Translate faultcodes to readable messages."""
-        messages = []
-        if not fault_code:
-            return messages
-        for code, mesg in fault_messages:
-            if fault_code & code:
-                messages.append(mesg)
-        return messages
+    @property
+    def poweronoff(self) -> bool | None:
+        """Whether the inverter is switched on, as last read from the device."""
+        return self.device.power.poweronoff
 
-    def _write_limit_power_sync(self, value: float) -> bool:
-        """Write the power limit to the inverter."""
-        response = self._write_registers(unit=1, address=0x801F, values=[int(value * 10)])
-        if response.isError():
-            _LOGGER.error("Failed to set limitpower")
-            return False
-        return True
+    @property
+    def limitpower(self) -> float:
+        """The active power limit.
 
-    def _write_power_on_off_sync(self, value: bool) -> bool:
-        """Write the power on/off command to the inverter."""
-        # According to the documentation, address 0x1037 is used for remote power on/off
-        # 0: power off, 1: power on
-        register_value = 1 if value else 0
-        response = self._write_registers(unit=1, address=0x1037, values=[register_value])
-        if response.isError():
-            _LOGGER.error("Failed to set power on/off")
-            return False
-        return True
+        Write-only on this inverter, so this is the last value written rather
+        than anything read back from the device.
+        """
+        return self._power_limit
 
     async def async_set_power_on_off(self, value: bool) -> bool:
         """Set the power on/off on the inverter."""
-        if await self.hass.async_add_executor_job(self._write_power_on_off_sync, value):
-            self._power_on_off = value
-            if self.data:
-                new_data = self.data.copy()
-                new_data["poweronoff"] = value
-                self.async_set_updated_data(new_data)
-            return True
-        return False
+        try:
+            await self.device.power.write("poweronoff", value)
+        except ModbusError as ex:
+            _LOGGER.error("Failed to set power on/off: %s", ex)
+            return False
+        return True
 
     async def async_set_limit_power(self, value: float) -> bool:
         """Set the power limit on the inverter."""
         if self.limiter_is_disabled():
             return False
 
-        if await self.hass.async_add_executor_job(self._write_limit_power_sync, value):
-            self._power_limit = value
-            if self.data:
-                new_data = self.data.copy()
-                new_data["limitpower"] = value
-                self.async_set_updated_data(new_data)
-            return True
-        return False
+        try:
+            await self.device.settings.write("limitpower", value)
+        except ModbusError as ex:
+            _LOGGER.error("Failed to set limitpower: %s", ex)
+            return False
+        self._power_limit = value
+        self.async_update_listeners()
+        return True
 
-    def set_date_and_time(self, date_time: datetime | None = None) -> None:
+    async def async_set_date_and_time(self, date_time: datetime | None = None) -> None:
         """Set the time and date on the inverter."""
         if date_time is None:
             date_time = datetime.now()
-        values = [
-            date_time.year,
-            (date_time.month << 8) + date_time.day,
-            (date_time.hour << 8) + date_time.minute,
-            (date_time.second << 8),
-        ]
-        response = self._write_registers(unit=1, address=0x8020, values=values)
-        if response.isError():
-            raise ModbusException("Error setting date and time")
+        await self.device.settings.write("datetime", date_time)
 
     def limiter_is_disabled(self) -> bool:
         """Return True if the limiter entity is disabled, False otherwise."""
         ent_reg = entity_registry.async_get(self.hass)
         limiter_entity_id = ent_reg.async_get_entity_id(
-            NUMBER_DOMAIN, DOMAIN, f"{self.name}_limitpower"
+            NUMBER_DOMAIN, DOMAIN, f"{self.identifier}_limitpower"
         )
-        if limiter_entity_id is None or (
-            ent_reg_entry := ent_reg.async_get(limiter_entity_id)
-        ) is None:
+        if (
+            limiter_entity_id is None
+            or (ent_reg_entry := ent_reg.async_get(limiter_entity_id)) is None
+        ):
             return True
         return ent_reg_entry.disabled

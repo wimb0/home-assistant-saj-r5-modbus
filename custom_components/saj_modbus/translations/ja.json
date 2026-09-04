@@ -9,14 +9,24 @@
           "port": "SAJインバーターへの接続に使用するTCPポート",
           "scan_interval": "MODBUSレジスタのポーリング頻度（秒）"
         }
+      },
+      "reconfigure": {
+        "title": "SAJ インバーターの接続を再設定",
+        "data": {
+          "host": "SAJインバーターMODBUSデバイスのIPアドレス",
+          "port": "SAJインバーターへの接続に使用するTCPポート"
+        }
       }
     },
     "error": {
-      "already_configured": "デバイスはすでに設定されています"
+      "already_configured": "デバイスはすでに設定されています",
+      "cannot_connect": "接続に失敗しました",
+      "invalid_host": "ホスト名または IP アドレスが無効です"
     },
     "abort": {
       "already_configured": "デバイスはすでに設定されています",
-      "reconfigure_successful": "設定が正常に更新されました！"
+      "reconfigure_successful": "設定が正常に更新されました！",
+      "wrong_inverter": "そのアドレスは別のインバーターのものです"
     }
   },
   "options": {
@@ -26,9 +36,6 @@
           "scan_interval": "MODBUSレジスタのポーリング頻度（秒）"
         }
       }
-    },
-    "abort": {
-      "reconfigure_successful": "設定が正常に更新されました！"
     }
   },
   "services": {
