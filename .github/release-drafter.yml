@@ -24,15 +24,15 @@ autolabeler:
 categories:
   - title: "💥 Breaking Change"
     when:
-      label:
+      labels:
         - "breaking-change"
   - title: "⚡ Enhancements"
     when:
-      label:
+      labels:
         - "enhancement"
   - title: "✨ New Features"
     when:
-      label:
+      labels:
         - "feature"
   - title: "🐛 Bug Fixes"
     when:
@@ -42,15 +42,15 @@ categories:
         - "bug"
   - title: "🔧 Maintenance"
     when:
-      label:
+      labels:
         - "chore"
   - title: "🎓 Code Quality"
     when:
-      label:
+      labels:
         - "code-quality"
   - title: "🔩 Dependency"
     when:
-      label:
+      labels:
         - "dependencies"
 
 template: |
