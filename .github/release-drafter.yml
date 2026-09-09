@@ -36,7 +36,7 @@ categories:
         - "feature"
   - title: "🐛 Bug Fixes"
     when:
-      label:
+      labels:
         - "fix"
         - "bugfix"
         - "bug"
