@@ -23,28 +23,34 @@ autolabeler:
       - "/build(deps):/i"      
 categories:
   - title: "💥 Breaking Change"
-    labels:
-      - "breaking-change"
+    when:
+      label:
+        - "breaking-change"
   - title: "⚡ Enhancements"
-    labels:
-      - "enhancement"
+    when:
+      label:
+        - "enhancement"
   - title: "✨ New Features"
-    labels:
-      - "feature"
+    when:
+      label:
+        - "feature"
   - title: "🐛 Bug Fixes"
-    labels:
-      - "fix"
-      - "bugfix"
-      - "bug"
-  - title: "🔧 Maintenance"
-    labels:
-      - "chore"
+    when:
+      label:
+        - "fix"
+        - "bugfix"
+        - "bug"
+    when:
+      label:
+        - "chore"
   - title: "🎓 Code Quality"
-    labels:
-      - "code-quality"
+    when:
+      label:
+        - "code-quality"
   - title: "🔩 Dependency"
-    labels:
-      - "dependencies"
+    when:
+      label:
+        - "dependencies"
 
 template: |
   [![Downloads for this release](https://img.shields.io/github/downloads/wimb0/home-assistant-saj-r5-modbus/v$RESOLVED_VERSION/total.svg)](https://github.com/wimb0/home-assistant-saj-r5-modbus/releases/v$RESOLVED_VERSION)
