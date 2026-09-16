@@ -1,7 +1,19 @@
 {
   "config": {
+    "abort": {
+      "already_configured": "Equipamento já configurado",
+      "reconfigure_successful": "Configuração atualizada com sucesso!",
+      "wrong_inverter": "Esse endereço pertence a outro inversor"
+    },
     "step": {
       "user": {
+        "title": "Definir o modbus de ligação ao inversor SAJ",
+        "menu_options": {
+          "tcp": "Rede (Modbus TCP)",
+          "serial": "Porta série (Modbus RTU)"
+        }
+      },
+      "tcp": {
         "title": "Definir o modbus de ligação ao inversor SAJ",
         "data": {
           "host": "O endereço ip do modbus do inversor SAJ",
@@ -10,23 +22,41 @@
           "scan_interval": "Frequencia de atualização em segundos"
         }
       },
+      "serial": {
+        "title": "Definir a ligação série ao inversor SAJ",
+        "data": {
+          "name": "O prefixo a usar nos sensores do inversor SAJ",
+          "serial_port": "A porta série do adaptador RS485",
+          "baudrate": "A taxa de transmissão da linha série (9600 ou 115200)",
+          "scan_interval": "Frequencia de atualização em segundos"
+        }
+      },
       "reconfigure": {
+        "title": "Reconfigurar a ligação ao seu inversor SAJ",
+        "data": {
+          "connection_type": "Tipo de ligação"
+        }
+      },
+      "reconfigure_tcp": {
         "title": "Reconfigurar a ligação ao seu inversor SAJ",
         "data": {
           "host": "O endereço ip do modbus do inversor SAJ",
           "port": "Qual TCP porta usada para ligar ao inversor SAJ"
+        }
+      },
+      "reconfigure_serial": {
+        "title": "Reconfigurar a ligação ao seu inversor SAJ",
+        "data": {
+          "serial_port": "A porta série do adaptador RS485",
+          "baudrate": "A taxa de transmissão da linha série (9600 ou 115200)"
         }
       }
     },
     "error": {
       "already_configured": "Equipamento já configurado",
       "cannot_connect": "Falha ao conectar",
-      "invalid_host": "Nome de anfitrião ou endereço IP inválido"
-    },
-    "abort": {
-      "already_configured": "Equipamento já configurado",
-      "reconfigure_successful": "Configuração atualizada com sucesso!",
-      "wrong_inverter": "Esse endereço pertence a outro inversor"
+      "invalid_host": "Nome de anfitrião ou endereço IP inválido",
+      "invalid_serial_port": "Porta série inválida"
     }
   },
   "options": {

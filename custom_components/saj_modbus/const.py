@@ -32,6 +32,23 @@ DEFAULT_PORT = 502
 CONF_SAJ_HUB = "saj_hub"
 ATTR_MANUFACTURER = "SAJ Electric"
 
+# Transport selection. Historical entries have neither key and are TCP.
+CONF_CONNECTION_TYPE = "connection_type"
+CONNECTION_TYPE_TCP = "tcp"
+CONNECTION_TYPE_SERIAL = "serial"
+
+CONF_SERIAL_PORT = "serial_port"
+CONF_BAUDRATE = "baudrate"
+CONF_BYTESIZE = "bytesize"
+CONF_PARITY = "parity"
+CONF_STOPBITS = "stopbits"
+
+DEFAULT_BAUDRATE = 9600
+DEFAULT_BYTESIZE = 8
+DEFAULT_PARITY = "N"
+DEFAULT_STOPBITS = 1
+SERIAL_BAUDRATES = (9600, 115200)
+
 if TYPE_CHECKING:
     from .hub import SAJModbusHub
 

@@ -9,7 +9,17 @@ from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT
 from homeassistant.core import HomeAssistant
 from modbus_connection import ModbusError
 
-from .const import COUNTER_SENSOR_TYPES, NUMBER_TYPES, SENSOR_TYPES, SWITCH_TYPES
+from .const import (
+    COUNTER_SENSOR_TYPES,
+    CONF_BAUDRATE,
+    CONF_BYTESIZE,
+    CONF_PARITY,
+    CONF_SERIAL_PORT,
+    CONF_STOPBITS,
+    NUMBER_TYPES,
+    SENSOR_TYPES,
+    SWITCH_TYPES,
+)
 from .hub import SAJModbusHub, SajConfigEntry
 from .inverter import SajR5Inverter
 
@@ -17,6 +27,11 @@ TO_REDACT = {
     CONF_HOST,
     CONF_NAME,
     CONF_PORT,
+    CONF_SERIAL_PORT,
+    CONF_BAUDRATE,
+    CONF_BYTESIZE,
+    CONF_PARITY,
+    CONF_STOPBITS,
 }
 
 

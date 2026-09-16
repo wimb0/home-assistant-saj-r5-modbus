@@ -1,7 +1,19 @@
 {
   "config": {
+    "abort": {
+      "already_configured": "Dispozitivul este deja configurat",
+      "reconfigure_successful": "Configurația a fost actualizată cu succes!",
+      "wrong_inverter": "Acea adresă aparține altui invertor"
+    },
     "step": {
       "user": {
+        "title": "Definiți conexiunea modbus a invertorului SAJ",
+        "menu_options": {
+          "tcp": "Rețea (Modbus TCP)",
+          "serial": "Port serial (Modbus RTU)"
+        }
+      },
+      "tcp": {
         "title": "Definiți conexiunea modbus a invertorului SAJ",
         "data": {
           "host": "Adresa IP a dispozitivului dvs. modbus pentru invertorul SAJ",
@@ -10,23 +22,41 @@
           "scan_interval": "Frecvența de interogare a registrelor modbus în secunde"
         }
       },
+      "serial": {
+        "title": "Definiți conexiunea serială a invertorului SAJ",
+        "data": {
+          "name": "Prefixul care trebuie utilizat pentru senzorii invertorului SAJ",
+          "serial_port": "Portul serial al adaptorului RS485",
+          "baudrate": "Rata de transfer a liniei seriale (9600 sau 115200)",
+          "scan_interval": "Frecvența de interogare a registrelor modbus în secunde"
+        }
+      },
       "reconfigure": {
+        "title": "Reconfigurați conexiunea la invertorul SAJ",
+        "data": {
+          "connection_type": "Tip de conexiune"
+        }
+      },
+      "reconfigure_tcp": {
         "title": "Reconfigurați conexiunea la invertorul SAJ",
         "data": {
           "host": "Adresa IP a dispozitivului dvs. modbus pentru invertorul SAJ",
           "port": "Portul TCP la care să vă conectați la invertorul SAJ"
+        }
+      },
+      "reconfigure_serial": {
+        "title": "Reconfigurați conexiunea la invertorul SAJ",
+        "data": {
+          "serial_port": "Portul serial al adaptorului RS485",
+          "baudrate": "Rata de transfer a liniei seriale (9600 sau 115200)"
         }
       }
     },
     "error": {
       "already_configured": "Dispozitivul este deja configurat",
       "cannot_connect": "Conectarea a eșuat",
-      "invalid_host": "Nume de gazdă sau adresă IP nevalidă"
-    },
-    "abort": {
-      "already_configured": "Dispozitivul este deja configurat",
-      "reconfigure_successful": "Configurația a fost actualizată cu succes!",
-      "wrong_inverter": "Acea adresă aparține altui invertor"
+      "invalid_host": "Nume de gazdă sau adresă IP nevalidă",
+      "invalid_serial_port": "Port serial nevalid"
     }
   },
   "options": {

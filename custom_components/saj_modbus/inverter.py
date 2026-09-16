@@ -12,6 +12,7 @@ from modbus_connection import (
     IllegalFunctionError,
     ModbusConnectionError,
     ModbusError,
+    ModbusSerialParams,
     ModbusTcpParams,
     ModbusTimeoutError,
     ModbusUnit,
@@ -64,9 +65,69 @@ class UpdateReport:
 
 
 def create_connection(host: str, port: int) -> ModbusConnection:
-    """Create an inverter connection, shared by entry setup and the config flow."""
+    """Create a TCP inverter connection, shared by entry setup and the config flow."""
     return ModbusConnection(
         ModbusTcpParams(host=host, port=port), timeout=MODBUS_TIMEOUT
+    )
+
+
+def create_serial_connection(
+    device: str,
+    baudrate: int = 9600,
+    bytesize: int = 8,
+    parity: str = "N",
+    stopbits: int = 1,
+) -> ModbusConnection:
+    """Create a serial (RTU) inverter connection.
+
+    ``device`` is a local port (``/dev/ttyUSB0``) or a serial-over-network
+    URL (``socket://host:port``, ``rfc2217://host:port``). Framing is fixed
+    to RTU: that is what the SAJ RS485 port speaks.
+    """
+    return ModbusConnection(
+        ModbusSerialParams(
+            device=device,
+            baudrate=baudrate,
+            bytesize=bytesize,  # type: ignore[arg-type]
+            parity=parity,  # type: ignore[arg-type]
+            stopbits=stopbits,  # type: ignore[arg-type]
+            framer="rtu",
+        ),
+        timeout=MODBUS_TIMEOUT,
+    )
+
+
+def params_from_config(data: dict[str, Any]) -> ModbusTcpParams | ModbusSerialParams:
+    """Build backend-neutral connection params from a config entry's data.
+
+    Entries written before serial support have no connection type and are TCP.
+    Serial line settings are fixed to 8 data bits, no parity and 1 stop bit;
+    only the port and the baud rate come from the entry.
+    """
+    from .const import (  # deferred: const only imports this module for typing
+        CONF_BAUDRATE,
+        CONF_CONNECTION_TYPE,
+        CONF_SERIAL_PORT,
+        CONNECTION_TYPE_SERIAL,
+        DEFAULT_BAUDRATE,
+        DEFAULT_BYTESIZE,
+        DEFAULT_PARITY,
+        DEFAULT_STOPBITS,
+        DEFAULT_PORT,
+    )
+    from homeassistant.const import CONF_HOST, CONF_PORT
+
+    if data.get(CONF_CONNECTION_TYPE) == CONNECTION_TYPE_SERIAL:
+        return ModbusSerialParams(
+            device=data[CONF_SERIAL_PORT],
+            baudrate=data.get(CONF_BAUDRATE, DEFAULT_BAUDRATE),
+            bytesize=DEFAULT_BYTESIZE,  # type: ignore[arg-type]
+            parity=DEFAULT_PARITY,  # type: ignore[arg-type]
+            stopbits=DEFAULT_STOPBITS,  # type: ignore[arg-type]
+            framer="rtu",
+        )
+    return ModbusTcpParams(
+        host=data[CONF_HOST], port=data.get(CONF_PORT, DEFAULT_PORT)
     )
 
 
@@ -224,6 +285,14 @@ class SajR5Inverter:
         info = InverterInfo(unit)
         await info.async_update()
         return info.sn or ""
+
+    @classmethod
+    async def async_probe_connection(cls, connection: ModbusConnection) -> str:
+        """Probe over an already-built connection, closing it afterwards."""
+        try:
+            return await cls.async_probe(connection.for_unit(UNIT_ID))
+        finally:
+            await connection.close()
 
     async def async_setup(self) -> None:
         """Read the static data and learn which optional components exist.

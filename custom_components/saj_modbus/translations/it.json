@@ -1,7 +1,19 @@
 {
   "config": {
+    "abort": {
+      "already_configured": "Il dispositivo è già configurato",
+      "reconfigure_successful": "Configurazione aggiornata con successo!",
+      "wrong_inverter": "Quell'indirizzo appartiene a un altro inverter"
+    },
     "step": {
       "user": {
+        "title": "Definisci la tua connessione modbus SAJ Inverter",
+        "menu_options": {
+          "tcp": "Rete (Modbus TCP)",
+          "serial": "Porta seriale (Modbus RTU)"
+        }
+      },
+      "tcp": {
         "title": "Definisci la tua connessione modbus SAJ Inverter",
         "data": {
           "host": "L'indirizzo IP del tuo dispositivo modbus SAJ Inverter",
@@ -10,23 +22,41 @@
           "scan_interval": "La frequenza di polling dei registri modbus in secondi"
         }
       },
+      "serial": {
+        "title": "Definisci la connessione seriale dell'inverter SAJ",
+        "data": {
+          "name": "Il prefisso da utilizzare per i tuoi sensori SAJ Inverter",
+          "serial_port": "La porta seriale dell'adattatore RS485",
+          "baudrate": "La velocità di trasmissione della linea seriale (9600 o 115200)",
+          "scan_interval": "La frequenza di polling dei registri modbus in secondi"
+        }
+      },
       "reconfigure": {
+        "title": "Riconfigura la connessione dell'inverter SAJ",
+        "data": {
+          "connection_type": "Tipo di connessione"
+        }
+      },
+      "reconfigure_tcp": {
         "title": "Riconfigura la connessione dell'inverter SAJ",
         "data": {
           "host": "L'indirizzo IP del tuo dispositivo modbus SAJ Inverter",
           "port": "La porta TCP su cui connettersi all'inverter SAJ"
+        }
+      },
+      "reconfigure_serial": {
+        "title": "Riconfigura la connessione dell'inverter SAJ",
+        "data": {
+          "serial_port": "La porta seriale dell'adattatore RS485",
+          "baudrate": "La velocità di trasmissione della linea seriale (9600 o 115200)"
         }
       }
     },
     "error": {
       "already_configured": "Il dispositivo è già configurato",
       "cannot_connect": "Impossibile connettersi",
-      "invalid_host": "Nome host o indirizzo IP non valido"
-    },
-    "abort": {
-      "already_configured": "Il dispositivo è già configurato",
-      "reconfigure_successful": "Configurazione aggiornata con successo!",
-      "wrong_inverter": "Quell'indirizzo appartiene a un altro inverter"
+      "invalid_host": "Nome host o indirizzo IP non valido",
+      "invalid_serial_port": "Porta seriale non valida"
     }
   },
   "options": {
