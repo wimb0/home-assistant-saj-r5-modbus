@@ -31,8 +31,15 @@ def mock_connection(info_registers: dict, realtime_registers: dict):
     unit = connection.for_unit(UNIT_ID)
     unit.holding.update(info_registers)
     unit.holding.update(realtime_registers)
-    with patch(
-        "custom_components.saj_modbus.hub.create_connection", return_value=connection
+    with (
+        patch(
+            "custom_components.saj_modbus.hub.ModbusConnection",
+            return_value=connection,
+        ),
+        patch(
+            "custom_components.saj_modbus.hub.create_connection",
+            return_value=connection,
+        ),
     ):
         yield connection
 
