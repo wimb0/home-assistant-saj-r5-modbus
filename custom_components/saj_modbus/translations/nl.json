@@ -1,7 +1,19 @@
 {
   "config": {
+    "abort": {
+      "already_configured": "Apparaat is al geconfigureerd",
+      "reconfigure_successful": "Configuratie succesvol bijgewerkt!",
+      "wrong_inverter": "Dat adres hoort bij een andere omvormer"
+    },
     "step": {
       "user": {
+        "title": "Definieer uw SAJ Inverter modbus-verbinding",
+        "menu_options": {
+          "tcp": "Netwerk (Modbus TCP)",
+          "serial": "Seriële poort (Modbus RTU)"
+        }
+      },
+      "tcp": {
         "title": "Definieer uw SAJ Inverter modbus-verbinding",
         "data": {
           "host": "Het ip-adres van uw SAJ-omvormer modbus apparaat",
@@ -10,23 +22,41 @@
           "scan_interval": "De polling-frequentie van de modbus registratie in seconden"
         }
       },
+      "serial": {
+        "title": "Definieer uw seriële SAJ-omvormerverbinding",
+        "data": {
+          "name": "Het voorvoegsel dat moet worden gebruikt voor uw SAJ-sensoren",
+          "serial_port": "De seriële poort van de RS485-adapter",
+          "baudrate": "De baudrate van de seriële lijn (9600 of 115200)",
+          "scan_interval": "De polling-frequentie van de modbus registratie in seconden"
+        }
+      },
       "reconfigure": {
+        "title": "Verbinding met uw SAJ-omvormer opnieuw instellen",
+        "data": {
+          "connection_type": "Verbindingstype"
+        }
+      },
+      "reconfigure_tcp": {
         "title": "Verbinding met uw SAJ-omvormer opnieuw instellen",
         "data": {
           "host": "Het ip-adres van uw SAJ-omvormer modbus apparaat",
           "port": "De TCP-poort waarop verbinding moet worden gemaakt met de SAJ-omvormer"
+        }
+      },
+      "reconfigure_serial": {
+        "title": "Verbinding met uw SAJ-omvormer opnieuw instellen",
+        "data": {
+          "serial_port": "De seriële poort van de RS485-adapter",
+          "baudrate": "De baudrate van de seriële lijn (9600 of 115200)"
         }
       }
     },
     "error": {
       "already_configured": "Apparaat is al geconfigureerd",
       "cannot_connect": "Kan geen verbinding maken",
-      "invalid_host": "Ongeldige hostnaam of IP-adres"
-    },
-    "abort": {
-      "already_configured": "Apparaat is al geconfigureerd",
-      "reconfigure_successful": "Configuratie succesvol bijgewerkt!",
-      "wrong_inverter": "Dat adres hoort bij een andere omvormer"
+      "invalid_host": "Ongeldige hostnaam of IP-adres",
+      "invalid_serial_port": "Ongeldige seriële poort"
     }
   },
   "options": {

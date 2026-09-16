@@ -1,7 +1,19 @@
 {
   "config": {
+    "abort": {
+      "already_configured": "Zariadenie je už nakonfigurované",
+      "reconfigure_successful": "Konfigurácia bola úspešne aktualizovaná!",
+      "wrong_inverter": "Na tejto adrese je iný menič"
+    },
     "step": {
       "user": {
+        "title": "Definujte svoje pripojenie SAJ Inverter modbus",
+        "menu_options": {
+          "tcp": "Sieť (Modbus TCP)",
+          "serial": "Sériový port (Modbus RTU)"
+        }
+      },
+      "tcp": {
         "title": "Definujte svoje pripojenie SAJ Inverter modbus",
         "data": {
           "host": "IP adresa vášho zariadenia SAJ Inverter modbus",
@@ -10,23 +22,41 @@
           "scan_interval": "Frekvencia dopytovania modbus registrov v sekundách"
         }
       },
+      "serial": {
+        "title": "Definujte svoje sériové pripojenie k meniču SAJ",
+        "data": {
+          "name": "Predpona, ktorá sa má použiť pre vaše senzory SAJ Inverter",
+          "serial_port": "Sériový port adaptéra RS485",
+          "baudrate": "Prenosová rýchlosť sériovej linky (9600 alebo 115200)",
+          "scan_interval": "Frekvencia dopytovania modbus registrov v sekundách"
+        }
+      },
       "reconfigure": {
+        "title": "Zmena pripojenia k meniču SAJ",
+        "data": {
+          "connection_type": "Typ pripojenia"
+        }
+      },
+      "reconfigure_tcp": {
         "title": "Zmena pripojenia k meniču SAJ",
         "data": {
           "host": "IP adresa vášho zariadenia SAJ Inverter modbus",
           "port": "TCP port, na ktorý sa má pripojiť k meniču SAJ"
+        }
+      },
+      "reconfigure_serial": {
+        "title": "Zmena pripojenia k meniču SAJ",
+        "data": {
+          "serial_port": "Sériový port adaptéra RS485",
+          "baudrate": "Prenosová rýchlosť sériovej linky (9600 alebo 115200)"
         }
       }
     },
     "error": {
       "already_configured": "Zariadenie je už nakonfigurované",
       "cannot_connect": "Nepodarilo sa pripojiť",
-      "invalid_host": "Neplatný názov hostiteľa alebo IP adresa"
-    },
-    "abort": {
-      "already_configured": "Zariadenie je už nakonfigurované",
-      "reconfigure_successful": "Konfigurácia bola úspešne aktualizovaná!",
-      "wrong_inverter": "Na tejto adrese je iný menič"
+      "invalid_host": "Neplatný názov hostiteľa alebo IP adresa",
+      "invalid_serial_port": "Neplatný sériový port"
     }
   },
   "options": {

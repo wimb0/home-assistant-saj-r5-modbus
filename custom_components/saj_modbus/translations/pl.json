@@ -1,7 +1,19 @@
 {
   "config": {
+    "abort": {
+      "already_configured": "Urządzenie jest już skonfigurowane",
+      "reconfigure_successful": "Konfiguracja została pomyślnie zaktualizowana!",
+      "wrong_inverter": "Ten adres należy do innego falownika"
+    },
     "step": {
       "user": {
+        "title": "Zdefiniuj swoje połączenie modbus z falownikiem SAJ",
+        "menu_options": {
+          "tcp": "Sieć (Modbus TCP)",
+          "serial": "Port szeregowy (Modbus RTU)"
+        }
+      },
+      "tcp": {
         "title": "Zdefiniuj swoje połączenie modbus z falownikiem SAJ",
         "data": {
           "host": "Adres IP Twojego urządzenia modbus z falownikiem SAJ",
@@ -10,23 +22,41 @@
           "scan_interval": "Częstotliwość odpytywania rejestrów modbus w sekundach"
         }
       },
+      "serial": {
+        "title": "Zdefiniuj połączenie szeregowe z falownikiem SAJ",
+        "data": {
+          "name": "Prefiks, który ma być używany dla Twoich czujników falownika SAJ",
+          "serial_port": "Port szeregowy adaptera RS485",
+          "baudrate": "Prędkość transmisji linii szeregowej (9600 lub 115200)",
+          "scan_interval": "Częstotliwość odpytywania rejestrów modbus w sekundach"
+        }
+      },
       "reconfigure": {
+        "title": "Ponowna konfiguracja połączenia z falownikiem SAJ",
+        "data": {
+          "connection_type": "Typ połączenia"
+        }
+      },
+      "reconfigure_tcp": {
         "title": "Ponowna konfiguracja połączenia z falownikiem SAJ",
         "data": {
           "host": "Adres IP Twojego urządzenia modbus z falownikiem SAJ",
           "port": "Port TCP, na którym należy połączyć się z falownikiem SAJ"
+        }
+      },
+      "reconfigure_serial": {
+        "title": "Ponowna konfiguracja połączenia z falownikiem SAJ",
+        "data": {
+          "serial_port": "Port szeregowy adaptera RS485",
+          "baudrate": "Prędkość transmisji linii szeregowej (9600 lub 115200)"
         }
       }
     },
     "error": {
       "already_configured": "Urządzenie jest już skonfigurowane",
       "cannot_connect": "Nie można nawiązać połączenia",
-      "invalid_host": "Nieprawidłowa nazwa hosta lub adres IP"
-    },
-    "abort": {
-      "already_configured": "Urządzenie jest już skonfigurowane",
-      "reconfigure_successful": "Konfiguracja została pomyślnie zaktualizowana!",
-      "wrong_inverter": "Ten adres należy do innego falownika"
+      "invalid_host": "Nieprawidłowa nazwa hosta lub adres IP",
+      "invalid_serial_port": "Nieprawidłowy port szeregowy"
     }
   },
   "options": {

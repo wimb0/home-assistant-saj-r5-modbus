@@ -1,7 +1,19 @@
 {
   "config": {
+    "abort": {
+      "already_configured": "Gerät ist bereits konfiguriert",
+      "reconfigure_successful": "Konfiguration erfolgreich aktualisiert!",
+      "wrong_inverter": "Diese Adresse gehört zu einem anderen Wechselrichter"
+    },
     "step": {
       "user": {
+        "title": "Definieren Sie Ihre SAJ Inverter Modbus-Verbindung",
+        "menu_options": {
+          "tcp": "Netzwerk (Modbus TCP)",
+          "serial": "Serieller Anschluss (Modbus RTU)"
+        }
+      },
+      "tcp": {
         "title": "Definieren Sie Ihre SAJ Inverter Modbus-Verbindung",
         "data": {
           "host": "Die IP-Adresse Ihres SAJ Inverter Modbus-Geräts",
@@ -10,23 +22,41 @@
           "scan_interval": "Die Abfragehäufigkeit der Modbus-Register in Sekunden"
         }
       },
+      "serial": {
+        "title": "Definieren Sie Ihre serielle SAJ Inverter-Verbindung",
+        "data": {
+          "name": "Das Präfix, das für Ihre SAJ Inverter-Sensoren verwendet werden soll",
+          "serial_port": "Der serielle Anschluss des RS485-Adapters",
+          "baudrate": "Die Baudrate der seriellen Leitung (9600 oder 115200)",
+          "scan_interval": "Die Abfragehäufigkeit der Modbus-Register in Sekunden"
+        }
+      },
       "reconfigure": {
+        "title": "Verbindung zum SAJ-Wechselrichter neu konfigurieren",
+        "data": {
+          "connection_type": "Verbindungstyp"
+        }
+      },
+      "reconfigure_tcp": {
         "title": "Verbindung zum SAJ-Wechselrichter neu konfigurieren",
         "data": {
           "host": "Die IP-Adresse Ihres SAJ Inverter Modbus-Geräts",
           "port": "Der TCP-Port, über den eine Verbindung zum SAJ-Wechselrichter hergestellt werden soll"
+        }
+      },
+      "reconfigure_serial": {
+        "title": "Verbindung zum SAJ-Wechselrichter neu konfigurieren",
+        "data": {
+          "serial_port": "Der serielle Anschluss des RS485-Adapters",
+          "baudrate": "Die Baudrate der seriellen Leitung (9600 oder 115200)"
         }
       }
     },
     "error": {
       "already_configured": "Gerät ist bereits konfiguriert",
       "cannot_connect": "Verbindung fehlgeschlagen",
-      "invalid_host": "Ungültiger Hostname oder ungültige IP-Adresse"
-    },
-    "abort": {
-      "already_configured": "Gerät ist bereits konfiguriert",
-      "reconfigure_successful": "Konfiguration erfolgreich aktualisiert!",
-      "wrong_inverter": "Diese Adresse gehört zu einem anderen Wechselrichter"
+      "invalid_host": "Ungültiger Hostname oder ungültige IP-Adresse",
+      "invalid_serial_port": "Ungültiger serieller Anschluss"
     }
   },
   "options": {

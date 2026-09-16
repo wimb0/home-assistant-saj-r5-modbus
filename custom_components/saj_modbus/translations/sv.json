@@ -1,7 +1,19 @@
 {
   "config": {
+    "abort": {
+      "already_configured": "Enheten är redan konfigurerad",
+      "reconfigure_successful": "Konfigurationen har uppdaterats!",
+      "wrong_inverter": "Den adressen tillhör en annan växelriktare"
+    },
     "step": {
       "user": {
+        "title": "Definiera din SAJ Inverter modbus-anslutning",
+        "menu_options": {
+          "tcp": "Nätverk (Modbus TCP)",
+          "serial": "Seriell port (Modbus RTU)"
+        }
+      },
+      "tcp": {
         "title": "Definiera din SAJ Inverter modbus-anslutning",
         "data": {
           "host": "IP-adressen till din SAJ Inverter modbus-enhet",
@@ -10,23 +22,41 @@
           "scan_interval": "Avfrågningsfrekvensen för modbus-registren i sekunder"
         }
       },
+      "serial": {
+        "title": "Definiera din seriella SAJ Inverter-anslutning",
+        "data": {
+          "name": "Prefixet som ska användas för dina SAJ Inverter-sensorer",
+          "serial_port": "RS485-adapterns seriella port",
+          "baudrate": "Baudhastigheten på den seriella linjen (9600 eller 115200)",
+          "scan_interval": "Avfrågningsfrekvensen för modbus-registren i sekunder"
+        }
+      },
       "reconfigure": {
+        "title": "Konfigurera om anslutningen till din SAJ-växelriktare",
+        "data": {
+          "connection_type": "Anslutningstyp"
+        }
+      },
+      "reconfigure_tcp": {
         "title": "Konfigurera om anslutningen till din SAJ-växelriktare",
         "data": {
           "host": "IP-adressen till din SAJ Inverter modbus-enhet",
           "port": "TCP-porten som du ska ansluta till SAJ-växelriktaren på"
+        }
+      },
+      "reconfigure_serial": {
+        "title": "Konfigurera om anslutningen till din SAJ-växelriktare",
+        "data": {
+          "serial_port": "RS485-adapterns seriella port",
+          "baudrate": "Baudhastigheten på den seriella linjen (9600 eller 115200)"
         }
       }
     },
     "error": {
       "already_configured": "Enheten är redan konfigurerad",
       "cannot_connect": "Det gick inte att ansluta",
-      "invalid_host": "Ogiltigt värdnamn eller IP-adress"
-    },
-    "abort": {
-      "already_configured": "Enheten är redan konfigurerad",
-      "reconfigure_successful": "Konfigurationen har uppdaterats!",
-      "wrong_inverter": "Den adressen tillhör en annan växelriktare"
+      "invalid_host": "Ogiltigt värdnamn eller IP-adress",
+      "invalid_serial_port": "Ogiltig seriell port"
     }
   },
   "options": {

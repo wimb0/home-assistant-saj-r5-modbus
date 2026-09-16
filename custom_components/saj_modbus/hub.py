@@ -9,15 +9,36 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from modbus_connection import ModbusError, ModbusTimeoutError
+from modbus_connection import (
+    ModbusError,
+    ModbusSerialParams,
+    ModbusTimeoutError,
+)
+from modbus_connection.tmodbus import ModbusConnection
 
 from .const import (
     ATTR_MANUFACTURER,
+    CONF_BAUDRATE,
+    CONF_BYTESIZE,
+    CONF_PARITY,
+    CONF_SERIAL_PORT,
+    CONF_STOPBITS,
+    DEFAULT_BAUDRATE,
+    DEFAULT_BYTESIZE,
+    DEFAULT_PARITY,
+    DEFAULT_STOPBITS,
     DEVICE_STATUSSES,
     DOMAIN,
     FAULT_MESSAGES,
 )
-from .inverter import UNIT_ID, SajR5Inverter, UpdateReport, create_connection
+from .inverter import (
+    MODBUS_TIMEOUT,
+    UNIT_ID,
+    SajR5Inverter,
+    UpdateReport,
+    create_connection,
+    create_serial_connection,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -44,11 +65,23 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
         hass: HomeAssistant,
         entry: SajConfigEntry,
         name: str,
-        host: str,
-        port: int,
-        scan_interval: int,
+        host: str | None = None,
+        port: int | None = None,
+        scan_interval: int = 60,
+        connection_params=None,
+        serial_port: str | None = None,
+        baudrate: int = DEFAULT_BAUDRATE,
+        bytesize: int = DEFAULT_BYTESIZE,
+        parity: str = DEFAULT_PARITY,
+        stopbits: int = DEFAULT_STOPBITS,
     ) -> None:
-        """Initialize the Modbus hub."""
+        """Initialize the Modbus hub.
+
+        TCP entries pass ``host``/``port`` (the historical signature);
+        serial entries pass ``serial_port`` and the line settings, or a
+        ready-made ``connection_params`` (``ModbusTcpParams`` /
+        ``ModbusSerialParams``). ``connection_params`` wins when given.
+        """
         super().__init__(
             hass,
             _LOGGER,
@@ -57,7 +90,29 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
             update_interval=timedelta(seconds=scan_interval),
         )
 
-        self._connection = create_connection(host, port)
+        if connection_params is not None:
+            self._connection = ModbusConnection(
+                connection_params, timeout=MODBUS_TIMEOUT
+            )
+            self.connection_params = connection_params
+            self.is_serial = isinstance(connection_params, ModbusSerialParams)
+        elif serial_port is not None:
+            self._connection = create_serial_connection(
+                serial_port, baudrate, bytesize, parity, stopbits
+            )
+            self.connection_params = {
+                CONF_SERIAL_PORT: serial_port,
+                CONF_BAUDRATE: baudrate,
+                CONF_BYTESIZE: bytesize,
+                CONF_PARITY: parity,
+                CONF_STOPBITS: stopbits,
+            }
+            self.is_serial = True
+        else:
+            assert host is not None and port is not None
+            self._connection = create_connection(host, port)
+            self.connection_params = {"host": host, "port": port}
+            self.is_serial = False
         self.device = SajR5Inverter(self._connection.for_unit(UNIT_ID))
         self._power_limit: float = 110.0
         # Consecutive poll timeouts; reset by any poll that reaches the device.
@@ -115,10 +170,11 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
     async def _async_note_timeout(self) -> None:
         """Count a timeout, and drop the link once it looks stuck.
 
-        A wedged serial-to-network bridge keeps its socket open while Modbus
-        stops answering, and a timeout does not touch the transport. One
-        timeout is only a slow reply, so wait for a few before dropping the
-        link; the next request opens a fresh one over the same components.
+        A wedged serial-to-network bridge (or USB adapter) keeps its handle
+        open while Modbus stops answering, and a timeout does not touch the
+        transport. One timeout is only a slow reply, so wait for a few before
+        dropping the link; the next request opens a fresh one over the same
+        components. Applies to TCP and serial links alike.
         """
         self._timeouts += 1
         if self._timeouts < _STUCK_AFTER_TIMEOUTS:

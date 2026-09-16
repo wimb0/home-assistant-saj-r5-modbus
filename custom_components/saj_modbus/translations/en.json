@@ -3,6 +3,13 @@
     "step": {
       "user": {
         "title": "Define your SAJ Inverter modbus-connection",
+        "menu_options": {
+          "tcp": "Network (Modbus TCP)",
+          "serial": "Serial port (Modbus RTU)"
+        }
+      },
+      "tcp": {
+        "title": "Define your SAJ Inverter modbus-connection",
         "data": {
           "host": "The ip-address of your SAJ Inverter modbus device",
           "name": "The prefix to be used for your SAJ Inverter sensors",
@@ -10,18 +17,41 @@
           "scan_interval": "The polling frequency of the modbus registers in seconds"
         }
       },
+      "serial": {
+        "title": "Define your SAJ Inverter serial connection",
+        "data": {
+          "name": "The prefix to be used for your SAJ Inverter sensors",
+          "serial_port": "The serial port of the RS485 adapter",
+          "baudrate": "The baud rate of the serial line (9600 or 115200)",
+          "scan_interval": "The polling frequency of the modbus registers in seconds"
+        }
+      },
       "reconfigure": {
         "title": "Reconfigure your SAJ Inverter connection",
         "data": {
-          "host": "The ip-address of your SAJ Inverter modbus device",
+          "connection_type": "Connection type"
+        }
+      },
+      "reconfigure_tcp": {
+        "title": "Reconfigure your SAJ Inverter connection",
+        "data": {
+          "host": "The ip-address or hostname of your SAJ Inverter modbus device",
           "port": "The TCP port on which to connect to the SAJ Inverter"
+        }
+      },
+      "reconfigure_serial": {
+        "title": "Reconfigure your SAJ Inverter serial connection",
+        "data": {
+          "serial_port": "The serial port of the RS485 adapter",
+          "baudrate": "The baud rate of the serial line (9600 or 115200)"
         }
       }
     },
     "error": {
       "already_configured": "Device is already configured",
       "cannot_connect": "Failed to connect",
-      "invalid_host": "Invalid hostname or IP address"
+      "invalid_host": "Invalid hostname or IP address",
+      "invalid_serial_port": "Invalid serial port"
     },
     "abort": {
       "already_configured": "Device is already configured",

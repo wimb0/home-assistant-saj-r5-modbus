@@ -1,7 +1,19 @@
 {
   "config": {
+    "abort": {
+      "already_configured": "Enheten er allerede konfigurert",
+      "reconfigure_successful": "Konfigurasjonen er oppdatert!",
+      "wrong_inverter": "Adressen tilhører en annen inverter"
+    },
     "step": {
       "user": {
+        "title": "Definer din SAJ Inverter modbus-tilkobling",
+        "menu_options": {
+          "tcp": "Nettverk (Modbus TCP)",
+          "serial": "Seriell port (Modbus RTU)"
+        }
+      },
+      "tcp": {
         "title": "Definer din SAJ Inverter modbus-tilkobling",
         "data": {
           "host": "IP-adressen til SAJ Inverter modbus-enheten din",
@@ -10,23 +22,41 @@
           "scan_interval": "Pollingfrekvensen til modbus-registrene i sekunder"
         }
       },
+      "serial": {
+        "title": "Definer din serielle SAJ Inverter-tilkobling",
+        "data": {
+          "name": "Prefikset som skal brukes for SAJ Inverter-sensorene dine",
+          "serial_port": "Den serielle porten til RS485-adapteren",
+          "baudrate": "Baudhastigheten på den serielle linjen (9600 eller 115200)",
+          "scan_interval": "Pollingfrekvensen til modbus-registrene i sekunder"
+        }
+      },
       "reconfigure": {
+        "title": "Konfigurer tilkoblingen til SAJ-inverteren på nytt",
+        "data": {
+          "connection_type": "Tilkoblingstype"
+        }
+      },
+      "reconfigure_tcp": {
         "title": "Konfigurer tilkoblingen til SAJ-inverteren på nytt",
         "data": {
           "host": "IP-adressen til SAJ Inverter modbus-enheten din",
           "port": "TCP-porten du skal koble til SAJ-inverteren på"
+        }
+      },
+      "reconfigure_serial": {
+        "title": "Konfigurer tilkoblingen til SAJ-inverteren på nytt",
+        "data": {
+          "serial_port": "Den serielle porten til RS485-adapteren",
+          "baudrate": "Baudhastigheten på den serielle linjen (9600 eller 115200)"
         }
       }
     },
     "error": {
       "already_configured": "Enheten er allerede konfigurert",
       "cannot_connect": "Tilkobling mislyktes",
-      "invalid_host": "Ugyldig vertsnavn eller IP-adresse"
-    },
-    "abort": {
-      "already_configured": "Enheten er allerede konfigurert",
-      "reconfigure_successful": "Konfigurasjonen er oppdatert!",
-      "wrong_inverter": "Adressen tilhører en annen inverter"
+      "invalid_host": "Ugyldig vertsnavn eller IP-adresse",
+      "invalid_serial_port": "Ugyldig seriell port"
     }
   },
   "options": {
