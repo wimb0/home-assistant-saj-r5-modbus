@@ -47,6 +47,19 @@ type SajConfigEntry = ConfigEntry[SAJModbusHub]
 # Consecutive timeouts before the link is treated as stuck rather than slow.
 _STUCK_AFTER_TIMEOUTS = 3
 
+# DeviceType (information register 0x8F00) values identifying supported
+# families. Deliberately without MPPT counts: the documents' per-variant
+# tables do not reliably match physical hardware.
+_DEVTYPE_MODELS = {
+    0x11: "Sununo Plus (single-phase)",
+    0x12: "Sununo Plus (single-phase)",
+    0x13: "R5 (single-phase)",
+    0x14: "R5 (single-phase)",
+    0x15: "R5 (single-phase)",
+    0x21: "Suntrio Plus (three-phase)",
+    0x22: "R5 (three-phase)",
+}
+
 
 def translate_fault_code_to_messages(
     fault_code: int, fault_messages: dict[int, str]
@@ -132,6 +145,17 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
         return serial or None
 
     @property
+    def model_name(self) -> str | None:
+        """The marketing model, resolved from the device type where known."""
+        return _DEVTYPE_MODELS.get(self.device.info.devtype)
+
+    @property
+    def firmware_version(self) -> str | None:
+        """The master control software version, once info has been read."""
+        mcv = self.device.info.mcv
+        return f"{mcv:.3f}" if mcv is not None else None
+
+    @property
     def identifier(self) -> str:
         """The stable key entity unique ids and the device are built from."""
         return self._identifier
@@ -153,6 +177,8 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
             identifiers={(DOMAIN, self.identifier)},
             name=self.name,
             manufacturer=ATTR_MANUFACTURER,
+            model=self.model_name,
+            sw_version=self.firmware_version,
             serial_number=self.serial_number,
         )
 
