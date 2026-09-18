@@ -8,7 +8,7 @@
 
 # Home Assistant SAJ R5 Series Inverter Modbus Integration
 
-This is an unofficial Home Assistant integration that enables you to read data locally from SAJ R5, Sununo, and Suntrio inverters via Modbus TCP, without a cloud-connected dongle.
+This is an unofficial Home Assistant integration that enables you to read data locally from SAJ R5, Sununo, and Suntrio inverters via **Modbus TCP or a directly connected serial (RS485 RTU) port**, without a cloud-connected dongle.
 
 The integration is also compatible with Zonneplan ONE inverters, which are rebranded SAJ R5 inverters.
 
@@ -19,6 +19,7 @@ Implements SAJ Inverter registers from [`saj-plus-series-inverter-modbus-protoca
 ## Features ✨
 
 * **Easy Installation:** Set up (and reconfigure) the integration through the Home Assistant UI.
+* **Network or Serial:** Connect over Modbus TCP (e.g. via a Modbus-to-WiFi bridge) or directly over a serial RS485 port (e.g. a USB-to-RS485 adapter, locally or through an ESPHome serial proxy).
 * **Detailed Sensors:** Each Modbus register is exposed as a separate sensor.
 * **Automatic Scaling:** The integration automatically applies the correct scaling factor to the raw data.
 * **Configurable Polling:** You can set your desired polling interval for data updates.
@@ -34,11 +35,15 @@ Once the integration is installed, you can configure it through the Home Assista
 1.  Go to **Settings > Devices & Services**.
 2.  Click the **+ Add Integration** button.
 3.  Search for "SAJ R5 Modbus" and select it.
-4.  Fill in the required information:
-    * **Name:** A descriptive name for your inverter (e.g., "SAJ Inverter").
-    * **Host:** The IP address of your Modbus to Wi-Fi device.
-    * **Port:** The TCP port for the Modbus connection (default is 502).
-    * **Scan Interval:** The frequency in seconds to poll the inverter for data (default is 60).
+4.  Choose the connection type:
+    * **Network (Modbus TCP)** — fill in **Host** (the IP address of your Modbus to Wi-Fi device) and **Port** (default is 502).
+    * **Serial port (Modbus RTU)** — pick the **serial port** from the dropdown and the **baud rate** (**9600** for the inverter's RS485 port, **115200** for its USB/RS232 port).
+5.  Fill in **Name** (a descriptive name for your inverter, e.g. "SAJ") and **Scan Interval** (the frequency in seconds to poll the inverter, default is 60).
+6.  Confirm the detected inverter (model and serial number) to create the entry.
+
+The connection can be changed later through the integration's **Reconfigure** option — switching between a network and a serial connection is supported.
+
+> **Note:** the serial port dropdown requires a recent Home Assistant version. Check the minimum version in `hacs.json`.
 
 
 ## Installation ⚙️
@@ -62,7 +67,7 @@ _or_
 
 
 ## Connecting to the Inverter 🔌
-You will need a Modbus to Wi-Fi or Ethernet adapter to connect your SAJ inverter to your network.
+You can connect your SAJ inverter to Home Assistant either through the network (using a Modbus to Wi-Fi or Ethernet adapter) or directly over a serial RS485 line (using a USB-to-RS485 adapter).
 The following instructions are for the Hi-Flying Elfin-EW11/EW10 and PUSR DR132, but other similar devices should work as well.
 
 <details>
@@ -91,6 +96,23 @@ Connect the EW11A to the RS485 port on your SAJ R5 inverter.
     * **Stop Bits:** 1
     * **Parity:** None
     * **Protocol:** Modbus
+</details>
+
+<details>
+<summary>Direct serial connection (USB-to-RS485 adapter)</summary>
+
+Connect a USB-to-RS485 adapter (e.g. Waveshare) to the RS485 port on your SAJ R5 inverter, using the same RJ45 pinout as above (SAJ pins 7/8 = RS485 A/B). Plug the adapter into the machine running Home Assistant (or any host whose serial ports Home Assistant can see) and pick the port in the integration setup.
+
+* **Baud Rate:** Select **9600** in the setup flow (the inverter's RS485 default).
+* Data bits (8), stop bits (1), parity (none) and flow control (off) are fixed by the integration.
+
+</details>
+
+<details>
+<summary>Serial connection via ESPHome serial proxy (Tested with Nabu Casa Aux-2)</summary>
+
+Instead of a local USB port, the adapter can use an ESPHome device exposing it through the `serial_proxy` component. Pick the correct `Serial Port` in the integration setup and select **9600** baud for Modbus and **115200** for Serial.
+
 </details>
 
 <details>
@@ -171,7 +193,9 @@ Plug the ethernet cable into your LAN and add the device to HA by its static IP 
 
 ## Entities 🧩
 
-This integration will create the following entities:
+This integration will create the following entities. The device card itself
+also shows the inverter **model** (e.g. R5 single-phase, Suntrio Plus
+three-phase) and **firmware version**, read from the inverter.
 
 ### Sensors
 
@@ -201,7 +225,18 @@ If you encounter any issues with the integration, there are two main ways to gat
 
 ### Some Entities Unavailable
 
-Each poll reads the inverter's realtime block and its remote power state independently, so one of them being slow or refused does not take the other down with it. Only the entities reading the part that failed go unavailable — they keep their last values internally and come back on the next poll that reads it — and a warning naming the part and the error is written to the log. All entities go unavailable only when the inverter answers nothing at all. A diagnostics download lists what is currently failing under `failing_components`, and registers this firmware does not serve at all under `unserved_components`.
+Each poll reads the inverter's realtime block and its remote power state independently, so one of them being slow or refused does not take the other down with it. Only the entities reading the part that failed go unavailable — they keep their last values internally and come back on the next poll that reads it — and a warning naming the part and the error is written to the log. All entities go unavailable only when the inverter answers nothing at all. A diagnostics download lists what is currently failing under `failed`, and registers this firmware does not serve at all under `unserved_components`.
+
+### Inverter Offline Overnight
+
+A sleeping inverter answers nothing, so the realtime entities go `unavailable` overnight by design — this is not a fault. The energy totals keep their last value (and survive restarts), so long-term statistics and the energy dashboard stay intact. Everything recovers on the first successful morning poll without any reload.
+
+### Serial "Failed to connect"
+
+Watch the adapter's TX/RX LEDs while submitting the setup form:
+
+* **Neither blinks:** the bytes never reach the adapter. Check the PWR LED, the baud rate (**9600** for the RS485 port), and — for ESPHome proxies — the device logs: `Channel not initialised - write ignored` means the firmware never claimed the dongle (check its USB chip ID; see above).
+* **TX blinks, RX never answers:** the request reaches the wire but the inverter doesn't reply. Check the A/B wiring, and confirm the inverter is awake and producing.
 
 ### Enabling Debug Logging
 
@@ -212,6 +247,7 @@ logger:
   default: info
   logs:
     custom_components.saj_modbus: debug
+    tmodbus.transport: debug   # serial/TCP connects, closes and timeouts
 ```
 
 After adding this, restart Home Assistant. The logs can be found in **Settings > System > Logs**.
@@ -232,7 +268,7 @@ This will download a text file with diagnostic information that you can share wh
 This integration was inspired by the [`home-assistant-solaredge-modbus`](https://github.com/binsentsu/home-assistant-solaredge-modbus) integration by [@binsentsu](https://github.com/binsentsu).
 
 
-_This is a third-party integration and is not officially supported by SAJ Electric._
+*This is a third-party integration and is not officially supported by SAJ Electric.*
 
 
 [![saj_logo](https://github.com/wimb0/home-assistant-saj-r5-modbus/blob/main/images/saj_modbus/logo.png)](https://www.saj-electric.com/)
