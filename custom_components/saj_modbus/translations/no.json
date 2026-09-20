@@ -19,6 +19,7 @@
           "host": "IP-adressen til SAJ Inverter modbus-enheten din",
           "name": "Prefikset som skal brukes for SAJ Inverter-sensorene dine",
           "port": "TCP-porten du skal koble til SAJ-inverteren på",
+          "slave_id": "Modbus slave-ID for vekselretteren (1–247)",
           "scan_interval": "Pollingfrekvensen til modbus-registrene i sekunder"
         }
       },
@@ -28,6 +29,7 @@
           "name": "Prefikset som skal brukes for SAJ Inverter-sensorene dine",
           "serial_port": "Den serielle porten til RS485-adapteren",
           "baudrate": "Baudhastigheten på den serielle linjen (9600 eller 115200)",
+          "slave_id": "Modbus slave-ID for vekselretteren (1–247)",
           "scan_interval": "Pollingfrekvensen til modbus-registrene i sekunder"
         }
       },
@@ -35,28 +37,42 @@
         "title": "Konfigurer tilkoblingen til SAJ-inverteren på nytt",
         "data": {
           "connection_type": "Tilkoblingstype"
-        }
+        },
+        "description": "Endre hvordan {name} kobler til. Nå: {current}. Velg først tilkoblingstypen, deretter innstillingene på neste skjerm."
       },
       "reconfigure_tcp": {
         "title": "Konfigurer tilkoblingen til SAJ-inverteren på nytt",
         "data": {
           "host": "IP-adressen til SAJ Inverter modbus-enheten din",
-          "port": "TCP-porten du skal koble til SAJ-inverteren på"
-        }
+          "port": "TCP-porten du skal koble til SAJ-inverteren på",
+          "slave_id": "Modbus slave-ID for vekselretteren (1–247)"
+        },
+        "description": "Oppgi den nye nettverksadressen for {name}. Vekselretteren testes før lagring."
       },
       "reconfigure_serial": {
         "title": "Konfigurer tilkoblingen til SAJ-inverteren på nytt",
         "data": {
           "serial_port": "Den serielle porten til RS485-adapteren",
-          "baudrate": "Baudhastigheten på den serielle linjen (9600 eller 115200)"
-        }
+          "baudrate": "Baudhastigheten på den serielle linjen (9600 eller 115200)",
+          "slave_id": "Modbus slave-ID for vekselretteren (1–247)"
+        },
+        "description": "Oppgi den nye serielle porten for {name}. Vekselretteren testes før lagring."
       }
     },
     "error": {
       "already_configured": "Enheten er allerede konfigurert",
       "cannot_connect": "Tilkobling mislyktes",
       "invalid_host": "Ugyldig vertsnavn eller IP-adresse",
-      "invalid_serial_port": "Ugyldig seriell port"
+      "invalid_serial_port": "Ugyldig seriell port",
+      "invalid_slave_id": "Ugyldig slave-ID (oppgi 1–247)"
+    }
+  },
+  "selector": {
+    "connection_type": {
+      "options": {
+        "tcp": "Nettverk (Modbus TCP)",
+        "serial": "Seriell port (Modbus RTU)"
+      }
     }
   },
   "options": {

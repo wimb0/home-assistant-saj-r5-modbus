@@ -19,6 +19,7 @@
           "host": "Het ip-adres van uw SAJ-omvormer modbus apparaat",
           "name": "Het voorvoegsel dat moet worden gebruikt voor uw SAJ-sensoren",
           "port": "De TCP-poort waarop verbinding moet worden gemaakt met de SAJ-omvormer",
+          "slave_id": "Modbus slave-ID van de omvormer (1–247)",
           "scan_interval": "De polling-frequentie van de modbus registratie in seconden"
         }
       },
@@ -28,6 +29,7 @@
           "name": "Het voorvoegsel dat moet worden gebruikt voor uw SAJ-sensoren",
           "serial_port": "De seriële poort van de RS485-adapter",
           "baudrate": "De baudrate van de seriële lijn (9600 of 115200)",
+          "slave_id": "Modbus slave-ID van de omvormer (1–247)",
           "scan_interval": "De polling-frequentie van de modbus registratie in seconden"
         }
       },
@@ -35,28 +37,42 @@
         "title": "Verbinding met uw SAJ-omvormer opnieuw instellen",
         "data": {
           "connection_type": "Verbindingstype"
-        }
+        },
+        "description": "Wijzig hoe {name} verbinding maakt. Nu in gebruik: {current}. Kies eerst het verbindingstype, daarna de instellingen op het volgende scherm."
       },
       "reconfigure_tcp": {
         "title": "Verbinding met uw SAJ-omvormer opnieuw instellen",
         "data": {
           "host": "Het ip-adres van uw SAJ-omvormer modbus apparaat",
-          "port": "De TCP-poort waarop verbinding moet worden gemaakt met de SAJ-omvormer"
-        }
+          "port": "De TCP-poort waarop verbinding moet worden gemaakt met de SAJ-omvormer",
+          "slave_id": "Modbus slave-ID van de omvormer (1–247)"
+        },
+        "description": "Voer het nieuwe netwerkadres voor {name} in. De omvormer wordt gecontroleerd voordat er iets wordt opgeslagen."
       },
       "reconfigure_serial": {
         "title": "Verbinding met uw SAJ-omvormer opnieuw instellen",
         "data": {
           "serial_port": "De seriële poort van de RS485-adapter",
-          "baudrate": "De baudrate van de seriële lijn (9600 of 115200)"
-        }
+          "baudrate": "De baudrate van de seriële lijn (9600 of 115200)",
+          "slave_id": "Modbus slave-ID van de omvormer (1–247)"
+        },
+        "description": "Voer de nieuwe seriële poort voor {name} in. De omvormer wordt gecontroleerd voordat er iets wordt opgeslagen."
       }
     },
     "error": {
       "already_configured": "Apparaat is al geconfigureerd",
       "cannot_connect": "Kan geen verbinding maken",
       "invalid_host": "Ongeldige hostnaam of IP-adres",
-      "invalid_serial_port": "Ongeldige seriële poort"
+      "invalid_serial_port": "Ongeldige seriële poort",
+      "invalid_slave_id": "Ongeldige slave-ID (voer 1–247 in)"
+    }
+  },
+  "selector": {
+    "connection_type": {
+      "options": {
+        "tcp": "Netwerk (Modbus TCP)",
+        "serial": "Seriële poort (Modbus RTU)"
+      }
     }
   },
   "options": {

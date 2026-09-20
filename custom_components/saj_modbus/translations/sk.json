@@ -19,6 +19,7 @@
           "host": "IP adresa vášho zariadenia SAJ Inverter modbus",
           "name": "Predpona, ktorá sa má použiť pre vaše senzory SAJ Inverter",
           "port": "TCP port, na ktorý sa má pripojiť k meniču SAJ",
+          "slave_id": "Slave ID Modbus meniča (1–247)",
           "scan_interval": "Frekvencia dopytovania modbus registrov v sekundách"
         }
       },
@@ -28,6 +29,7 @@
           "name": "Predpona, ktorá sa má použiť pre vaše senzory SAJ Inverter",
           "serial_port": "Sériový port adaptéra RS485",
           "baudrate": "Prenosová rýchlosť sériovej linky (9600 alebo 115200)",
+          "slave_id": "Slave ID Modbus meniča (1–247)",
           "scan_interval": "Frekvencia dopytovania modbus registrov v sekundách"
         }
       },
@@ -35,28 +37,42 @@
         "title": "Zmena pripojenia k meniču SAJ",
         "data": {
           "connection_type": "Typ pripojenia"
-        }
+        },
+        "description": "Zmeňte spôsob pripojenia {name}. Aktuálne: {current}. Najprv vyberte typ pripojenia, potom jeho nastavenia na ďalšej obrazovke."
       },
       "reconfigure_tcp": {
         "title": "Zmena pripojenia k meniču SAJ",
         "data": {
           "host": "IP adresa vášho zariadenia SAJ Inverter modbus",
-          "port": "TCP port, na ktorý sa má pripojiť k meniču SAJ"
-        }
+          "port": "TCP port, na ktorý sa má pripojiť k meniču SAJ",
+          "slave_id": "Slave ID Modbus meniča (1–247)"
+        },
+        "description": "Zadajte novú sieťovú adresu pre {name}. Menič sa pred uložením overí."
       },
       "reconfigure_serial": {
         "title": "Zmena pripojenia k meniču SAJ",
         "data": {
           "serial_port": "Sériový port adaptéra RS485",
-          "baudrate": "Prenosová rýchlosť sériovej linky (9600 alebo 115200)"
-        }
+          "baudrate": "Prenosová rýchlosť sériovej linky (9600 alebo 115200)",
+          "slave_id": "Slave ID Modbus meniča (1–247)"
+        },
+        "description": "Zadajte nový sériový port pre {name}. Menič sa pred uložením overí."
       }
     },
     "error": {
       "already_configured": "Zariadenie je už nakonfigurované",
       "cannot_connect": "Nepodarilo sa pripojiť",
       "invalid_host": "Neplatný názov hostiteľa alebo IP adresa",
-      "invalid_serial_port": "Neplatný sériový port"
+      "invalid_serial_port": "Neplatný sériový port",
+      "invalid_slave_id": "Neplatné slave ID (zadajte 1–247)"
+    }
+  },
+  "selector": {
+    "connection_type": {
+      "options": {
+        "tcp": "Sieť (Modbus TCP)",
+        "serial": "Sériový port (Modbus RTU)"
+      }
     }
   },
   "options": {

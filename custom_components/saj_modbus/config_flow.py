@@ -16,13 +16,18 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL
 from homeassistant.core import callback
-from homeassistant.helpers.selector import SerialPortSelector
+from homeassistant.helpers.selector import (
+    SelectSelector,
+    SelectSelectorConfig,
+    SerialPortSelector,
+)
 from modbus_connection import ModbusError
 
 from .const import (
     CONF_BAUDRATE,
     CONF_CONNECTION_TYPE,
     CONF_SERIAL_PORT,
+    CONF_SLAVE_ID,
     CONNECTION_TYPE_SERIAL,
     CONNECTION_TYPE_TCP,
     DEFAULT_BAUDRATE,
@@ -31,12 +36,14 @@ from .const import (
     DEFAULT_PARITY,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_SLAVE_ID,
     DEFAULT_STOPBITS,
     DOMAIN,
+    MAX_SLAVE_ID,
+    MIN_SLAVE_ID,
     SERIAL_BAUDRATES,
 )
 from .inverter import (
-    UNIT_ID,
     SajR5Inverter,
     create_connection,
     create_serial_connection,
@@ -80,11 +87,11 @@ def serial_port_valid(device: str) -> bool:
     return True
 
 
-async def async_probe(host: str, port: int) -> str:
+async def async_probe(host: str, port: int, slave_id: int) -> str:
     """Probe the inverter over TCP, returning its serial; raises on failure."""
     connection = create_connection(host, port)
     try:
-        return await SajR5Inverter.async_probe(connection.for_unit(UNIT_ID))
+        return await SajR5Inverter.async_probe(connection.for_unit(slave_id))
     finally:
         await connection.close()
 
@@ -95,21 +102,60 @@ async def async_probe_serial(
     bytesize: int,
     parity: str,
     stopbits: int,
+    slave_id: int,
 ) -> str:
     """Probe the inverter over a serial line, returning its serial number."""
     connection = create_serial_connection(
         device, baudrate, bytesize, parity, stopbits
     )
     try:
-        return await SajR5Inverter.async_probe(connection.for_unit(UNIT_ID))
+        return await SajR5Inverter.async_probe(connection.for_unit(slave_id))
     finally:
         await connection.close()
+
+
+def _slave_schema() -> vol.Coerce:
+    """Text field for the Modbus station address; range-checked in the step."""
+    return vol.Coerce(int)
+
+
+def slave_valid(slave_id: Any) -> bool:
+    """Return True if the station address is within 1-247."""
+    try:
+        value = int(slave_id)
+    except (TypeError, ValueError):
+        return False
+    return MIN_SLAVE_ID <= value <= MAX_SLAVE_ID
+
+
+def _connection_type_schema() -> SelectSelector:
+    """Dropdown for the transport with translated option labels."""
+    return SelectSelector(
+        SelectSelectorConfig(
+            options=[CONNECTION_TYPE_TCP, CONNECTION_TYPE_SERIAL],
+            translation_key="connection_type",
+        )
+    )
+
+
+def _connection_summary(data: dict[str, Any]) -> str:
+    """One-line summary of where an entry currently points."""
+    slave_id = data.get(CONF_SLAVE_ID, DEFAULT_SLAVE_ID)
+    if data.get(CONF_CONNECTION_TYPE) == CONNECTION_TYPE_SERIAL:
+        return (
+            f"{data.get(CONF_SERIAL_PORT)} @ "
+            f"{data.get(CONF_BAUDRATE, DEFAULT_BAUDRATE)} baud "
+            f"(slave {slave_id})"
+        )
+    return (
+        f"{data.get(CONF_HOST)}:{data.get(CONF_PORT)} (slave {slave_id})"
+    )
 
 
 class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
     """SAJ Modbus config flow."""
 
-    VERSION = 3
+    VERSION = 4
 
     @staticmethod
     @callback
@@ -133,33 +179,41 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None:
             host = user_input[CONF_HOST]
+            port = user_input[CONF_PORT]
+            slave_id = user_input[CONF_SLAVE_ID]
 
-            if not host_valid(host):
+            if not slave_valid(slave_id):
+                errors[CONF_SLAVE_ID] = "invalid_slave_id"
+            elif not host_valid(host):
                 errors[CONF_HOST] = "invalid_host"
             elif any(
                 entry.data.get(CONF_HOST) == host
+                and entry.data.get(CONF_PORT) == port
+                and entry.data.get(CONF_SLAVE_ID, DEFAULT_SLAVE_ID) == slave_id
                 for entry in self._async_current_entries()
             ):
                 errors[CONF_HOST] = "already_configured"
             else:
                 try:
-                    serial = await async_probe(host, user_input[CONF_PORT])
+                    serial = await async_probe(host, port, slave_id)
                 except ModbusError:
                     errors["base"] = "cannot_connect"
             if not errors:
                 data = {
                     CONF_NAME: user_input[CONF_NAME],
                     CONF_CONNECTION_TYPE: CONNECTION_TYPE_TCP,
-                    CONF_HOST: user_input[CONF_HOST],
-                    CONF_PORT: user_input[CONF_PORT],
+                    CONF_HOST: host,
+                    CONF_PORT: port,
+                    CONF_SLAVE_ID: slave_id,
                 }
                 options = {
                     CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL],
                 }
                 # Key the entry on the serial where the inverter reports one,
                 # so the same device is recognised across addresses. Firmware
-                # that does not serve the info block falls back to the host.
-                await self.async_set_unique_id(serial or host)
+                # that does not serve the info block falls back to host and
+                # station address.
+                await self.async_set_unique_id(serial or f"{host}:{slave_id}")
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(
                     title=data[CONF_NAME], data=data, options=options
@@ -170,6 +224,9 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                 vol.Optional(CONF_NAME, default=DEFAULT_NAME): str,
                 vol.Required(CONF_HOST): str,
                 vol.Required(CONF_PORT, default=DEFAULT_PORT): int,
+                vol.Required(CONF_SLAVE_ID, default=DEFAULT_SLAVE_ID): (
+                    _slave_schema()
+                ),
                 vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): int,
             }
         )
@@ -185,11 +242,15 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None:
             device = user_input[CONF_SERIAL_PORT]
+            slave_id = user_input[CONF_SLAVE_ID]
 
-            if not serial_port_valid(device):
+            if not slave_valid(slave_id):
+                errors[CONF_SLAVE_ID] = "invalid_slave_id"
+            elif not serial_port_valid(device):
                 errors[CONF_SERIAL_PORT] = "invalid_serial_port"
             elif any(
                 entry.data.get(CONF_SERIAL_PORT) == device
+                and entry.data.get(CONF_SLAVE_ID, DEFAULT_SLAVE_ID) == slave_id
                 for entry in self._async_current_entries()
             ):
                 errors[CONF_SERIAL_PORT] = "already_configured"
@@ -201,6 +262,7 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                         DEFAULT_BYTESIZE,
                         DEFAULT_PARITY,
                         DEFAULT_STOPBITS,
+                        slave_id,
                     )
                 except ModbusError:
                     errors["base"] = "cannot_connect"
@@ -210,13 +272,14 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                     CONF_CONNECTION_TYPE: CONNECTION_TYPE_SERIAL,
                     CONF_SERIAL_PORT: device,
                     CONF_BAUDRATE: user_input[CONF_BAUDRATE],
+                    CONF_SLAVE_ID: slave_id,
                 }
                 options = {
                     CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL],
                 }
                 # Same identity rule as TCP: the inverter's serial where it
-                # reports one, else the port path it was found on.
-                await self.async_set_unique_id(serial or device)
+                # reports one, else the port path and station address.
+                await self.async_set_unique_id(serial or f"{device}:{slave_id}")
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(
                     title=data[CONF_NAME], data=data, options=options
@@ -228,6 +291,9 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                 vol.Required(CONF_SERIAL_PORT): SerialPortSelector(),
                 vol.Required(CONF_BAUDRATE, default=DEFAULT_BAUDRATE): vol.In(
                     list(SERIAL_BAUDRATES)
+                ),
+                vol.Required(CONF_SLAVE_ID, default=DEFAULT_SLAVE_ID): (
+                    _slave_schema()
                 ),
                 vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): int,
             }
@@ -253,9 +319,13 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                 {
                     vol.Required(
                         CONF_CONNECTION_TYPE, default=current
-                    ): vol.In([CONNECTION_TYPE_TCP, CONNECTION_TYPE_SERIAL]),
+                    ): _connection_type_schema(),
                 }
             ),
+            description_placeholders={
+                "name": entry.title,
+                "current": _connection_summary(entry.data),
+            },
         )
 
     async def async_step_reconfigure_tcp(
@@ -267,11 +337,15 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             host = user_input[CONF_HOST]
-            if not host_valid(host):
+            port = user_input[CONF_PORT]
+            slave_id = user_input[CONF_SLAVE_ID]
+            if not slave_valid(slave_id):
+                errors[CONF_SLAVE_ID] = "invalid_slave_id"
+            elif not host_valid(host):
                 errors[CONF_HOST] = "invalid_host"
             else:
                 try:
-                    serial = await async_probe(host, user_input[CONF_PORT])
+                    serial = await async_probe(host, port, slave_id)
                 except ModbusError:
                     errors["base"] = "cannot_connect"
             if not errors:
@@ -285,7 +359,8 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                     data_updates={
                         CONF_CONNECTION_TYPE: CONNECTION_TYPE_TCP,
                         CONF_HOST: host,
-                        CONF_PORT: user_input[CONF_PORT],
+                        CONF_PORT: port,
+                        CONF_SLAVE_ID: slave_id,
                     },
                 )
 
@@ -295,8 +370,13 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                 {
                     vol.Required(CONF_HOST, default=entry.data.get(CONF_HOST)): str,
                     vol.Required(CONF_PORT, default=entry.data.get(CONF_PORT)): int,
+                    vol.Required(
+                        CONF_SLAVE_ID,
+                        default=entry.data.get(CONF_SLAVE_ID, DEFAULT_SLAVE_ID),
+                    ): _slave_schema(),
                 }
             ),
+            description_placeholders={"name": entry.title},
             errors=errors,
         )
 
@@ -309,7 +389,10 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             device = user_input[CONF_SERIAL_PORT]
-            if not serial_port_valid(device):
+            slave_id = user_input[CONF_SLAVE_ID]
+            if not slave_valid(slave_id):
+                errors[CONF_SLAVE_ID] = "invalid_slave_id"
+            elif not serial_port_valid(device):
                 errors[CONF_SERIAL_PORT] = "invalid_serial_port"
             else:
                 try:
@@ -319,6 +402,7 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                         DEFAULT_BYTESIZE,
                         DEFAULT_PARITY,
                         DEFAULT_STOPBITS,
+                        slave_id,
                     )
                 except ModbusError:
                     errors["base"] = "cannot_connect"
@@ -332,6 +416,7 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                         CONF_CONNECTION_TYPE: CONNECTION_TYPE_SERIAL,
                         CONF_SERIAL_PORT: device,
                         CONF_BAUDRATE: user_input[CONF_BAUDRATE],
+                        CONF_SLAVE_ID: slave_id,
                     },
                 )
 
@@ -347,8 +432,13 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                         CONF_BAUDRATE,
                         default=entry.data.get(CONF_BAUDRATE, DEFAULT_BAUDRATE),
                     ): vol.In(list(SERIAL_BAUDRATES)),
+                    vol.Required(
+                        CONF_SLAVE_ID,
+                        default=entry.data.get(CONF_SLAVE_ID, DEFAULT_SLAVE_ID),
+                    ): _slave_schema(),
                 }
             ),
+            description_placeholders={"name": entry.title},
             errors=errors,
         )
 

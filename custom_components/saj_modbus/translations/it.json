@@ -19,6 +19,7 @@
           "host": "L'indirizzo IP del tuo dispositivo modbus SAJ Inverter",
           "name": "Il prefisso da utilizzare per i tuoi sensori SAJ Inverter",
           "port": "La porta TCP su cui connettersi all'inverter SAJ",
+          "slave_id": "ID slave Modbus dell’inverter (1–247)",
           "scan_interval": "La frequenza di polling dei registri modbus in secondi"
         }
       },
@@ -28,6 +29,7 @@
           "name": "Il prefisso da utilizzare per i tuoi sensori SAJ Inverter",
           "serial_port": "La porta seriale dell'adattatore RS485",
           "baudrate": "La velocità di trasmissione della linea seriale (9600 o 115200)",
+          "slave_id": "ID slave Modbus dell’inverter (1–247)",
           "scan_interval": "La frequenza di polling dei registri modbus in secondi"
         }
       },
@@ -35,28 +37,42 @@
         "title": "Riconfigura la connessione dell'inverter SAJ",
         "data": {
           "connection_type": "Tipo di connessione"
-        }
+        },
+        "description": "Modifica il modo in cui {name} si connette. Attualmente: {current}. Scegli prima il tipo di connessione, poi le sue impostazioni nella schermata successiva."
       },
       "reconfigure_tcp": {
         "title": "Riconfigura la connessione dell'inverter SAJ",
         "data": {
           "host": "L'indirizzo IP del tuo dispositivo modbus SAJ Inverter",
-          "port": "La porta TCP su cui connettersi all'inverter SAJ"
-        }
+          "port": "La porta TCP su cui connettersi all'inverter SAJ",
+          "slave_id": "ID slave Modbus dell’inverter (1–247)"
+        },
+        "description": "Inserisci il nuovo indirizzo di rete per {name}. L’inverter viene verificato prima del salvataggio."
       },
       "reconfigure_serial": {
         "title": "Riconfigura la connessione dell'inverter SAJ",
         "data": {
           "serial_port": "La porta seriale dell'adattatore RS485",
-          "baudrate": "La velocità di trasmissione della linea seriale (9600 o 115200)"
-        }
+          "baudrate": "La velocità di trasmissione della linea seriale (9600 o 115200)",
+          "slave_id": "ID slave Modbus dell’inverter (1–247)"
+        },
+        "description": "Inserisci la nuova porta seriale per {name}. L’inverter viene verificato prima del salvataggio."
       }
     },
     "error": {
       "already_configured": "Il dispositivo è già configurato",
       "cannot_connect": "Impossibile connettersi",
       "invalid_host": "Nome host o indirizzo IP non valido",
-      "invalid_serial_port": "Porta seriale non valida"
+      "invalid_serial_port": "Porta seriale non valida",
+      "invalid_slave_id": "ID slave non valido (inserire 1–247)"
+    }
+  },
+  "selector": {
+    "connection_type": {
+      "options": {
+        "tcp": "Rete (Modbus TCP)",
+        "serial": "Porta seriale (Modbus RTU)"
+      }
     }
   },
   "options": {

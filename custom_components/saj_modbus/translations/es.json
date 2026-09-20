@@ -19,6 +19,7 @@
           "host": "La dirección IP de su dispositivo modbus SAJ Inverter",
           "name": "El prefijo que se utilizará para sus sensores SAJ Inverter",
           "port": "El puerto TCP en el que se conectará al inversor SAJ",
+          "slave_id": "ID de esclavo Modbus del inversor (1–247)",
           "scan_interval": "La frecuencia de sondeo de los registros modbus en segundos"
         }
       },
@@ -28,6 +29,7 @@
           "name": "El prefijo que se utilizará para sus sensores SAJ Inverter",
           "serial_port": "El puerto serie del adaptador RS485",
           "baudrate": "La velocidad en baudios de la línea serie (9600 o 115200)",
+          "slave_id": "ID de esclavo Modbus del inversor (1–247)",
           "scan_interval": "La frecuencia de sondeo de los registros modbus en segundos"
         }
       },
@@ -35,28 +37,42 @@
         "title": "Reconfigura la conexión de tu inversor SAJ",
         "data": {
           "connection_type": "Tipo de conexión"
-        }
+        },
+        "description": "Cambia cómo se conecta {name}. Actualmente: {current}. Elige primero el tipo de conexión y luego sus ajustes en la siguiente pantalla."
       },
       "reconfigure_tcp": {
         "title": "Reconfigura la conexión de tu inversor SAJ",
         "data": {
           "host": "La dirección IP de su dispositivo modbus SAJ Inverter",
-          "port": "El puerto TCP en el que se conectará al inversor SAJ"
-        }
+          "port": "El puerto TCP en el que se conectará al inversor SAJ",
+          "slave_id": "ID de esclavo Modbus del inversor (1–247)"
+        },
+        "description": "Introduce la nueva dirección de red para {name}. El inversor se comprueba antes de guardar."
       },
       "reconfigure_serial": {
         "title": "Reconfigura la conexión de tu inversor SAJ",
         "data": {
           "serial_port": "El puerto serie del adaptador RS485",
-          "baudrate": "La velocidad en baudios de la línea serie (9600 o 115200)"
-        }
+          "baudrate": "La velocidad en baudios de la línea serie (9600 o 115200)",
+          "slave_id": "ID de esclavo Modbus del inversor (1–247)"
+        },
+        "description": "Introduce el nuevo puerto serie para {name}. El inversor se comprueba antes de guardar."
       }
     },
     "error": {
       "already_configured": "El dispositivo ya está configurado",
       "cannot_connect": "No se pudo conectar",
       "invalid_host": "Nombre de host o dirección IP no válidos",
-      "invalid_serial_port": "Puerto serie no válido"
+      "invalid_serial_port": "Puerto serie no válido",
+      "invalid_slave_id": "ID de esclavo no válido (introduce 1–247)"
+    }
+  },
+  "selector": {
+    "connection_type": {
+      "options": {
+        "tcp": "Red (Modbus TCP)",
+        "serial": "Puerto serie (Modbus RTU)"
+      }
     }
   },
   "options": {

@@ -19,6 +19,7 @@
           "host": "Adres IP Twojego urządzenia modbus z falownikiem SAJ",
           "name": "Prefiks, który ma być używany dla Twoich czujników falownika SAJ",
           "port": "Port TCP, na którym należy połączyć się z falownikiem SAJ",
+          "slave_id": "ID slave Modbus falownika (1–247)",
           "scan_interval": "Częstotliwość odpytywania rejestrów modbus w sekundach"
         }
       },
@@ -28,6 +29,7 @@
           "name": "Prefiks, który ma być używany dla Twoich czujników falownika SAJ",
           "serial_port": "Port szeregowy adaptera RS485",
           "baudrate": "Prędkość transmisji linii szeregowej (9600 lub 115200)",
+          "slave_id": "ID slave Modbus falownika (1–247)",
           "scan_interval": "Częstotliwość odpytywania rejestrów modbus w sekundach"
         }
       },
@@ -35,28 +37,42 @@
         "title": "Ponowna konfiguracja połączenia z falownikiem SAJ",
         "data": {
           "connection_type": "Typ połączenia"
-        }
+        },
+        "description": "Zmień sposób łączenia {name}. Obecnie: {current}. Najpierw wybierz typ połączenia, a następnie jego ustawienia na kolejnym ekranie."
       },
       "reconfigure_tcp": {
         "title": "Ponowna konfiguracja połączenia z falownikiem SAJ",
         "data": {
           "host": "Adres IP Twojego urządzenia modbus z falownikiem SAJ",
-          "port": "Port TCP, na którym należy połączyć się z falownikiem SAJ"
-        }
+          "port": "Port TCP, na którym należy połączyć się z falownikiem SAJ",
+          "slave_id": "ID slave Modbus falownika (1–247)"
+        },
+        "description": "Wprowadź nowy adres sieciowy dla {name}. Falownik zostanie sprawdzony przed zapisaniem."
       },
       "reconfigure_serial": {
         "title": "Ponowna konfiguracja połączenia z falownikiem SAJ",
         "data": {
           "serial_port": "Port szeregowy adaptera RS485",
-          "baudrate": "Prędkość transmisji linii szeregowej (9600 lub 115200)"
-        }
+          "baudrate": "Prędkość transmisji linii szeregowej (9600 lub 115200)",
+          "slave_id": "ID slave Modbus falownika (1–247)"
+        },
+        "description": "Wprowadź nowy port szeregowy dla {name}. Falownik zostanie sprawdzony przed zapisaniem."
       }
     },
     "error": {
       "already_configured": "Urządzenie jest już skonfigurowane",
       "cannot_connect": "Nie można nawiązać połączenia",
       "invalid_host": "Nieprawidłowa nazwa hosta lub adres IP",
-      "invalid_serial_port": "Nieprawidłowy port szeregowy"
+      "invalid_serial_port": "Nieprawidłowy port szeregowy",
+      "invalid_slave_id": "Nieprawidłowe ID slave (wpisz 1–247)"
+    }
+  },
+  "selector": {
+    "connection_type": {
+      "options": {
+        "tcp": "Sieć (Modbus TCP)",
+        "serial": "Port szeregowy (Modbus RTU)"
+      }
     }
   },
   "options": {

@@ -19,6 +19,7 @@
           "host": "Adresa IP a dispozitivului dvs. modbus pentru invertorul SAJ",
           "name": "Prefixul care trebuie utilizat pentru senzorii invertorului SAJ",
           "port": "Portul TCP la care să vă conectați la invertorul SAJ",
+          "slave_id": "ID-ul slave Modbus al invertorului (1–247)",
           "scan_interval": "Frecvența de interogare a registrelor modbus în secunde"
         }
       },
@@ -28,6 +29,7 @@
           "name": "Prefixul care trebuie utilizat pentru senzorii invertorului SAJ",
           "serial_port": "Portul serial al adaptorului RS485",
           "baudrate": "Rata de transfer a liniei seriale (9600 sau 115200)",
+          "slave_id": "ID-ul slave Modbus al invertorului (1–247)",
           "scan_interval": "Frecvența de interogare a registrelor modbus în secunde"
         }
       },
@@ -35,28 +37,42 @@
         "title": "Reconfigurați conexiunea la invertorul SAJ",
         "data": {
           "connection_type": "Tip de conexiune"
-        }
+        },
+        "description": "Modificați modul de conectare al {name}. În prezent: {current}. Alegeți mai întâi tipul de conexiune, apoi setările pe ecranul următor."
       },
       "reconfigure_tcp": {
         "title": "Reconfigurați conexiunea la invertorul SAJ",
         "data": {
           "host": "Adresa IP a dispozitivului dvs. modbus pentru invertorul SAJ",
-          "port": "Portul TCP la care să vă conectați la invertorul SAJ"
-        }
+          "port": "Portul TCP la care să vă conectați la invertorul SAJ",
+          "slave_id": "ID-ul slave Modbus al invertorului (1–247)"
+        },
+        "description": "Introduceți noua adresă de rețea pentru {name}. Invertorul este verificat înainte de salvare."
       },
       "reconfigure_serial": {
         "title": "Reconfigurați conexiunea la invertorul SAJ",
         "data": {
           "serial_port": "Portul serial al adaptorului RS485",
-          "baudrate": "Rata de transfer a liniei seriale (9600 sau 115200)"
-        }
+          "baudrate": "Rata de transfer a liniei seriale (9600 sau 115200)",
+          "slave_id": "ID-ul slave Modbus al invertorului (1–247)"
+        },
+        "description": "Introduceți noul port serial pentru {name}. Invertorul este verificat înainte de salvare."
       }
     },
     "error": {
       "already_configured": "Dispozitivul este deja configurat",
       "cannot_connect": "Conectarea a eșuat",
       "invalid_host": "Nume de gazdă sau adresă IP nevalidă",
-      "invalid_serial_port": "Port serial nevalid"
+      "invalid_serial_port": "Port serial nevalid",
+      "invalid_slave_id": "ID slave nevalid (introduceți 1–247)"
+    }
+  },
+  "selector": {
+    "connection_type": {
+      "options": {
+        "tcp": "Rețea (Modbus TCP)",
+        "serial": "Port serial (Modbus RTU)"
+      }
     }
   },
   "options": {

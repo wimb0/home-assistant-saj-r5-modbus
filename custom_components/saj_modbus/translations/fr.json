@@ -19,6 +19,7 @@
           "host": "L'adresse IP de votre appareil modbus SAJ Inverter",
           "name": "Le préfixe à utiliser pour vos capteurs SAJ Inverter",
           "port": "Le port TCP sur lequel se connecter à l'onduleur SAJ",
+          "slave_id": "ID esclave Modbus de l’onduleur (1–247)",
           "scan_interval": "La fréquence d'interrogation des registres modbus en secondes"
         }
       },
@@ -28,6 +29,7 @@
           "name": "Le préfixe à utiliser pour vos capteurs SAJ Inverter",
           "serial_port": "Le port série de l’adaptateur RS485",
           "baudrate": "Le débit en bauds de la ligne série (9600 ou 115200)",
+          "slave_id": "ID esclave Modbus de l’onduleur (1–247)",
           "scan_interval": "La fréquence d'interrogation des registres modbus en secondes"
         }
       },
@@ -35,28 +37,42 @@
         "title": "Reconfigurer la connexion à votre onduleur SAJ",
         "data": {
           "connection_type": "Type de connexion"
-        }
+        },
+        "description": "Modifiez la façon dont {name} se connecte. Actuellement : {current}. Choisissez d’abord le type de connexion, puis ses paramètres sur l’écran suivant."
       },
       "reconfigure_tcp": {
         "title": "Reconfigurer la connexion à votre onduleur SAJ",
         "data": {
           "host": "L'adresse IP de votre appareil modbus SAJ Inverter",
-          "port": "Le port TCP sur lequel se connecter à l'onduleur SAJ"
-        }
+          "port": "Le port TCP sur lequel se connecter à l'onduleur SAJ",
+          "slave_id": "ID esclave Modbus de l’onduleur (1–247)"
+        },
+        "description": "Saisissez la nouvelle adresse réseau pour {name}. L’onduleur est testé avant tout enregistrement."
       },
       "reconfigure_serial": {
         "title": "Reconfigurer la connexion à votre onduleur SAJ",
         "data": {
           "serial_port": "Le port série de l’adaptateur RS485",
-          "baudrate": "Le débit en bauds de la ligne série (9600 ou 115200)"
-        }
+          "baudrate": "Le débit en bauds de la ligne série (9600 ou 115200)",
+          "slave_id": "ID esclave Modbus de l’onduleur (1–247)"
+        },
+        "description": "Saisissez le nouveau port série pour {name}. L’onduleur est testé avant tout enregistrement."
       }
     },
     "error": {
       "already_configured": "L'appareil est déjà configuré",
       "cannot_connect": "Échec de connexion",
       "invalid_host": "Nom d'hôte ou adresse IP non valide",
-      "invalid_serial_port": "Port série invalide"
+      "invalid_serial_port": "Port série invalide",
+      "invalid_slave_id": "ID esclave invalide (saisir 1–247)"
+    }
+  },
+  "selector": {
+    "connection_type": {
+      "options": {
+        "tcp": "Réseau (Modbus TCP)",
+        "serial": "Port série (Modbus RTU)"
+      }
     }
   },
   "options": {

@@ -19,6 +19,7 @@
           "host": "Die IP-Adresse Ihres SAJ Inverter Modbus-Geräts",
           "name": "Das Präfix, das für Ihre SAJ Inverter-Sensoren verwendet werden soll",
           "port": "Der TCP-Port, über den eine Verbindung zum SAJ-Wechselrichter hergestellt werden soll",
+          "slave_id": "Modbus-Slave-ID des Wechselrichters (1–247)",
           "scan_interval": "Die Abfragehäufigkeit der Modbus-Register in Sekunden"
         }
       },
@@ -28,6 +29,7 @@
           "name": "Das Präfix, das für Ihre SAJ Inverter-Sensoren verwendet werden soll",
           "serial_port": "Der serielle Anschluss des RS485-Adapters",
           "baudrate": "Die Baudrate der seriellen Leitung (9600 oder 115200)",
+          "slave_id": "Modbus-Slave-ID des Wechselrichters (1–247)",
           "scan_interval": "Die Abfragehäufigkeit der Modbus-Register in Sekunden"
         }
       },
@@ -35,28 +37,42 @@
         "title": "Verbindung zum SAJ-Wechselrichter neu konfigurieren",
         "data": {
           "connection_type": "Verbindungstyp"
-        }
+        },
+        "description": "Ändern Sie, wie {name} verbunden ist. Aktuell: {current}. Wählen Sie zuerst den Verbindungstyp, dann dessen Einstellungen auf der nächsten Seite."
       },
       "reconfigure_tcp": {
         "title": "Verbindung zum SAJ-Wechselrichter neu konfigurieren",
         "data": {
           "host": "Die IP-Adresse Ihres SAJ Inverter Modbus-Geräts",
-          "port": "Der TCP-Port, über den eine Verbindung zum SAJ-Wechselrichter hergestellt werden soll"
-        }
+          "port": "Der TCP-Port, über den eine Verbindung zum SAJ-Wechselrichter hergestellt werden soll",
+          "slave_id": "Modbus-Slave-ID des Wechselrichters (1–247)"
+        },
+        "description": "Geben Sie die neue Netzwerkadresse für {name} ein. Der Wechselrichter wird vor dem Speichern geprüft."
       },
       "reconfigure_serial": {
         "title": "Verbindung zum SAJ-Wechselrichter neu konfigurieren",
         "data": {
           "serial_port": "Der serielle Anschluss des RS485-Adapters",
-          "baudrate": "Die Baudrate der seriellen Leitung (9600 oder 115200)"
-        }
+          "baudrate": "Die Baudrate der seriellen Leitung (9600 oder 115200)",
+          "slave_id": "Modbus-Slave-ID des Wechselrichters (1–247)"
+        },
+        "description": "Geben Sie den neuen seriellen Anschluss für {name} ein. Der Wechselrichter wird vor dem Speichern geprüft."
       }
     },
     "error": {
       "already_configured": "Gerät ist bereits konfiguriert",
       "cannot_connect": "Verbindung fehlgeschlagen",
       "invalid_host": "Ungültiger Hostname oder ungültige IP-Adresse",
-      "invalid_serial_port": "Ungültiger serieller Anschluss"
+      "invalid_serial_port": "Ungültiger serieller Anschluss",
+      "invalid_slave_id": "Ungültige Slave-ID (1–247 eingeben)"
+    }
+  },
+  "selector": {
+    "connection_type": {
+      "options": {
+        "tcp": "Netzwerk (Modbus TCP)",
+        "serial": "Serieller Anschluss (Modbus RTU)"
+      }
     }
   },
   "options": {

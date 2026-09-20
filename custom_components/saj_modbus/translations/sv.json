@@ -19,6 +19,7 @@
           "host": "IP-adressen till din SAJ Inverter modbus-enhet",
           "name": "Prefixet som ska användas för dina SAJ Inverter-sensorer",
           "port": "TCP-porten som du ska ansluta till SAJ-växelriktaren på",
+          "slave_id": "Modbus slav-ID för växelriktaren (1–247)",
           "scan_interval": "Avfrågningsfrekvensen för modbus-registren i sekunder"
         }
       },
@@ -28,6 +29,7 @@
           "name": "Prefixet som ska användas för dina SAJ Inverter-sensorer",
           "serial_port": "RS485-adapterns seriella port",
           "baudrate": "Baudhastigheten på den seriella linjen (9600 eller 115200)",
+          "slave_id": "Modbus slav-ID för växelriktaren (1–247)",
           "scan_interval": "Avfrågningsfrekvensen för modbus-registren i sekunder"
         }
       },
@@ -35,28 +37,42 @@
         "title": "Konfigurera om anslutningen till din SAJ-växelriktare",
         "data": {
           "connection_type": "Anslutningstyp"
-        }
+        },
+        "description": "Ändra hur {name} ansluter. För närvarande: {current}. Välj först anslutningstyp, sedan dess inställningar på nästa skärm."
       },
       "reconfigure_tcp": {
         "title": "Konfigurera om anslutningen till din SAJ-växelriktare",
         "data": {
           "host": "IP-adressen till din SAJ Inverter modbus-enhet",
-          "port": "TCP-porten som du ska ansluta till SAJ-växelriktaren på"
-        }
+          "port": "TCP-porten som du ska ansluta till SAJ-växelriktaren på",
+          "slave_id": "Modbus slav-ID för växelriktaren (1–247)"
+        },
+        "description": "Ange den nya nätverksadressen för {name}. Växelriktaren testas före sparning."
       },
       "reconfigure_serial": {
         "title": "Konfigurera om anslutningen till din SAJ-växelriktare",
         "data": {
           "serial_port": "RS485-adapterns seriella port",
-          "baudrate": "Baudhastigheten på den seriella linjen (9600 eller 115200)"
-        }
+          "baudrate": "Baudhastigheten på den seriella linjen (9600 eller 115200)",
+          "slave_id": "Modbus slav-ID för växelriktaren (1–247)"
+        },
+        "description": "Ange den nya seriella porten för {name}. Växelriktaren testas före sparning."
       }
     },
     "error": {
       "already_configured": "Enheten är redan konfigurerad",
       "cannot_connect": "Det gick inte att ansluta",
       "invalid_host": "Ogiltigt värdnamn eller IP-adress",
-      "invalid_serial_port": "Ogiltig seriell port"
+      "invalid_serial_port": "Ogiltig seriell port",
+      "invalid_slave_id": "Ogiltigt slav-ID (ange 1–247)"
+    }
+  },
+  "selector": {
+    "connection_type": {
+      "options": {
+        "tcp": "Nätverk (Modbus TCP)",
+        "serial": "Seriell port (Modbus RTU)"
+      }
     }
   },
   "options": {

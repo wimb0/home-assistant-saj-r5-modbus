@@ -19,6 +19,7 @@
           "host": "SAJインバーターMODBUSデバイスのIPアドレス",
           "name": "SAJインバーターセンサーに使用するプレフィックス",
           "port": "SAJインバーターへの接続に使用するTCPポート",
+          "slave_id": "インバーターのModbusスレーブID (1–247)",
           "scan_interval": "MODBUSレジスタのポーリング頻度（秒）"
         }
       },
@@ -28,6 +29,7 @@
           "name": "SAJインバーターセンサーに使用するプレフィックス",
           "serial_port": "RS485アダプターのシリアルポート",
           "baudrate": "シリアル回線のボーレート (9600または115200)",
+          "slave_id": "インバーターのModbusスレーブID (1–247)",
           "scan_interval": "MODBUSレジスタのポーリング頻度（秒）"
         }
       },
@@ -35,28 +37,42 @@
         "title": "SAJ インバーターの接続を再設定",
         "data": {
           "connection_type": "接続タイプ"
-        }
+        },
+        "description": "{name}の接続方法を変更します。現在: {current}。最初に接続タイプを選び、次の画面で設定を入力します。"
       },
       "reconfigure_tcp": {
         "title": "SAJ インバーターの接続を再設定",
         "data": {
           "host": "SAJインバーターMODBUSデバイスのIPアドレス",
-          "port": "SAJインバーターへの接続に使用するTCPポート"
-        }
+          "port": "SAJインバーターへの接続に使用するTCPポート",
+          "slave_id": "インバーターのModbusスレーブID (1–247)"
+        },
+        "description": "{name}の新しいネットワークアドレスを入力します。保存前にインバーターをテストします。"
       },
       "reconfigure_serial": {
         "title": "SAJ インバーターの接続を再設定",
         "data": {
           "serial_port": "RS485アダプターのシリアルポート",
-          "baudrate": "シリアル回線のボーレート (9600または115200)"
-        }
+          "baudrate": "シリアル回線のボーレート (9600または115200)",
+          "slave_id": "インバーターのModbusスレーブID (1–247)"
+        },
+        "description": "{name}の新しいシリアルポートを入力します。保存前にインバーターをテストします。"
       }
     },
     "error": {
       "already_configured": "デバイスはすでに設定されています",
       "cannot_connect": "接続に失敗しました",
       "invalid_host": "ホスト名または IP アドレスが無効です",
-      "invalid_serial_port": "無効なシリアルポート"
+      "invalid_serial_port": "無効なシリアルポート",
+      "invalid_slave_id": "無効なスレーブID (1–247 を入力)"
+    }
+  },
+  "selector": {
+    "connection_type": {
+      "options": {
+        "tcp": "ネットワーク (Modbus TCP)",
+        "serial": "シリアルポート (Modbus RTU)"
+      }
     }
   },
   "options": {

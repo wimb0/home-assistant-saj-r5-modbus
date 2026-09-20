@@ -14,6 +14,7 @@
           "host": "The ip-address of your SAJ Inverter modbus device",
           "name": "The prefix to be used for your SAJ Inverter sensors",
           "port": "The TCP port on which to connect to the SAJ Inverter",
+          "slave_id": "The Modbus slave ID of the inverter (1-247)",
           "scan_interval": "The polling frequency of the modbus registers in seconds"
         }
       },
@@ -23,27 +24,33 @@
           "name": "The prefix to be used for your SAJ Inverter sensors",
           "serial_port": "The serial port of the RS485 adapter",
           "baudrate": "The baud rate of the serial line (9600 or 115200)",
+          "slave_id": "The Modbus slave ID of the inverter (1-247)",
           "scan_interval": "The polling frequency of the modbus registers in seconds"
         }
       },
       "reconfigure": {
         "title": "Reconfigure your SAJ Inverter connection",
+        "description": "Change how {name} connects. It currently uses {current}. Pick the connection type first, then its settings on the next screen.",
         "data": {
           "connection_type": "Connection type"
         }
       },
       "reconfigure_tcp": {
         "title": "Reconfigure your SAJ Inverter connection",
+        "description": "Enter the new network address for {name}. The inverter is probed before anything is saved.",
         "data": {
           "host": "The ip-address or hostname of your SAJ Inverter modbus device",
-          "port": "The TCP port on which to connect to the SAJ Inverter"
+          "port": "The TCP port on which to connect to the SAJ Inverter",
+          "slave_id": "The Modbus slave ID of the inverter (1-247)"
         }
       },
       "reconfigure_serial": {
         "title": "Reconfigure your SAJ Inverter serial connection",
+        "description": "Enter the new serial port for {name}. The inverter is probed before anything is saved.",
         "data": {
           "serial_port": "The serial port of the RS485 adapter",
-          "baudrate": "The baud rate of the serial line (9600 or 115200)"
+          "baudrate": "The baud rate of the serial line (9600 or 115200)",
+          "slave_id": "The Modbus slave ID of the inverter (1-247)"
         }
       }
     },
@@ -51,12 +58,21 @@
       "already_configured": "Device is already configured",
       "cannot_connect": "Failed to connect",
       "invalid_host": "Invalid hostname or IP address",
-      "invalid_serial_port": "Invalid serial port"
+      "invalid_serial_port": "Invalid serial port",
+      "invalid_slave_id": "Invalid slave ID (enter 1-247)"
     },
     "abort": {
       "already_configured": "Device is already configured",
       "reconfigure_successful": "Configuration updated successfully!",
       "wrong_inverter": "That address belongs to a different inverter"
+    }
+  },
+  "selector": {
+    "connection_type": {
+      "options": {
+        "tcp": "Network (Modbus TCP)",
+        "serial": "Serial port (Modbus RTU)"
+      }
     }
   },
   "options": {

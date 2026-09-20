@@ -19,6 +19,7 @@
           "host": "IP adresa vašeho zařízení modbus k měniči SAJ",
           "name": "Předpona, která se má použít pro vaše snímače měniče SAJ",
           "port": "TCP port, na kterém se má připojit k měniči SAJ",
+          "slave_id": "Modbus slave ID střídače (1–247)",
           "scan_interval": "Frekvence dotazování registrů modbus v sekundách"
         }
       },
@@ -28,6 +29,7 @@
           "name": "Předpona, která se má použít pro vaše snímače měniče SAJ",
           "serial_port": "Sériový port adaptéru RS485",
           "baudrate": "Přenosová rychlost sériové linky (9600 nebo 115200)",
+          "slave_id": "Modbus slave ID střídače (1–247)",
           "scan_interval": "Frekvence dotazování registrů modbus v sekundách"
         }
       },
@@ -35,28 +37,42 @@
         "title": "Změna připojení k měniči SAJ",
         "data": {
           "connection_type": "Typ připojení"
-        }
+        },
+        "description": "Změňte způsob připojení {name}. Aktuálně: {current}. Nejprve vyberte typ připojení, poté jeho nastavení na další obrazovce."
       },
       "reconfigure_tcp": {
         "title": "Změna připojení k měniči SAJ",
         "data": {
           "host": "IP adresa vašeho zařízení modbus k měniči SAJ",
-          "port": "TCP port, na kterém se má připojit k měniči SAJ"
-        }
+          "port": "TCP port, na kterém se má připojit k měniči SAJ",
+          "slave_id": "Modbus slave ID střídače (1–247)"
+        },
+        "description": "Zadejte novou síťovou adresu pro {name}. Střídač se před uložením ověří."
       },
       "reconfigure_serial": {
         "title": "Změna připojení k měniči SAJ",
         "data": {
           "serial_port": "Sériový port adaptéru RS485",
-          "baudrate": "Přenosová rychlost sériové linky (9600 nebo 115200)"
-        }
+          "baudrate": "Přenosová rychlost sériové linky (9600 nebo 115200)",
+          "slave_id": "Modbus slave ID střídače (1–247)"
+        },
+        "description": "Zadejte nový sériový port pro {name}. Střídač se před uložením ověří."
       }
     },
     "error": {
       "already_configured": "Zařízení je již nakonfigurováno",
       "cannot_connect": "Nepodařilo se připojit",
       "invalid_host": "Neplatný název hostitele nebo IP adresa",
-      "invalid_serial_port": "Neplatný sériový port"
+      "invalid_serial_port": "Neplatný sériový port",
+      "invalid_slave_id": "Neplatné slave ID (zadejte 1–247)"
+    }
+  },
+  "selector": {
+    "connection_type": {
+      "options": {
+        "tcp": "Síť (Modbus TCP)",
+        "serial": "Sériový port (Modbus RTU)"
+      }
     }
   },
   "options": {

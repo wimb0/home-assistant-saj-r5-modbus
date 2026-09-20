@@ -13,9 +13,11 @@ from modbus_connection import ModbusError
 
 from .const import (
     CONF_CONNECTION_TYPE,
+    CONF_SLAVE_ID,
     CONNECTION_TYPE_TCP,
     DEFAULT_NAME,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_SLAVE_ID,
     DOMAIN,
 )
 from .hub import SAJModbusHub, SajConfigEntry
@@ -38,12 +40,17 @@ async def async_migrate_entry(hass: HomeAssistant, entry: SajConfigEntry) -> boo
     """Migrate old entries forward.
 
     Version 2 entries predate serial support and carry only host/port; stamp
-    them as TCP so later code can branch on the connection type.
+    them as TCP so later code can branch on the connection type. Entries
+    predating the slave ID default to station address 1.
     """
     if entry.version < 3:
         data = dict(entry.data)
         data.setdefault(CONF_CONNECTION_TYPE, CONNECTION_TYPE_TCP)
         hass.config_entries.async_update_entry(entry, data=data, version=3)
+    if entry.version < 4:
+        data = dict(entry.data)
+        data.setdefault(CONF_SLAVE_ID, DEFAULT_SLAVE_ID)
+        hass.config_entries.async_update_entry(entry, data=data, version=4)
     return True
 
 
@@ -60,6 +67,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SajConfigEntry) -> bool:
         name,
         scan_interval=scan_interval,
         connection_params=params_from_config(entry.data),
+        slave_id=entry.data.get(CONF_SLAVE_ID, DEFAULT_SLAVE_ID),
     )
     entry.async_on_unload(hub.async_close)
     entry.runtime_data = hub

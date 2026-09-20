@@ -87,6 +87,7 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
         bytesize: int = DEFAULT_BYTESIZE,
         parity: str = DEFAULT_PARITY,
         stopbits: int = DEFAULT_STOPBITS,
+        slave_id: int = UNIT_ID,
     ) -> None:
         """Initialize the Modbus hub.
 
@@ -94,6 +95,7 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
         serial entries pass ``serial_port`` and the line settings, or a
         ready-made ``connection_params`` (``ModbusTcpParams`` /
         ``ModbusSerialParams``). ``connection_params`` wins when given.
+        ``slave_id`` is the Modbus station address (1-247, default 1).
         """
         super().__init__(
             hass,
@@ -126,7 +128,8 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
             self._connection = create_connection(host, port)
             self.connection_params = {"host": host, "port": port}
             self.is_serial = False
-        self.device = SajR5Inverter(self._connection.for_unit(UNIT_ID))
+        self.slave_id = slave_id
+        self.device = SajR5Inverter(self._connection.for_unit(slave_id))
         self._power_limit: float = 110.0
         # Consecutive poll timeouts; reset by any poll that reaches the device.
         self._timeouts = 0
