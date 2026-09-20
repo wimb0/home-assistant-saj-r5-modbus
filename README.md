@@ -38,6 +38,7 @@ Once the integration is installed, you can configure it through the Home Assista
 4.  Choose the connection type:
     * **Network (Modbus TCP)** — fill in **Host** (the IP address of your Modbus to Wi-Fi device) and **Port** (default is 502).
     * **Serial port (Modbus RTU)** — pick the **serial port** from the dropdown and the **baud rate** (**9600** for the inverter's RS485 port, **115200** for its USB/RS232 port).
+    * For both options, **Slave ID** is optional (the Modbus station address of the inverter, default is 1
 5.  Fill in **Name** (a descriptive name for your inverter, e.g. "SAJ") and **Scan Interval** (the frequency in seconds to poll the inverter, default is 60).
 6.  Confirm the detected inverter (model and serial number) to create the entry.
 
