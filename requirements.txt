@@ -4,5 +4,5 @@ modbus-connection[tmodbus]>=4.11.1
 pip>=26.2.1
 pytest
 pytest-asyncio
-pytest-homeassistant-custom-component==0.13.364
+pytest-homeassistant-custom-component==0.13.365
 ruff==0.16.7
