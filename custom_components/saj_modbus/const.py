@@ -182,6 +182,22 @@ COUNTER_SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
 }
 
 SENSOR_TYPES: dict[str, list[SajModbusSensorEntityDescription]] = {
+    "DevType": SajModbusSensorEntityDescription(
+        name="Device Type",
+        key="devtype",
+        value_fn=lambda hub: hub.device.info.devtype,
+        component="info",
+        icon="mdi:information-outline",
+        entity_registry_enabled_default=False,
+    ),
+    "SubType": SajModbusSensorEntityDescription(
+        name="Sub Type",
+        key="subtype",
+        value_fn=lambda hub: hub.device.info.subtype,
+        component="info",
+        icon="mdi:information-outline",
+        entity_registry_enabled_default=False,
+    ),
     "CommVer": SajModbusSensorEntityDescription(
         name="Comms Protocol Version",
         key="commver",
