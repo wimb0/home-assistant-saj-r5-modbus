@@ -149,8 +149,19 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
 
     @property
     def model_name(self) -> str | None:
-        """The marketing model, resolved from the device type where known."""
-        return _DEVTYPE_MODELS.get(self.device.info.devtype)
+        """The marketing model, resolved from the device type where known.
+
+        Appends the machine power (SubType, in W) as kW, e.g.
+        "R5 (single-phase) 2.5kW", so no separate DevType/SubType sensors
+        are needed on the device page.
+        """
+        base = _DEVTYPE_MODELS.get(self.device.info.devtype)
+        subtype = self.device.info.subtype
+        if base is None:
+            return None
+        if subtype is None:
+            return base
+        return f"{base} - {subtype / 1000:g}kW"
 
     @property
     def firmware_version(self) -> str | None:
