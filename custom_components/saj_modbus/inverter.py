@@ -23,11 +23,14 @@ from modbus_connection.model import (
     RegisterField,
     boolean,
     gauge,
+    int32,
     integer,
     string,
     uint32,
 )
 from modbus_connection.tmodbus import ModbusConnection
+
+from .const import FAMILY_R5, FAMILY_R6_HIGH, FAMILY_R6_HYBRID
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,10 +43,49 @@ MODBUS_TIMEOUT = 5
 # so those propagate.
 _NOT_SERVED = (IllegalFunctionError, IllegalDataAddressError)
 
+# DeviceType (0x8F00) values the documents assign to the PLUS / R5 families.
+_R5_DEVTYPES = frozenset({0x11, 0x12, 0x13, 0x14, 0x15, 0x21, 0x22})
+
+# One probe register per family, tried in order when the device type is not
+# one of the known R5 values: R6 3-15K answers 0x4004, R6 17-50K / C6 answers
+# 0x6013, PLUS / R5 answers 0x100.
+_FAMILY_PROBES = (
+    (0x4004, FAMILY_R6_HYBRID),
+    (0x6013, FAMILY_R6_HIGH),
+    (0x100, FAMILY_R5),
+)
+
 # Every component attribute a poll may refresh, in read order. A timeout on
 # the first one ends the poll, so the block worth waiting for leads. The
 # information is static, so setup reads it and polling never does.
 _POLLED = ("realtime", "power")
+
+
+async def detect_family(unit: ModbusUnit, devtype: int | None) -> str:
+    """Work out which inverter family sits behind ``unit``.
+
+    A known R5 device type decides immediately; anything else is settled by
+    probing one realtime register per family and seeing which block answers.
+    When nothing refuses, the R5 block is the default.
+    """
+    if devtype in _R5_DEVTYPES:
+        return FAMILY_R5
+    for address, family in _FAMILY_PROBES:
+        try:
+            await unit.read_holding_registers(address, 1)
+        except _NOT_SERVED:
+            continue
+        return family
+    return FAMILY_R5
+
+
+@dataclass(frozen=True)
+class ProbeResult:
+    """What the config flow learns from an inverter before creating an entry."""
+
+    serial: str
+    family: str
+    devtype: int | None
 
 
 @dataclass(frozen=True)
@@ -126,9 +168,7 @@ def params_from_config(data: dict[str, Any]) -> ModbusTcpParams | ModbusSerialPa
             stopbits=DEFAULT_STOPBITS,  # type: ignore[arg-type]
             framer="rtu",
         )
-    return ModbusTcpParams(
-        host=data[CONF_HOST], port=data.get(CONF_PORT, DEFAULT_PORT)
-    )
+    return ModbusTcpParams(host=data[CONF_HOST], port=data.get(CONF_PORT, DEFAULT_PORT))
 
 
 class DateTimeField(RegisterField[datetime]):
@@ -231,14 +271,177 @@ class RealtimeData(Component):
     datetime = DateTimeField(0x137, count=4)
 
 
+class R6HybridData(Component):
+    """R6 3-15K (hybrid) realtime data, block 0x4000-0x40FD."""
+
+    datetime = DateTimeField(0x4000, count=4)
+    mpvmode = integer(0x4004, signed=False)
+    hfaultmsg = uint32(0x4005)
+    mfaultmsg = uint32(0x4007)
+    mfaultmsg2 = uint32(0x4009)
+    bmsfaultmsg = uint32(0x400B)
+    errorcount = integer(0x400F, signed=False)
+    sinktempc = gauge(0x4010, 0.1)
+    ambtempc = gauge(0x4011, 0.1)
+    gfci = integer(0x4012)
+    iso1 = integer(0x4013, signed=False)
+    iso2 = integer(0x4014, signed=False)
+    iso3 = integer(0x4015, signed=False)
+    iso4 = integer(0x4016, signed=False)
+    conntime = integer(0x4019, signed=False)
+    batstatusdisp = integer(0x4027, signed=False)
+    busvoltmaster = gauge(0x4067, 0.1, signed=False)
+    busvoltslave = gauge(0x4068, 0.1, signed=False)
+    batvolt = gauge(0x4069, 0.1, signed=False)
+    batcurr = gauge(0x406A, 0.01)
+    batpower = integer(0x406D)
+    battempc = gauge(0x406E, 0.1)
+    batsoc = gauge(0x406F, 0.01, signed=False)
+    pvconsumpwatt = integer(0x4099)
+    gridconsumpwatt = integer(0x409A)
+    gridfeedinpvwatt = integer(0x409B)
+    gridfeedinbatwatt = integer(0x409C)
+    batconsumpwatt = integer(0x409D)
+    batchgpvwatt = integer(0x409E)
+    batchggridwatt = integer(0x409F)
+    systotalloadwatt = integer(0x40A0)
+    totalpvpower = integer(0x40A5)
+    totalbatterypower = integer(0x40A6)
+    totalgridpowerwatt = integer(0x40A7)
+    totalinvpowerwatt = integer(0x40A9)
+    sysgridpowerwall = integer(0x40AD)
+    todayhour = gauge(0x40BC, 0.1, signed=False)
+    totalhour = uint32(0x40BD, scale=0.1)
+    todaypvenergy = uint32(0x40BF, scale=0.01)
+    monthpvenergy = uint32(0x40C1, scale=0.01)
+    yearpvenergy = uint32(0x40C3, scale=0.01)
+    totalpvenergy = uint32(0x40C5, scale=0.01)
+    todaybatchgenergy = uint32(0x40C7, scale=0.01)
+    monthbatchgenergy = uint32(0x40C9, scale=0.01)
+    yearbatchgenergy = uint32(0x40CB, scale=0.01)
+    totalbatchgenergy = uint32(0x40CD, scale=0.01)
+    todaybatdisenergy = uint32(0x40CF, scale=0.01)
+    monthbatdisenergy = uint32(0x40D1, scale=0.01)
+    yearbatdisenergy = uint32(0x40D3, scale=0.01)
+    totalbatdisenergy = uint32(0x40D5, scale=0.01)
+    todayinvgenenergy = uint32(0x40D7, scale=0.01)
+    monthinvgenenergy = uint32(0x40D9, scale=0.01)
+    yearinvgenenergy = uint32(0x40DB, scale=0.01)
+    totalinvgenenergy = uint32(0x40DD, scale=0.01)
+    todaytotalloadenergy = uint32(0x40DF, scale=0.01)
+    monthtotalloadenergy = uint32(0x40E1, scale=0.01)
+    yeartotalloadenergy = uint32(0x40E3, scale=0.01)
+    totaltotalloadenergy = uint32(0x40E5, scale=0.01)
+    todaysellenergy = uint32(0x40EF, scale=0.01)
+    monthsellenergy = uint32(0x40F1, scale=0.01)
+    yearsellenergy = uint32(0x40F3, scale=0.01)
+    totalsellenergy = uint32(0x40F5, scale=0.01)
+    todayfeedinenergy = uint32(0x40F7, scale=0.01)
+    monthfeedinenergy = uint32(0x40F9, scale=0.01)
+    yearfeedinenergy = uint32(0x40FB, scale=0.01)
+    totalfeedinenergy = uint32(0x40FD, scale=0.01)
+
+    for _ph, _base in (("r", 0x4031), ("s", 0x4038), ("t", 0x403F)):
+        locals()[f"{_ph}gridvolt"] = gauge(_base, 0.1, signed=False)
+        locals()[f"{_ph}gridcurr"] = gauge(_base + 1, 0.01)
+        locals()[f"{_ph}gridfreq"] = gauge(_base + 2, 0.01, signed=False)
+        locals()[f"{_ph}gridpowerwatt"] = integer(_base + 4)
+    for _ph, _base in (("r", 0x4046), ("s", 0x404B), ("t", 0x4050)):
+        locals()[f"{_ph}invvolt"] = gauge(_base, 0.1, signed=False)
+        locals()[f"{_ph}invcurr"] = gauge(_base + 1, 0.01)
+        locals()[f"{_ph}invpowerwatt"] = integer(_base + 3)
+    for _ph, _base in (("r", 0x4055), ("s", 0x405B), ("t", 0x4061)):
+        locals()[f"{_ph}outvolt"] = gauge(_base, 0.1, signed=False)
+        locals()[f"{_ph}outcurr"] = gauge(_base + 1, 0.01)
+        locals()[f"{_ph}outfreq"] = gauge(_base + 2, 0.01, signed=False)
+        locals()[f"{_ph}outpowerwatt"] = integer(_base + 4)
+    for _pv, _base in ((1, 0x4071), (2, 0x4074), (3, 0x4077), (4, 0x407A)):
+        locals()[f"pv{_pv}volt"] = gauge(_base, 0.1, signed=False)
+        locals()[f"pv{_pv}curr"] = gauge(_base + 1, 0.01, signed=False)
+        locals()[f"pv{_pv}power"] = integer(_base + 2, signed=False)
+    for _pv in range(1, 5):
+        for _str in range(1, 5):
+            locals()[f"pv{_pv}strcurr{_str}"] = gauge(
+                0x407D + (_pv - 1) * 4 + (_str - 1), 0.01, signed=False
+            )
+
+
+class R6HighData(Component):
+    """R6 17-50K / C6 realtime data, block 0x6000-0x6080."""
+
+    datetime = DateTimeField(0x6000, count=4)
+    totalenergy = uint32(0x6004, scale=0.01)
+    yearenergy = uint32(0x6006, scale=0.01)
+    monthenergy = uint32(0x6008, scale=0.01)
+    todayenergy = uint32(0x600A, scale=0.01)
+    totalhour = uint32(0x600C, scale=0.1)
+    todayhour = gauge(0x600E, 0.1, signed=False)
+    errorcount = integer(0x600F, signed=False)
+    mpvmode = integer(0x6013, signed=False)
+    faultmsg0 = uint32(0x6014)
+    faultmsg1 = uint32(0x6016)
+    faultmsg2 = uint32(0x6018)
+    conntime = integer(0x601A, signed=False)
+    power = uint32(0x601D)
+    qpower = int32(0x601F)
+    pf = gauge(0x6021, 0.001)
+    nevolt = gauge(0x6034, 0.1, signed=False)
+    gfci = integer(0x6035)
+    busvolt = gauge(0x6036, 0.1, signed=False)
+    busvoltm = gauge(0x6037, 0.1, signed=False)
+    invtempc1 = gauge(0x6038, 0.1)
+    invtempc_l1 = gauge(0x6039, 0.1)
+    invtempc_l2 = gauge(0x603A, 0.1)
+    invtempc_l3 = gauge(0x603B, 0.1)
+    invtempc_cavity = gauge(0x603C, 0.1)
+    iso1 = integer(0x6041, signed=False)
+    iso2 = integer(0x6042, signed=False)
+    iso3 = integer(0x6043, signed=False)
+    iso4 = integer(0x6044, signed=False)
+
+    for _ph, _base in (("l1", 0x6022), ("l2", 0x6028), ("l3", 0x602E)):
+        locals()[f"{_ph}volt"] = gauge(_base, 0.1, signed=False)
+        locals()[f"{_ph}curr"] = gauge(_base + 1, 0.01, signed=False)
+        locals()[f"{_ph}freq"] = gauge(_base + 2, 0.01, signed=False)
+        locals()[f"{_ph}dci"] = integer(_base + 3)
+        locals()[f"{_ph}power"] = integer(_base + 4, signed=False)
+        locals()[f"{_ph}pf"] = gauge(_base + 5, 0.001)
+    for _pv in range(1, 7):
+        _base = 0x6045 + 3 * (_pv - 1)
+        locals()[f"pv{_pv}volt"] = gauge(_base, 0.1, signed=False)
+        locals()[f"pv{_pv}curr"] = gauge(_base + 1, 0.01, signed=False)
+        locals()[f"pv{_pv}power"] = integer(_base + 2, signed=False)
+    for _pv in range(7, 13):
+        _base = 0x6063 + 3 * (_pv - 7)
+        locals()[f"pv{_pv}volt"] = gauge(_base, 0.1, signed=False)
+        locals()[f"pv{_pv}curr"] = gauge(_base + 1, 0.01, signed=False)
+        locals()[f"pv{_pv}power"] = integer(_base + 2, signed=False)
+    for _pv in range(1, 7):
+        locals()[f"pv{_pv}strcurr1"] = gauge(0x6057 + 2 * (_pv - 1), 0.01, signed=False)
+        locals()[f"pv{_pv}strcurr2"] = gauge(0x6058 + 2 * (_pv - 1), 0.01, signed=False)
+    for _pv in range(7, 13):
+        locals()[f"pv{_pv}strcurr1"] = gauge(0x6075 + 2 * (_pv - 7), 0.01, signed=False)
+        locals()[f"pv{_pv}strcurr2"] = gauge(0x6076 + 2 * (_pv - 7), 0.01, signed=False)
+
+
 class PowerState(Component):
     """Remote power on/off, read and written at 0x1037.
 
     Its own component so a firmware that rejects this register only loses the
     switch, not the whole poll. The R5 only accepts FC16 writes, hence force_fc16.
+    PLUS / R5 and R6 17-50K / C6 share this register.
     """
 
     poweronoff = boolean(0x1037, writable=True, force_fc16=True)
+
+
+class R6StopState(Component):
+    """R6 3-15K remote stop, read and written at 0x340C.
+
+    Inverted compared to 0x1037: 1 means power off, 0 means power on.
+    """
+
+    inverterstop = boolean(0x340C, writable=True, force_fc16=True)
 
 
 class Settings(Component):
@@ -248,26 +451,72 @@ class Settings(Component):
     datetime = DateTimeField(0x8020, count=4, writable=True)
 
 
-class SajR5Inverter:
-    """A SAJ R5 inverter on a Modbus unit.
+class R6HybridSettings(Component):
+    """R6 3-15K write-only settings: power limit 0x340B, clock 0x8020."""
 
-    Reading it has two phases. ``async_setup`` runs once: it reads the static
-    information and finds out which optional components this firmware serves.
-    ``async_update`` then runs every interval over the components setup
-    settled on — what the inverter serves cannot change between two polls.
+    limitpower = gauge(0x340B, 0.1, writable=True, force_fc16=True)
+    datetime = DateTimeField(0x8020, count=4, writable=True)
+
+
+class R6HighSettings(Component):
+    """R6 17-50K / C6 write-only settings: power limit 0x101C, clock 0x8020."""
+
+    limitpower = gauge(0x101C, 0.1, writable=True, force_fc16=True)
+    datetime = DateTimeField(0x8020, count=4, writable=True)
+
+
+class SajR5Inverter:
+    """A SAJ inverter on a Modbus unit, of one detected family.
+
+    The family picks the register map: PLUS / R5 read the 0x100 block, R6
+    3-15K hybrids the 0x4000 block and R6 17-50K / C6 the 0x6000 block, each
+    with their own power and settings registers. Reading has two phases.
+    ``async_setup`` runs once: it detects the family (unless the config entry
+    already says), reads the static information and finds out which optional
+    components this firmware serves. ``async_update`` then runs every
+    interval over the components setup settled on — what the inverter serves
+    cannot change between two polls.
     """
 
-    def __init__(self, unit: ModbusUnit) -> None:
-        """Initialize the device's components on ``unit``."""
+    def __init__(self, unit: ModbusUnit, family: str | None = None) -> None:
+        """Initialize the device's components on ``unit``.
+
+        ``family`` comes from the config entry; when it is None the family is
+        detected in ``async_setup`` and the components are rebuilt then.
+        """
         self._unit = unit
-        self.info = InverterInfo(unit)
-        self.realtime = RealtimeData(unit)
-        self.power = PowerState(unit)
-        self.settings = Settings(unit)
+        self._family_known = family is not None
+        self.family: str = family or FAMILY_R5
         self.absent: frozenset[str] = frozenset()
         # None until async_setup has run, so a failed setup is retried.
         self._polled: list[str] | None = None
-        self._readable = ComponentGroup(unit, [self.info, self.realtime, self.power])
+        self._build(self.family)
+
+    def _build(self, family: str) -> None:
+        """(Re)build the family's components on this device's unit.
+
+        The info component survives a rebuild: detection reads it first, and
+        its values (serial, device type) are what identity is built from.
+        """
+        self.family = family
+        self.info = getattr(self, "info", None) or InverterInfo(self._unit)
+        if family == FAMILY_R6_HYBRID:
+            self.realtime: Component = R6HybridData(self._unit)
+            self.power = R6StopState(self._unit)
+            self.settings = R6HybridSettings(self._unit)
+        elif family == FAMILY_R6_HIGH:
+            self.realtime = R6HighData(self._unit)
+            self.power = PowerState(self._unit)
+            self.settings = R6HighSettings(self._unit)
+        else:
+            self.realtime = RealtimeData(self._unit)
+            self.power = PowerState(self._unit)
+            self.settings = Settings(self._unit)
+        self.absent = frozenset()
+        self._polled = None
+        self._readable = ComponentGroup(
+            self._unit, [self.info, self.realtime, self.power]
+        )
 
     @property
     def components(self) -> dict[str, Component]:
@@ -280,14 +529,15 @@ class SajR5Inverter:
         }
 
     @classmethod
-    async def async_probe(cls, unit: ModbusUnit) -> str:
-        """Read the inverter's serial number, proving it is reachable."""
+    async def async_probe(cls, unit: ModbusUnit) -> ProbeResult:
+        """Read the inverter's identity: serial, family and device type."""
         info = InverterInfo(unit)
         await info.async_update()
-        return info.sn or ""
+        family = await detect_family(unit, info.devtype)
+        return ProbeResult(info.sn or "", family, info.devtype)
 
     @classmethod
-    async def async_probe_connection(cls, connection: ModbusConnection) -> str:
+    async def async_probe_connection(cls, connection: ModbusConnection) -> ProbeResult:
         """Probe over an already-built connection, closing it afterwards."""
         try:
             return await cls.async_probe(connection.for_unit(UNIT_ID))
@@ -295,14 +545,24 @@ class SajR5Inverter:
             await connection.close()
 
     async def async_setup(self) -> None:
-        """Read the static data and learn which optional components exist.
+        """Detect the family if needed, then read what this firmware serves.
 
         Some firmware revisions do not serve the information or power-state
         registers. A refusal of those is not a failure of setup; anything else
         is, and propagates.
         """
         absent = set()
-        for name, component in (("info", self.info), ("power", self.power)):
+        probes: list[tuple[str, Component]] = []
+        if not self._family_known:
+            try:
+                await self.info.async_update()
+            except _NOT_SERVED:
+                absent.add("info")
+            self._build(await detect_family(self._unit, self.info.devtype))
+        else:
+            probes.append(("info", self.info))
+        probes.append(("power", self.power))
+        for name, component in probes:
             try:
                 await component.async_update()
             except _NOT_SERVED as ex:

@@ -6,6 +6,7 @@ from functools import partial
 import pytest
 from modbus_connection.mock import MockModbusUnit, ReadEvent, WriteEvent
 
+from custom_components.saj_modbus.const import FAMILY_R5
 from custom_components.saj_modbus.diagnostics import _register_layout
 from custom_components.saj_modbus.inverter import (
     InverterInfo,
@@ -14,6 +15,7 @@ from custom_components.saj_modbus.inverter import (
     SajR5Inverter,
     Settings,
 )
+from tests.conftest import refuse_r6_probes
 
 # Modbus function code 0x10, write-multiple-registers.
 WRITE_MULTIPLE_REGISTERS = 0x10
@@ -167,13 +169,18 @@ async def test_read_only_fields_reject_writes(mock_modbus_unit: MockModbusUnit) 
         await realtime.write("power", 1)
 
 
-async def test_probe_returns_serial(
+async def test_probe_returns_identity(
     mock_modbus_unit: MockModbusUnit, info_registers: dict, serial: str
 ) -> None:
-    """The setup probe reads the serial number."""
+    """The setup probe reads the serial and detects the family."""
     mock_modbus_unit.holding.update(info_registers)
+    refuse_r6_probes(mock_modbus_unit)
 
-    assert await SajR5Inverter.async_probe(mock_modbus_unit) == serial
+    probe = await SajR5Inverter.async_probe(mock_modbus_unit)
+
+    assert probe.serial == serial
+    assert probe.devtype == 3
+    assert probe.family == FAMILY_R5
 
 
 async def test_read_raw_covers_all_components(device: SajR5Inverter) -> None:
