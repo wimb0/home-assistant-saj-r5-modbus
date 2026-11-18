@@ -30,7 +30,7 @@ from modbus_connection.model import (
 )
 from modbus_connection.tmodbus import ModbusConnection
 
-from .const import FAMILY_R5, FAMILY_R6_HIGH, FAMILY_R6_HYBRID
+from .const import FAMILIES, FAMILY_R5, FAMILY_R6_HIGH, FAMILY_R6_HYBRID
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -485,8 +485,9 @@ class SajR5Inverter:
         detected in ``async_setup`` and the components are rebuilt then.
         """
         self._unit = unit
-        self._family_known = family is not None
-        self.family: str = family or FAMILY_R5
+        # An unknown stored type is treated as "not known" and re-detected.
+        self._family_known = family in FAMILIES
+        self.family: str = family if family in FAMILIES else FAMILY_R5
         self.absent: frozenset[str] = frozenset()
         # None until async_setup has run, so a failed setup is retried.
         self._polled: list[str] | None = None
@@ -498,6 +499,8 @@ class SajR5Inverter:
         The info component survives a rebuild: detection reads it first, and
         its values (serial, device type) are what identity is built from.
         """
+        if family not in FAMILIES:
+            family = FAMILY_R5
         self.family = family
         self.info = getattr(self, "info", None) or InverterInfo(self._unit)
         if family == FAMILY_R6_HYBRID:

@@ -28,11 +28,12 @@ from custom_components.saj_modbus.inverter import (
     ProbeResult,
     R6HighData,
     R6HybridData,
+    RealtimeData,
     SajR5Inverter,
     UpdateReport,
     detect_family,
 )
-from tests.conftest import R6_HYBRID_PROBE, R6_HIGH_PROBE
+from tests.conftest import R6_HYBRID_PROBE, R6_HIGH_PROBE, refuse_r6_probes
 
 WRITE_MULTIPLE_REGISTERS = 0x10
 R5_BLOCK = 0x100
@@ -205,6 +206,21 @@ async def test_setup_detects_family_and_rebuilds(
     reads = [event.address for event in mock_modbus_unit.read_events]
     assert R5_BLOCK not in reads
     assert any(0x4000 <= address <= 0x40FE for address in reads)
+
+
+async def test_setup_redetects_an_unknown_stored_family(
+    mock_modbus_unit: MockModbusUnit, info_registers: dict, realtime_registers: dict
+) -> None:
+    """A corrupt stored type is treated as unknown and re-detected at setup."""
+    mock_modbus_unit.holding.update(info_registers)
+    mock_modbus_unit.holding.update(realtime_registers)
+    refuse_r6_probes(mock_modbus_unit)
+    device = SajR5Inverter(mock_modbus_unit, family="bogus")
+
+    await device.async_setup()
+
+    assert device.family == FAMILY_R5
+    assert isinstance(device.realtime, RealtimeData)
 
 
 async def test_setup_keeps_stored_family(
