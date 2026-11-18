@@ -10,6 +10,7 @@ from custom_components.saj_modbus.diagnostics import _register_layout
 from custom_components.saj_modbus.inverter import (
     InverterInfo,
     PowerState,
+    PvStrings,
     RealtimeData,
     SajR5Inverter,
     Settings,
@@ -94,6 +95,26 @@ async def test_realtime_read_plan(
 
     blocks = [(event.address, event.count) for event in mock_modbus_unit.read_events]
     assert blocks == [(0x100, 59)]
+
+
+async def test_pv_string_currents(
+    mock_modbus_unit: MockModbusUnit, strings_registers: dict
+) -> None:
+    """The strings component decodes the per-string currents as one block."""
+    mock_modbus_unit.holding.update(strings_registers)
+    strings = PvStrings(mock_modbus_unit)
+
+    await strings.async_update()
+
+    assert strings.pv1strcurr1 == 5.12
+    assert strings.pv1strcurr2 == 5.11
+    assert strings.pv1strcurr3 == 0.0
+    assert strings.pv2strcurr1 == 4.31
+    assert strings.pv2strcurr2 == 4.30
+    assert strings.pv4strcurr4 == 0.0
+
+    blocks = [(event.address, event.count) for event in mock_modbus_unit.read_events]
+    assert blocks == [(0x13B, 16)]
 
 
 async def test_power_state(
@@ -182,6 +203,7 @@ async def test_read_raw_covers_all_components(device: SajR5Inverter) -> None:
 
     assert raw["holding"][0x8F00] == 3
     assert raw["holding"][0x100] == 2
+    assert raw["holding"][0x13B] == 512
     assert raw["holding"][0x1037] == 1
 
 
@@ -205,8 +227,10 @@ def test_register_layout_locates_every_field(device: SajR5Inverter) -> None:
     """The layout diagnostics reports comes from the model, not a second table."""
     layout = _register_layout(device)
 
-    assert set(layout) == {"info", "realtime", "power", "settings"}
+    assert set(layout) == {"info", "realtime", "strings", "power", "settings"}
     assert layout["realtime"]["power"] == "holding:0x0113"
+    assert layout["strings"]["pv1strcurr1"] == "holding:0x013B"
+    assert layout["strings"]["pv4strcurr4"] == "holding:0x014A"
     # A multi-register field reports the whole span it covers.
     assert layout["realtime"]["datetime"] == "holding:0x0137-0x013A"
     assert layout["power"]["poweronoff"] == "holding:0x1037"

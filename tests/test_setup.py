@@ -25,12 +25,15 @@ MPVMODE_REGISTER = 0x100
 
 
 @pytest.fixture
-def mock_connection(info_registers: dict, realtime_registers: dict):
+def mock_connection(
+    info_registers: dict, realtime_registers: dict, strings_registers: dict
+):
     """Serve the inverter's registers wherever the hub opens a connection."""
     connection = MockModbusConnection()
     unit = connection.for_unit(UNIT_ID)
     unit.holding.update(info_registers)
     unit.holding.update(realtime_registers)
+    unit.holding.update(strings_registers)
     with (
         patch(
             "custom_components.saj_modbus.hub.ModbusConnection",
