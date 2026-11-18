@@ -10,14 +10,13 @@ from homeassistant.core import HomeAssistant
 from modbus_connection import ModbusError
 
 from .const import (
-    COUNTER_SENSOR_TYPES,
     CONF_BAUDRATE,
     CONF_BYTESIZE,
     CONF_PARITY,
     CONF_SERIAL_PORT,
     CONF_STOPBITS,
     NUMBER_TYPES,
-    SENSOR_TYPES,
+    SENSORS_BY_FAMILY,
     SWITCH_TYPES,
 )
 from .hub import SAJModbusHub, SajConfigEntry
@@ -38,14 +37,16 @@ TO_REDACT = {
 def _decoded_values(hub: SAJModbusHub) -> dict[str, Any]:
     """Every value this integration exposes, keyed by entity key.
 
-    Built from the entity descriptions rather than from the device model, so a
-    diagnostics download reports exactly what the entities report.
+    Built from the entity descriptions of the inverter's family rather than
+    from the device model, so a diagnostics download reports exactly what the
+    entities report.
     """
+    sensor_types, counter_types = SENSORS_BY_FAMILY[hub.family]
     return {
         description.key: description.value_fn(hub)
         for descriptions in (
-            SENSOR_TYPES,
-            COUNTER_SENSOR_TYPES,
+            sensor_types,
+            counter_types,
             NUMBER_TYPES,
             SWITCH_TYPES,
         )

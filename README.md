@@ -6,19 +6,20 @@
 ![license][lic-badge]
 [![buymecoffeebadge]][buymecoffeeurl]
 
-# Home Assistant SAJ R5 Series Inverter Modbus Integration
+# Home Assistant SAJ Inverter Modbus Integration
 
-This is an unofficial Home Assistant integration that enables you to read data locally from SAJ R5, Sununo, and Suntrio inverters via **Modbus TCP or a directly connected serial (RS485 RTU) port**, without a cloud-connected dongle.
+This is an unofficial Home Assistant integration that enables you to read data locally from SAJ PLUS, R5, R6 (3-15K hybrid and 17-50K) and C6 inverters, plus the Sununo and Suntrio series, via **Modbus TCP or a directly connected serial (RS485 RTU) port**, without a cloud-connected dongle.
 
 The integration is also compatible with Zonneplan ONE inverters, which are rebranded SAJ R5 inverters.
 
 
-Implements SAJ Inverter registers from [`saj-plus-series-inverter-modbus-protocal.pdf`](https://github.com/wimb0/home-assistant-saj-r5-modbus/blob/main/saj-plus-series-inverter-modbus-protocal.pdf).
+Implements SAJ Inverter registers from [`saj-plus-series-inverter-modbus-protocal.pdf`](https://github.com/wimb0/home-assistant-saj-r5-modbus/blob/main/saj-plus-series-inverter-modbus-protocal.pdf), [`SAJ Modbus Protocol_EN_R5.pdf`](https://github.com/wimb0/home-assistant-saj-r5-modbus/blob/main/SAJ%20Modbus%20Protocol_EN_R5.pdf) and [`map-modbus-communication-protocol-saj-r5-r6-c6.pdf`](https://github.com/wimb0/home-assistant-saj-r5-modbus/blob/main/map-modbus-communication-protocol-saj-r5-r6-c6.pdf).
 
 
 ## Features ✨
 
 * **Easy Installation:** Set up (and reconfigure) the integration through the Home Assistant UI.
+* **Automatic Type Detection:** At setup the integration detects the inverter family (PLUS / R5, R6 3-15K hybrid, R6 17-50K / C6) from the device type and register blocks, and picks the matching registers and settings for it.
 * **Network or Serial:** Connect over Modbus TCP (e.g. via a Modbus-to-WiFi bridge) or directly over a serial RS485 port (e.g. a USB-to-RS485 adapter, locally or through an ESPHome serial proxy).
 * **Detailed Sensors:** Each Modbus register is exposed as a separate sensor.
 * **Automatic Scaling:** The integration automatically applies the correct scaling factor to the raw data.
@@ -40,7 +41,7 @@ Once the integration is installed, you can configure it through the Home Assista
     * **Serial port (Modbus RTU)** — pick the **serial port** from the dropdown and the **baud rate** (**9600** for the inverter's RS485 port, **115200** for its USB/RS232 port).
     * For both options, **Slave ID** is optional (the Modbus station address of the inverter, default is 1
 5.  Fill in **Name** (a descriptive name for your inverter, e.g. "SAJ") and **Scan Interval** (the frequency in seconds to poll the inverter, default is 60).
-6.  Confirm the detected inverter (model and serial number) to create the entry.
+6.  Confirm the detected inverter (type, model and serial number) to create the entry. The detected type decides which registers and settings (power limit, on/off) the integration uses; it is stored on the entry and re-detected on reconfigure.
 
 The connection can be changed later through the integration's **Reconfigure** option — switching between a network and a serial connection is supported.
 
@@ -200,20 +201,24 @@ three-phase) and **firmware version**, read from the inverter.
 
 ### Sensors
 
-* **Device Information:** Type, Sub Type, Comms Protocol Version, Serial Number, Product Code, and various hardware/software versions.
-* **Status:** Inverter Status, Inverter Working Mode, and Inverter Error Message.
-* **Real-time Data:** PV voltage, current, and power for each string, bus voltage, inverter temperature, and more.
-* **Grid Information:** L1/L2/L3 voltage, current, frequency, and power.
+The exact set depends on the detected inverter type:
+
+* **Device Information:** Type, Sub Type, Comms Protocol Version, Serial Number, Product Code, and various hardware/software versions (all families).
+* **Status:** Inverter Status, Inverter Working Mode, and Inverter Error Message (family-specific fault tables).
+* **Real-time Data (PLUS / R5, block 0x100):** PV voltage, current, and power for each string, bus voltage, inverter temperature, and more.
+* **Real-time Data (R6 3-15K hybrid, block 0x4000):** the above plus battery voltage/current/power/SOC/temperature, per-phase grid, inverter and backup output readings, energy flows, and PV / battery / load / sell / feed-in energy totals.
+* **Real-time Data (R6 17-50K / C6, block 0x6000):** L1/L2/L3 voltage, current, frequency, and power, multiple temperatures, PV1-PV12 inputs with string currents, and more.
+* **Grid Information:** L1/L2/L3 (or R/S/T) voltage, current, frequency, and power.
 * **Energy Production:** Daily, monthly, yearly, and total power generation.
 * **Working Hours:** Daily and total working hours.
 
 ### Switches
 
-* **Power On/Off:** A switch to remotely turn the inverter on or off.
+* **Power On/Off:** A switch to remotely turn the inverter on or off (register 0x1037 on PLUS / R5 / R6 17-50K / C6, inverted stop bit 0x340C on R6 3-15K).
 
 ### Numbers
 
-* **Limit Power:** A number entity to limit the inverter's power output (in percentage).
+* **Limit Power:** A number entity to limit the inverter's power output (in percentage; register 0x801F on PLUS / R5, 0x340B on R6 3-15K, 0x101C on R6 17-50K / C6).
 
 ### Services
 

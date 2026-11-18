@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ipaddress
+import logging
 import re
 from typing import Any
 
@@ -26,6 +27,7 @@ from modbus_connection import ModbusError
 from .const import (
     CONF_BAUDRATE,
     CONF_CONNECTION_TYPE,
+    CONF_INVERTER_TYPE,
     CONF_SERIAL_PORT,
     CONF_SLAVE_ID,
     CONNECTION_TYPE_SERIAL,
@@ -39,11 +41,13 @@ from .const import (
     DEFAULT_SLAVE_ID,
     DEFAULT_STOPBITS,
     DOMAIN,
+    FAMILY_LABELS,
     MAX_SLAVE_ID,
     MIN_SLAVE_ID,
     SERIAL_BAUDRATES,
 )
 from .inverter import (
+    ProbeResult,
     SajR5Inverter,
     create_connection,
     create_serial_connection,
@@ -87,8 +91,11 @@ def serial_port_valid(device: str) -> bool:
     return True
 
 
-async def async_probe(host: str, port: int, slave_id: int) -> str:
-    """Probe the inverter over TCP, returning its serial; raises on failure."""
+async def async_probe(host: str, port: int, slave_id: int) -> ProbeResult:
+    """Probe the inverter over TCP; raises on failure.
+
+    Returns the serial, the detected inverter family and the device type.
+    """
     connection = create_connection(host, port)
     try:
         return await SajR5Inverter.async_probe(connection.for_unit(slave_id))
@@ -103,15 +110,23 @@ async def async_probe_serial(
     parity: str,
     stopbits: int,
     slave_id: int,
-) -> str:
-    """Probe the inverter over a serial line, returning its serial number."""
-    connection = create_serial_connection(
-        device, baudrate, bytesize, parity, stopbits
-    )
+) -> ProbeResult:
+    """Probe the inverter over a serial line, returning its identity."""
+    connection = create_serial_connection(device, baudrate, bytesize, parity, stopbits)
     try:
         return await SajR5Inverter.async_probe(connection.for_unit(slave_id))
     finally:
         await connection.close()
+
+
+def _log_detected(probe: ProbeResult) -> None:
+    """Log what the probe found, so a wrong family is visible in the log."""
+    logging.getLogger(__name__).info(
+        "Detected %s inverter (device type %s, serial %s)",
+        FAMILY_LABELS.get(probe.family, probe.family),
+        f"0x{probe.devtype:04X}" if probe.devtype is not None else "unknown",
+        probe.serial or "unknown",
+    )
 
 
 def _slave_schema() -> vol.Coerce:
@@ -139,17 +154,16 @@ def _connection_type_schema() -> SelectSelector:
 
 
 def _connection_summary(data: dict[str, Any]) -> str:
-    """One-line summary of where an entry currently points."""
+    """One-line summary of where an entry points and what it detected."""
     slave_id = data.get(CONF_SLAVE_ID, DEFAULT_SLAVE_ID)
+    family = FAMILY_LABELS.get(data.get(CONF_INVERTER_TYPE), "unknown type")
     if data.get(CONF_CONNECTION_TYPE) == CONNECTION_TYPE_SERIAL:
         return (
             f"{data.get(CONF_SERIAL_PORT)} @ "
             f"{data.get(CONF_BAUDRATE, DEFAULT_BAUDRATE)} baud "
-            f"(slave {slave_id})"
+            f"(slave {slave_id}, {family})"
         )
-    return (
-        f"{data.get(CONF_HOST)}:{data.get(CONF_PORT)} (slave {slave_id})"
-    )
+    return f"{data.get(CONF_HOST)}:{data.get(CONF_PORT)} (slave {slave_id}, {family})"
 
 
 class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -195,16 +209,19 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors[CONF_HOST] = "already_configured"
             else:
                 try:
-                    serial = await async_probe(host, port, slave_id)
+                    probe = await async_probe(host, port, slave_id)
                 except ModbusError:
                     errors["base"] = "cannot_connect"
             if not errors:
+                _log_detected(probe)
                 data = {
                     CONF_NAME: user_input[CONF_NAME],
                     CONF_CONNECTION_TYPE: CONNECTION_TYPE_TCP,
                     CONF_HOST: host,
                     CONF_PORT: port,
                     CONF_SLAVE_ID: slave_id,
+                    # The detected family picks the register map and settings.
+                    CONF_INVERTER_TYPE: probe.family,
                 }
                 options = {
                     CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL],
@@ -213,7 +230,7 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                 # so the same device is recognised across addresses. Firmware
                 # that does not serve the info block falls back to host and
                 # station address.
-                await self.async_set_unique_id(serial or f"{host}:{slave_id}")
+                await self.async_set_unique_id(probe.serial or f"{host}:{slave_id}")
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(
                     title=data[CONF_NAME], data=data, options=options
@@ -256,7 +273,7 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors[CONF_SERIAL_PORT] = "already_configured"
             else:
                 try:
-                    serial = await async_probe_serial(
+                    probe = await async_probe_serial(
                         device,
                         user_input[CONF_BAUDRATE],
                         DEFAULT_BYTESIZE,
@@ -267,19 +284,22 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                 except ModbusError:
                     errors["base"] = "cannot_connect"
             if not errors:
+                _log_detected(probe)
                 data = {
                     CONF_NAME: user_input[CONF_NAME],
                     CONF_CONNECTION_TYPE: CONNECTION_TYPE_SERIAL,
                     CONF_SERIAL_PORT: device,
                     CONF_BAUDRATE: user_input[CONF_BAUDRATE],
                     CONF_SLAVE_ID: slave_id,
+                    # The detected family picks the register map and settings.
+                    CONF_INVERTER_TYPE: probe.family,
                 }
                 options = {
                     CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL],
                 }
                 # Same identity rule as TCP: the inverter's serial where it
                 # reports one, else the port path and station address.
-                await self.async_set_unique_id(serial or f"{device}:{slave_id}")
+                await self.async_set_unique_id(probe.serial or f"{device}:{slave_id}")
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(
                     title=data[CONF_NAME], data=data, options=options
@@ -345,14 +365,15 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors[CONF_HOST] = "invalid_host"
             else:
                 try:
-                    serial = await async_probe(host, port, slave_id)
+                    probe = await async_probe(host, port, slave_id)
                 except ModbusError:
                     errors["base"] = "cannot_connect"
             if not errors:
-                if serial:
+                _log_detected(probe)
+                if probe.serial:
                     # Refuse to repoint this entry at a different inverter,
                     # which would orphan its entities and duplicate its device.
-                    await self.async_set_unique_id(serial)
+                    await self.async_set_unique_id(probe.serial)
                     self._abort_if_unique_id_mismatch(reason="wrong_inverter")
                 return self.async_update_reload_and_abort(
                     entry,
@@ -361,6 +382,8 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                         CONF_HOST: host,
                         CONF_PORT: port,
                         CONF_SLAVE_ID: slave_id,
+                        # Re-detect the family, it decides the register map.
+                        CONF_INVERTER_TYPE: probe.family,
                     },
                 )
 
@@ -396,7 +419,7 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors[CONF_SERIAL_PORT] = "invalid_serial_port"
             else:
                 try:
-                    serial = await async_probe_serial(
+                    probe = await async_probe_serial(
                         device,
                         user_input[CONF_BAUDRATE],
                         DEFAULT_BYTESIZE,
@@ -407,8 +430,9 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                 except ModbusError:
                     errors["base"] = "cannot_connect"
             if not errors:
-                if serial:
-                    await self.async_set_unique_id(serial)
+                _log_detected(probe)
+                if probe.serial:
+                    await self.async_set_unique_id(probe.serial)
                     self._abort_if_unique_id_mismatch(reason="wrong_inverter")
                 return self.async_update_reload_and_abort(
                     entry,
@@ -417,6 +441,8 @@ class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):
                         CONF_SERIAL_PORT: device,
                         CONF_BAUDRATE: user_input[CONF_BAUDRATE],
                         CONF_SLAVE_ID: slave_id,
+                        # Re-detect the family, it decides the register map.
+                        CONF_INVERTER_TYPE: probe.family,
                     },
                 )
 

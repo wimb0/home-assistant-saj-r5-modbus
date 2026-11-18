@@ -14,23 +14,27 @@ from pytest_homeassistant_custom_component.common import (
 )
 
 from custom_components.saj_modbus.const import (
+    CONF_INVERTER_TYPE,
     COUNTER_SENSOR_TYPES,
     DOMAIN,
+    FAMILY_R5,
     SENSOR_TYPES,
     STATISTICS_STATE_CLASSES,
 )
 from custom_components.saj_modbus.inverter import UNIT_ID
+from tests.conftest import refuse_r6_probes
 
 MPVMODE_REGISTER = 0x100
 
 
 @pytest.fixture
 def mock_connection(info_registers: dict, realtime_registers: dict):
-    """Serve the inverter's registers wherever the hub opens a connection."""
+    """Serve an R5 inverter's registers wherever the hub opens a connection."""
     connection = MockModbusConnection()
     unit = connection.for_unit(UNIT_ID)
     unit.holding.update(info_registers)
     unit.holding.update(realtime_registers)
+    refuse_r6_probes(unit)
     with (
         patch(
             "custom_components.saj_modbus.hub.ModbusConnection",
@@ -62,6 +66,8 @@ async def test_setup_entry(
     await hass.async_block_till_done()
 
     assert entry.state is ConfigEntryState.LOADED
+    # The entry predates type detection, so setup stamped the detected family.
+    assert entry.data[CONF_INVERTER_TYPE] == FAMILY_R5
 
     registry = er.async_get(hass)
     entities = er.async_entries_for_config_entry(registry, entry.entry_id)

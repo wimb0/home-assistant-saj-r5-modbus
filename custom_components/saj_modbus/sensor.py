@@ -13,8 +13,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
-    COUNTER_SENSOR_TYPES,
-    SENSOR_TYPES,
+    SENSORS_BY_FAMILY,
     STATISTICS_STATE_CLASSES,
     SajModbusSensorEntityDescription,
 )
@@ -29,20 +28,21 @@ async def async_setup_entry(
     entry: SajConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up sensor entities from a config entry."""
+    """Set up the sensor entities of the entry's inverter family."""
     hub = entry.runtime_data
 
+    sensor_types, counter_types = SENSORS_BY_FAMILY[hub.family]
     entities: list[SajEntity] = [
         (
             SajTotalSensor
             if description.state_class in STATISTICS_STATE_CLASSES
             else SajSensor
         )(hub, description)
-        for description in served(hub, SENSOR_TYPES.values())
+        for description in served(hub, sensor_types.values())
     ]
     entities.extend(
         SajCounterSensor(hub, description)
-        for description in served(hub, COUNTER_SENSOR_TYPES.values())
+        for description in served(hub, counter_types.values())
     )
 
     async_add_entities(entities)
@@ -119,5 +119,5 @@ class SajCounterSensor(SajTotalSensor):
         night, leaving the same hole in its long-term statistics that going
         unavailable would.
         """
-        if self.coordinator.device.realtime.mpvmode in (1, 2):
+        if self.coordinator.is_generating:
             super()._process_data()

@@ -13,6 +13,7 @@ from modbus_connection import ModbusError
 
 from .const import (
     CONF_CONNECTION_TYPE,
+    CONF_INVERTER_TYPE,
     CONF_SLAVE_ID,
     CONNECTION_TYPE_TCP,
     DEFAULT_NAME,
@@ -68,6 +69,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SajConfigEntry) -> bool:
         scan_interval=scan_interval,
         connection_params=params_from_config(entry.data),
         slave_id=entry.data.get(CONF_SLAVE_ID, DEFAULT_SLAVE_ID),
+        family=entry.data.get(CONF_INVERTER_TYPE),
     )
     entry.async_on_unload(hub.async_close)
     entry.runtime_data = hub
@@ -76,6 +78,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: SajConfigEntry) -> bool:
         await hub.async_setup()
     except ModbusError as err:
         raise ConfigEntryNotReady(f"Could not reach the inverter: {err}") from err
+
+    if entry.data.get(CONF_INVERTER_TYPE) != hub.family:
+        # Entries predating type detection learn their family at first setup;
+        # stamp it so later reloads skip the probing.
+        hass.config_entries.async_update_entry(
+            entry, data={**entry.data, CONF_INVERTER_TYPE: hub.family}
+        )
 
     await hub.async_config_entry_first_refresh()
     _async_migrate_to_serial_identity(hass, entry, hub)

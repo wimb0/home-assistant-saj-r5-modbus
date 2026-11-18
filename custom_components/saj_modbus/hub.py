@@ -29,7 +29,13 @@ from .const import (
     DEFAULT_STOPBITS,
     DEVICE_STATUSSES,
     DOMAIN,
+    FAMILY_LABELS,
+    FAMILY_R5,
+    FAMILY_R6_HYBRID,
     FAULT_MESSAGES,
+    R6_HIGH_FAULT_MESSAGES,
+    R6_HYBRID_FAULT_MESSAGES,
+    R6_HYBRID_STATUSES,
 )
 from .inverter import (
     MODBUS_TIMEOUT,
@@ -88,6 +94,7 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
         parity: str = DEFAULT_PARITY,
         stopbits: int = DEFAULT_STOPBITS,
         slave_id: int = UNIT_ID,
+        family: str | None = None,
     ) -> None:
         """Initialize the Modbus hub.
 
@@ -129,7 +136,9 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
             self.connection_params = {"host": host, "port": port}
             self.is_serial = False
         self.slave_id = slave_id
-        self.device = SajR5Inverter(self._connection.for_unit(slave_id))
+        # None lets the device detect the family at setup; the entry's stored
+        # type wins when present.
+        self.device = SajR5Inverter(self._connection.for_unit(slave_id), family=family)
         self._power_limit: float = 110.0
         # Consecutive poll timeouts; reset by any poll that reaches the device.
         self._timeouts = 0
@@ -140,6 +149,11 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
         # again: entities bake it into their unique ids at construction, so it
         # must not change under them if a later poll finally reads the serial.
         self._identifier = name
+
+    @property
+    def family(self) -> str:
+        """The inverter family this hub polls: r5, r6_hybrid or r6_high."""
+        return self.device.family or FAMILY_R5
 
     @property
     def serial_number(self) -> str | None:
@@ -153,9 +167,12 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
 
         Appends the machine power (SubType, in W) as kW, e.g.
         "R5 (single-phase) 2.5kW", so no separate DevType/SubType sensors
-        are needed on the device page.
+        are needed on the device page. Types the documents do not name fall
+        back to the detected family label.
         """
-        base = _DEVTYPE_MODELS.get(self.device.info.devtype)
+        base = _DEVTYPE_MODELS.get(self.device.info.devtype) or FAMILY_LABELS.get(
+            self.family
+        )
         subtype = self.device.info.subtype
         if base is None:
             return None
@@ -280,18 +297,45 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
     @property
     def mpvstatus(self) -> str:
         """The inverter's working mode as a readable status."""
-        return DEVICE_STATUSSES.get(self.device.realtime.mpvmode, "Unknown")
+        statuses = (
+            R6_HYBRID_STATUSES if self.family == FAMILY_R6_HYBRID else DEVICE_STATUSSES
+        )
+        return statuses.get(self.device.realtime.mpvmode, "Unknown")
+
+    @property
+    def is_generating(self) -> bool:
+        """Whether the inverter is in a mode where its counters read true.
+
+        R5 and R6 17-50K / C6 generate in modes 1-2; the R6 hybrid also counts
+        in grid + load mode (4).
+        """
+        mpvmode = self.device.realtime.mpvmode
+        if self.family == FAMILY_R6_HYBRID:
+            return mpvmode in (2, 4)
+        return mpvmode in (1, 2)
 
     @property
     def fault_messages(self) -> list[str]:
         """Every fault the inverter is currently reporting."""
         realtime = self.device.realtime
+        if self.family == FAMILY_R6_HYBRID:
+            return [
+                message
+                for fault_code, messages in zip(
+                    (realtime.hfaultmsg, realtime.mfaultmsg, realtime.mfaultmsg2),
+                    R6_HYBRID_FAULT_MESSAGES,
+                )
+                for message in translate_fault_code_to_messages(
+                    fault_code or 0, messages
+                )
+            ]
+        tables = R6_HIGH_FAULT_MESSAGES if self.family != FAMILY_R5 else FAULT_MESSAGES
         return [
             message
             for fault_code, messages in (
-                (realtime.faultmsg0, FAULT_MESSAGES[0]),
-                (realtime.faultmsg1, FAULT_MESSAGES[1]),
-                (realtime.faultmsg2, FAULT_MESSAGES[2]),
+                (realtime.faultmsg0, tables[0]),
+                (realtime.faultmsg1, tables[1]),
+                (realtime.faultmsg2, tables[2]),
             )
             for message in translate_fault_code_to_messages(fault_code or 0, messages)
         ]
@@ -303,7 +347,13 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
 
     @property
     def poweronoff(self) -> bool | None:
-        """Whether the inverter is switched on, as last read from the device."""
+        """Whether the inverter is switched on, as last read from the device.
+
+        The R6 3-15K hybrid stores the inverted stop bit at 0x340C.
+        """
+        if self.family == FAMILY_R6_HYBRID:
+            stop = self.device.power.inverterstop
+            return None if stop is None else not stop
         return self.device.power.poweronoff
 
     @property
@@ -318,7 +368,10 @@ class SAJModbusHub(DataUpdateCoordinator[None]):
     async def async_set_power_on_off(self, value: bool) -> bool:
         """Set the power on/off on the inverter."""
         try:
-            await self.device.power.write("poweronoff", value)
+            if self.family == FAMILY_R6_HYBRID:
+                await self.device.power.write("inverterstop", not value)
+            else:
+                await self.device.power.write("poweronoff", value)
         except ModbusError as ex:
             _LOGGER.error("Failed to set power on/off: %s", ex)
             return False
