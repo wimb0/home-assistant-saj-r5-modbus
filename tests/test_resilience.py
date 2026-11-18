@@ -1,6 +1,6 @@
 """One failing component must not take the rest of the poll with it.
 
-The inverter's two polled components are read independently: a block that is
+The inverter's polled components are read independently: a block that is
 slow or refused costs its own component and nothing else.
 """
 
@@ -28,6 +28,7 @@ from custom_components.saj_modbus.sensor import SajSensor, SajTotalSensor
 
 INFO_REGISTER = 0x8F00
 REALTIME_REGISTER = 0x100
+STRINGS_REGISTER = 0x13B
 POWER_REGISTER = 0x1037
 # Active power, in the middle of the realtime block.
 POWER_OUTPUT_REGISTER = 0x113
@@ -79,7 +80,7 @@ async def test_a_failed_component_leaves_the_rest_fresh(
     assert not report.complete
     assert set(report.failed) == {"power"}
     assert isinstance(report.failed["power"], ModbusTimeoutError)
-    assert report.updated == {"realtime"}
+    assert report.updated == {"realtime", "strings"}
     assert device.realtime.power == 1234
     assert device.power.poweronoff is True  # previous value kept
 
@@ -102,7 +103,7 @@ async def test_a_failed_realtime_block_leaves_the_power_state_fresh(
     report = await device.async_update()
 
     assert set(report.failed) == {"realtime"}
-    assert report.updated == {"power"}
+    assert report.updated == {"strings", "power"}
     assert device.realtime.power == before
     assert device.power.poweronoff is False
 
@@ -156,9 +157,9 @@ async def test_a_silent_inverter_raises_before_walking_the_rest(
     with pytest.raises(ModbusTimeoutError):
         await device.async_update()
 
-    assert POWER_REGISTER not in [
-        event.address for event in mock_modbus_unit.read_events
-    ]
+    reads = [event.address for event in mock_modbus_unit.read_events]
+    assert POWER_REGISTER not in reads
+    assert STRINGS_REGISTER not in reads
     assert device.power.poweronoff is True  # never reached, so never re-read
 
 
@@ -172,7 +173,7 @@ async def test_every_component_refreshes_on_a_healthy_device(
 
     assert report.complete
     assert report.failed == {}
-    assert report.updated == {"realtime", "power"}
+    assert report.updated == {"realtime", "strings", "power"}
 
 
 async def test_the_poll_reads_one_block_per_component(
@@ -180,8 +181,9 @@ async def test_the_poll_reads_one_block_per_component(
 ) -> None:
     """Reading per component did not change what goes on the wire.
 
-    The realtime and power registers are 0xF00 apart, far beyond the planner's
-    merge gap, so the pooled group these replaced already issued two reads.
+    The realtime, strings and power registers are far apart, beyond the
+    planner's merge gap, so the pooled group these replaced already issued
+    one read per block.
     """
     await device.async_setup()
 
@@ -189,7 +191,11 @@ async def test_the_poll_reads_one_block_per_component(
     await device.async_update()
 
     blocks = [(event.address, event.count) for event in mock_modbus_unit.read_events]
-    assert blocks == [(REALTIME_REGISTER, 59), (POWER_REGISTER, 1)]
+    assert blocks == [
+        (REALTIME_REGISTER, 59),
+        (STRINGS_REGISTER, 16),
+        (POWER_REGISTER, 1),
+    ]
 
 
 async def test_a_failed_setup_raises_and_is_retried(
@@ -254,12 +260,13 @@ async def test_a_reported_timeout_does_not_count_toward_a_stuck_link(
     hub = make_hub(device, mock_modbus_connection)
     await device.async_setup()
     mock_modbus_unit.fail_read(REALTIME_REGISTER, ServerDeviceBusyError())
+    mock_modbus_unit.fail_read(STRINGS_REGISTER, ServerDeviceBusyError())
     mock_modbus_unit.fail_read(POWER_REGISTER, ModbusTimeoutError("slow register"))
 
     with pytest.raises(UpdateFailed):
         await hub._async_update_data()
 
-    assert hub.failed_components == {"realtime", "power"}
+    assert hub.failed_components == {"realtime", "strings", "power"}
     assert hub._timeouts == 0
 
 

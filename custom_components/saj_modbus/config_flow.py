@@ -105,9 +105,7 @@ async def async_probe_serial(
     slave_id: int,
 ) -> str:
     """Probe the inverter over a serial line, returning its serial number."""
-    connection = create_serial_connection(
-        device, baudrate, bytesize, parity, stopbits
-    )
+    connection = create_serial_connection(device, baudrate, bytesize, parity, stopbits)
     try:
         return await SajR5Inverter.async_probe(connection.for_unit(slave_id))
     finally:
@@ -147,9 +145,7 @@ def _connection_summary(data: dict[str, Any]) -> str:
             f"{data.get(CONF_BAUDRATE, DEFAULT_BAUDRATE)} baud "
             f"(slave {slave_id})"
         )
-    return (
-        f"{data.get(CONF_HOST)}:{data.get(CONF_PORT)} (slave {slave_id})"
-    )
+    return f"{data.get(CONF_HOST)}:{data.get(CONF_PORT)} (slave {slave_id})"
 
 
 class SAJModbusConfigFlow(ConfigFlow, domain=DOMAIN):

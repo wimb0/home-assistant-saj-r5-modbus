@@ -86,6 +86,27 @@ REALTIME_REGISTERS = {
     0x1037: 1,  # poweronoff
 }
 
+STRINGS_REGISTERS = {
+    0x13B: [
+        512,
+        511,
+        0,
+        0,  # pv1 string currents: 5.12, 5.11, 0, 0 A
+        431,
+        430,
+        0,
+        0,  # pv2
+        0,
+        0,
+        0,
+        0,  # pv3
+        0,
+        0,
+        0,
+        0,  # pv4
+    ],
+}
+
 
 @pytest.fixture
 def serial() -> str:
@@ -106,8 +127,15 @@ def realtime_registers() -> dict:
 
 
 @pytest.fixture
+def strings_registers() -> dict:
+    """Return the inverter's PV string current registers."""
+    return dict(STRINGS_REGISTERS)
+
+
+@pytest.fixture
 def device(mock_modbus_unit: MockModbusUnit) -> SajR5Inverter:
     """Return an inverter whose registers are all populated."""
     mock_modbus_unit.holding.update(INFO_REGISTERS)
     mock_modbus_unit.holding.update(REALTIME_REGISTERS)
+    mock_modbus_unit.holding.update(STRINGS_REGISTERS)
     return SajR5Inverter(mock_modbus_unit)

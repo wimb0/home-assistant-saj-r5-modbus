@@ -39,6 +39,7 @@ async def hub(device: SajR5Inverter) -> SAJModbusHub:
     """Return a hub whose components have all been read."""
     await device.info.async_update()
     await device.realtime.async_update()
+    await device.strings.async_update()
     await device.power.async_update()
     return make_hub(device)
 
@@ -63,6 +64,8 @@ def test_values_match_the_device_model(hub: SAJModbusHub) -> None:
     values = {d.key: d.value_fn(hub) for d in ALL_DESCRIPTIONS}
 
     assert values["pv1volt"] == 305.0
+    assert values["pv1strcurr1"] == 5.12
+    assert values["pv2strcurr2"] == 4.30
     assert values["totalenergy"] == 78910.11
     assert values["invtempc"] == -1.0
     assert values["sn"] == "R5-3K-S2SN01"

@@ -43,7 +43,7 @@ _NOT_SERVED = (IllegalFunctionError, IllegalDataAddressError)
 # Every component attribute a poll may refresh, in read order. A timeout on
 # the first one ends the poll, so the block worth waiting for leads. The
 # information is static, so setup reads it and polling never does.
-_POLLED = ("realtime", "power")
+_POLLED = ("realtime", "strings", "power")
 
 
 @dataclass(frozen=True)
@@ -126,9 +126,7 @@ def params_from_config(data: dict[str, Any]) -> ModbusTcpParams | ModbusSerialPa
             stopbits=DEFAULT_STOPBITS,  # type: ignore[arg-type]
             framer="rtu",
         )
-    return ModbusTcpParams(
-        host=data[CONF_HOST], port=data.get(CONF_PORT, DEFAULT_PORT)
-    )
+    return ModbusTcpParams(host=data[CONF_HOST], port=data.get(CONF_PORT, DEFAULT_PORT))
 
 
 class DateTimeField(RegisterField[datetime]):
@@ -231,6 +229,32 @@ class RealtimeData(Component):
     datetime = DateTimeField(0x137, count=4)
 
 
+class PvStrings(Component):
+    """Per-string currents, 0x013B-0x014A, polled every update cycle.
+
+    Its own component because older firmware (Sununo/Suntrio Plus) does not
+    serve these registers: folding them into the realtime block would let one
+    refusal blank the whole block with it.
+    """
+
+    pv1strcurr1 = gauge(0x13B, 0.01, signed=False)
+    pv1strcurr2 = gauge(0x13C, 0.01, signed=False)
+    pv1strcurr3 = gauge(0x13D, 0.01, signed=False)
+    pv1strcurr4 = gauge(0x13E, 0.01, signed=False)
+    pv2strcurr1 = gauge(0x13F, 0.01, signed=False)
+    pv2strcurr2 = gauge(0x140, 0.01, signed=False)
+    pv2strcurr3 = gauge(0x141, 0.01, signed=False)
+    pv2strcurr4 = gauge(0x142, 0.01, signed=False)
+    pv3strcurr1 = gauge(0x143, 0.01, signed=False)
+    pv3strcurr2 = gauge(0x144, 0.01, signed=False)
+    pv3strcurr3 = gauge(0x145, 0.01, signed=False)
+    pv3strcurr4 = gauge(0x146, 0.01, signed=False)
+    pv4strcurr1 = gauge(0x147, 0.01, signed=False)
+    pv4strcurr2 = gauge(0x148, 0.01, signed=False)
+    pv4strcurr3 = gauge(0x149, 0.01, signed=False)
+    pv4strcurr4 = gauge(0x14A, 0.01, signed=False)
+
+
 class PowerState(Component):
     """Remote power on/off, read and written at 0x1037.
 
@@ -262,12 +286,15 @@ class SajR5Inverter:
         self._unit = unit
         self.info = InverterInfo(unit)
         self.realtime = RealtimeData(unit)
+        self.strings = PvStrings(unit)
         self.power = PowerState(unit)
         self.settings = Settings(unit)
         self.absent: frozenset[str] = frozenset()
         # None until async_setup has run, so a failed setup is retried.
         self._polled: list[str] | None = None
-        self._readable = ComponentGroup(unit, [self.info, self.realtime, self.power])
+        self._readable = ComponentGroup(
+            unit, [self.info, self.realtime, self.strings, self.power]
+        )
 
     @property
     def components(self) -> dict[str, Component]:
@@ -275,6 +302,7 @@ class SajR5Inverter:
         return {
             "info": self.info,
             "realtime": self.realtime,
+            "strings": self.strings,
             "power": self.power,
             "settings": self.settings,
         }
@@ -297,12 +325,16 @@ class SajR5Inverter:
     async def async_setup(self) -> None:
         """Read the static data and learn which optional components exist.
 
-        Some firmware revisions do not serve the information or power-state
-        registers. A refusal of those is not a failure of setup; anything else
-        is, and propagates.
+        Some firmware revisions do not serve the information, string-current
+        or power-state registers. A refusal of those is not a failure of
+        setup; anything else is, and propagates.
         """
         absent = set()
-        for name, component in (("info", self.info), ("power", self.power)):
+        for name, component in (
+            ("info", self.info),
+            ("strings", self.strings),
+            ("power", self.power),
+        ):
             try:
                 await component.async_update()
             except _NOT_SERVED as ex:

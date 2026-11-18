@@ -12,12 +12,19 @@ from modbus_connection import (
 )
 from modbus_connection.mock import MockModbusUnit
 
-from custom_components.saj_modbus.const import SWITCH_TYPES
+from custom_components.saj_modbus.const import SENSOR_TYPES, SWITCH_TYPES
 from custom_components.saj_modbus.entity import served
 from custom_components.saj_modbus.inverter import SajR5Inverter
 
 POWER_REGISTER = 0x1037
 INFO_REGISTER = 0x8F00
+STRINGS_REGISTER = 0x13B
+
+STRING_SENSORS = [
+    description
+    for description in SENSOR_TYPES.values()
+    if description.component == "strings"
+]
 
 
 @pytest.mark.parametrize(
@@ -103,6 +110,7 @@ async def test_a_served_inverter_polls_everything(
 
     reads = [event.address for event in mock_modbus_unit.read_events]
     assert POWER_REGISTER in reads
+    assert STRINGS_REGISTER in reads
     assert device.absent == frozenset()
 
 
@@ -118,3 +126,33 @@ async def test_entities_are_not_created_for_an_absent_component(
 
     assert served(_Hub(), SWITCH_TYPES.values()) == []
     assert len(SWITCH_TYPES) == 1
+
+
+async def test_an_absent_strings_component_is_never_polled(
+    device: SajR5Inverter, mock_modbus_unit: MockModbusUnit
+) -> None:
+    """Older firmware without the string registers is not asked for them again."""
+    mock_modbus_unit.fail_read(STRINGS_REGISTER, IllegalDataAddressError())
+    await device.async_setup()
+
+    assert device.absent == {"strings"}
+
+    mock_modbus_unit.read_events.clear()
+    await device.async_update()
+
+    reads = [event.address for event in mock_modbus_unit.read_events]
+    assert STRINGS_REGISTER not in reads
+
+
+async def test_string_sensors_are_not_created_for_an_absent_component(
+    device: SajR5Inverter, mock_modbus_unit: MockModbusUnit
+) -> None:
+    """The string current sensors are left out when the inverter refuses them."""
+    mock_modbus_unit.fail_read(STRINGS_REGISTER, IllegalDataAddressError())
+    await device.async_setup()
+
+    class _Hub:
+        absent_components = device.absent
+
+    assert len(STRING_SENSORS) == 16
+    assert served(_Hub(), STRING_SENSORS) == []

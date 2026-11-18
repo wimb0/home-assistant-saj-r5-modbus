@@ -202,7 +202,7 @@ three-phase) and **firmware version**, read from the inverter.
 
 * **Device Information:** Type, Sub Type, Comms Protocol Version, Serial Number, Product Code, and various hardware/software versions.
 * **Status:** Inverter Status, Inverter Working Mode, and Inverter Error Message.
-* **Real-time Data:** PV voltage, current, and power for each string, bus voltage, inverter temperature, and more.
+* **Real-time Data:** PV voltage, current, and power for each string, the current of each individual PV string (PV1-PV4, string 1-4), bus voltage, inverter temperature, and more. On firmware that does not serve the string-current registers (0x013B-0x014A), those sensors are not created.
 * **Grid Information:** L1/L2/L3 voltage, current, frequency, and power.
 * **Energy Production:** Daily, monthly, yearly, and total power generation.
 * **Working Hours:** Daily and total working hours.
